@@ -1,6 +1,5 @@
 
 import { supabase } from '@/integrations/supabase/client';
-import { useAuth } from '@/contexts/AuthContext';
 
 export interface PortfolioItem {
   id: string;
@@ -86,10 +85,12 @@ export const executeTransaction = async (
       p_total_amount: totalAmount
     };
     
-    // Using a complete type assertion to bypass TypeScript constraints
-    const { error: transactionError } = await (supabase.rpc as any)(
-      'execute_stock_transaction',
-      params
+    // Using a type assertion to properly handle the supabase.rpc method
+    const { error: transactionError } = await (supabase.functions.invoke as any)(
+      'execute-stock-transaction',
+      {
+        body: params
+      }
     );
     
     if (transactionError) throw transactionError;
