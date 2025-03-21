@@ -1,4 +1,3 @@
-
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 
@@ -87,7 +86,6 @@ export const executeTransaction = async (
   }
 };
 
-// Function to add a stock to a watchlist
 export const addToWatchlist = async (
   watchlistId: string,
   symbol: string,
@@ -109,7 +107,6 @@ export const addToWatchlist = async (
   }
 };
 
-// Function to create a new watchlist
 export const createWatchlist = async (name: string): Promise<string> => {
   try {
     // Get current user's ID
@@ -137,7 +134,6 @@ export const createWatchlist = async (name: string): Promise<string> => {
   }
 };
 
-// Function to get user watchlists
 export const getUserWatchlists = async () => {
   try {
     const { data, error } = await supabase
