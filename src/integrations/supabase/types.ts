@@ -9,7 +9,161 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
-      [_ in never]: never
+      portfolios: {
+        Row: {
+          average_price: number
+          company_name: string
+          created_at: string
+          id: string
+          shares: number
+          symbol: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          average_price: number
+          company_name: string
+          created_at?: string
+          id?: string
+          shares: number
+          symbol: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          average_price?: number
+          company_name?: string
+          created_at?: string
+          id?: string
+          shares?: number
+          symbol?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      profiles: {
+        Row: {
+          avatar_url: string | null
+          created_at: string
+          full_name: string | null
+          id: string
+          updated_at: string
+          username: string | null
+        }
+        Insert: {
+          avatar_url?: string | null
+          created_at?: string
+          full_name?: string | null
+          id: string
+          updated_at?: string
+          username?: string | null
+        }
+        Update: {
+          avatar_url?: string | null
+          created_at?: string
+          full_name?: string | null
+          id?: string
+          updated_at?: string
+          username?: string | null
+        }
+        Relationships: []
+      }
+      transactions: {
+        Row: {
+          company_name: string
+          created_at: string
+          id: string
+          price_per_share: number
+          shares: number
+          status: string
+          symbol: string
+          total_amount: number
+          transaction_type: string
+          user_id: string
+        }
+        Insert: {
+          company_name: string
+          created_at?: string
+          id?: string
+          price_per_share: number
+          shares: number
+          status?: string
+          symbol: string
+          total_amount: number
+          transaction_type: string
+          user_id: string
+        }
+        Update: {
+          company_name?: string
+          created_at?: string
+          id?: string
+          price_per_share?: number
+          shares?: number
+          status?: string
+          symbol?: string
+          total_amount?: number
+          transaction_type?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      watchlist_items: {
+        Row: {
+          company_name: string
+          created_at: string
+          id: string
+          symbol: string
+          watchlist_id: string
+        }
+        Insert: {
+          company_name: string
+          created_at?: string
+          id?: string
+          symbol: string
+          watchlist_id: string
+        }
+        Update: {
+          company_name?: string
+          created_at?: string
+          id?: string
+          symbol?: string
+          watchlist_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "watchlist_items_watchlist_id_fkey"
+            columns: ["watchlist_id"]
+            isOneToOne: false
+            referencedRelation: "watchlists"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      watchlists: {
+        Row: {
+          created_at: string
+          id: string
+          name: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          name: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          name?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
