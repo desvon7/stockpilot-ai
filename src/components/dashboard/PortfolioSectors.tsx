@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { PieChart, Pie, Cell, ResponsiveContainer, Legend, Tooltip } from 'recharts';
 import { cn } from '@/lib/utils';
@@ -24,14 +25,13 @@ const PortfolioSectors: React.FC<PortfolioSectorsProps> = ({ sectors, isLoading,
     );
   }
   
-  if (error || !sectors || sectors.length === 0) {
+  if (!sectors || sectors.length === 0) {
     return (
       <div className={cn('glass-card rounded-lg p-6 text-center', className)} style={{ minHeight: '300px' }}>
         <h2 className="text-2xl font-semibold mb-4">Sector Allocation</h2>
         <p className="text-muted-foreground">
-          {error ? 'Error loading sector data.' : 'No sector data available.'}
+          No sector data available.
         </p>
-        {error && <p className="text-sm mt-2">{(error as Error).message}</p>}
       </div>
     );
   }

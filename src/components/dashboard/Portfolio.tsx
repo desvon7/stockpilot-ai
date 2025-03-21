@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { cn } from '@/lib/utils';
 import { formatCurrency, formatPercent, getColorByChange } from '@/utils/formatters';
@@ -6,7 +7,6 @@ import PortfolioCard from '@/components/ui/PortfolioCard';
 import { PieChart, Pie, Cell, ResponsiveContainer, Legend, Tooltip } from 'recharts';
 import { Loader2 } from 'lucide-react';
 import { Link } from 'react-router-dom';
-import { usePortfolio } from '@/hooks/usePortfolio';
 
 interface PortfolioProps {
   portfolio: any; // Using any temporarily for the fix
@@ -22,18 +22,6 @@ const Portfolio: React.FC<PortfolioProps> = ({ portfolio, isLoading, className }
         <div className="glass-card rounded-lg p-6 flex justify-center items-center" style={{ minHeight: '300px' }}>
           <Loader2 className="h-8 w-8 animate-spin text-primary" />
           <span className="ml-2">Loading portfolio data...</span>
-        </div>
-      </div>
-    );
-  }
-  
-  if (error) {
-    return (
-      <div className={cn('space-y-6', className)}>
-        <div className="glass-card rounded-lg p-6 text-center" style={{ minHeight: '200px' }}>
-          <h2 className="text-2xl font-semibold mb-4">Your Portfolio</h2>
-          <p className="text-destructive">Error loading portfolio data.</p>
-          <p className="text-sm mt-2">{(error as Error).message}</p>
         </div>
       </div>
     );
