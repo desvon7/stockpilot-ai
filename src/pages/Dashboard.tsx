@@ -10,11 +10,13 @@ import StockOverview from '@/components/dashboard/StockOverview';
 import LiveMarketData from '@/components/market/LiveMarketData';
 import DashboardSettings from '@/components/dashboard/DashboardSettings';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { DollarSign, BarChart3, PieChart, Settings } from 'lucide-react';
+import { DollarSign, BarChart3, PieChart, Settings, Search } from 'lucide-react';
 import { mockStocks, mockRecommendations } from '@/utils/mockData';
 import { usePortfolio } from '@/hooks/usePortfolio';
 import { usePortfolioHistory } from '@/hooks/usePortfolioHistory';
 import { usePortfolioSectors } from '@/hooks/usePortfolioSectors';
+import StockSearch from '@/components/ui/StockSearch';
+import { Input } from '@/components/ui/input';
 
 const Dashboard: React.FC = () => {
   const { user } = useAuth();
@@ -22,6 +24,7 @@ const Dashboard: React.FC = () => {
   const { portfolio, isLoading: portfolioLoading } = usePortfolio();
   const { history, isLoading: historyLoading } = usePortfolioHistory();
   const { sectors, isLoading: sectorsLoading } = usePortfolioSectors();
+  const [showSearch, setShowSearch] = useState(false);
 
   const welcomeMessage = `Welcome, ${user?.user_metadata?.full_name || 'Investor'}`;
 
@@ -33,7 +36,22 @@ const Dashboard: React.FC = () => {
       
       <div className="container mx-auto px-4 pt-24 pb-16 min-h-screen">
         <div className="flex flex-col md:flex-row items-start md:items-center justify-between mb-6">
-          <h1 className="text-3xl font-bold mb-2 md:mb-0">{welcomeMessage}</h1>
+          <div className="flex items-center w-full md:w-auto mb-4 md:mb-0">
+            <h1 className="text-3xl font-bold mr-4">{welcomeMessage}</h1>
+            <button 
+              onClick={() => setShowSearch(!showSearch)} 
+              className="p-2 rounded-full hover:bg-muted transition-all"
+              aria-label="Search stocks"
+            >
+              <Search size={20} />
+            </button>
+          </div>
+          
+          {showSearch && (
+            <div className="w-full md:w-1/2 lg:w-1/3 mb-4">
+              <StockSearch className="w-full" />
+            </div>
+          )}
           
           <Tabs 
             value={activeTab} 

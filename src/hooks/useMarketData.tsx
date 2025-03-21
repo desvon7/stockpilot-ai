@@ -2,6 +2,7 @@
 import { useState, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { fetchMarketData } from '@/services/stockService';
+import { toast } from 'sonner';
 
 export interface MarketDataItem {
   ticker: string;
@@ -9,19 +10,16 @@ export interface MarketDataItem {
   change_amount: string;
   change_percentage: string;
   volume: string;
+  price_change: string;
 }
 
 export interface MarketData {
-  most_actively_traded: MarketDataItem[];
   top_gainers: MarketDataItem[];
   top_losers: MarketDataItem[];
-  metadata?: {
-    last_updated: string;
-    markets: string[];
-  };
+  most_actively_traded: MarketDataItem[];
 }
 
-export const useMarketData = (enabled = true) => {
+export const useMarketData = () => {
   const {
     data,
     isLoading,
@@ -29,13 +27,12 @@ export const useMarketData = (enabled = true) => {
     refetch
   } = useQuery({
     queryKey: ['marketData'],
-    queryFn: () => fetchMarketData(),
-    enabled: enabled,
-    staleTime: 60000, // 1 minute
-    refetchInterval: 5 * 60000, // Refetch every 5 minutes
+    queryFn: fetchMarketData,
+    staleTime: 5 * 60000, // 5 minutes
+    refetchInterval: 15 * 60000, // 15 minutes
     meta: {
       onError: (error: Error) => {
-        console.error('Error fetching market data:', error.message);
+        toast.error(`Failed to fetch market data: ${error.message}`);
       }
     }
   });
@@ -51,6 +48,7 @@ export const useMarketData = (enabled = true) => {
 
   const refreshData = () => {
     refetch();
+    toast.success('Refreshing market data...');
   };
 
   return {

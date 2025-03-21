@@ -1,79 +1,69 @@
+import React, { useState, useEffect } from 'react';
+import { Routes, Route } from 'react-router-dom';
+import { ThemeProvider } from "@/components/theme-provider"
+import { useTheme } from "next-themes"
+import { Toaster } from 'sonner';
 
-import { Toaster } from "@/components/ui/toaster";
-import { Toaster as Sonner } from "@/components/ui/sonner";
-import { TooltipProvider } from "@/components/ui/tooltip";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
-import { AuthProvider } from "@/contexts/AuthContext";
-import { PreferencesProvider } from "@/contexts/PreferencesContext";
-import Index from "./pages/Index";
-import Home from "./pages/Home";
-import Dashboard from "./pages/Dashboard";
-import StockDetail from "./pages/StockDetail";
-import Transactions from "./pages/Transactions";
-import Watchlists from "./pages/Watchlists";
-import TrendingAssets from "./pages/TrendingAssets";
-import NewsFeed from "./pages/NewsFeed";
-import Auth from "./pages/Auth";
-import ResetPassword from "./pages/ResetPassword";
-import UpdatePassword from "./pages/UpdatePassword";
-import NotFound from "./pages/NotFound";
-import ProtectedRoute from "./components/auth/ProtectedRoute";
-import { HelmetProvider } from "react-helmet-async";
+import Index from '@/pages/Index';
+import Auth from '@/pages/Auth';
+import ResetPassword from '@/pages/ResetPassword';
+import UpdatePassword from '@/pages/UpdatePassword';
+import Dashboard from '@/pages/Dashboard';
+import NewsFeed from '@/pages/NewsFeed';
+import Watchlists from '@/pages/Watchlists';
+import Transactions from '@/pages/Transactions';
+import StockDetail from '@/pages/StockDetail';
+import TrendingAssets from '@/pages/TrendingAssets';
+import NotFound from '@/pages/NotFound';
+import ProtectedRoute from '@/components/auth/ProtectedRoute';
+import MobileMenu from '@/components/layout/MobileMenu';
+import { Navbar } from '@/components/layout/Navbar';
 
-const queryClient = new QueryClient();
+// Add the import for StockBrowser
+import StockBrowser from '@/pages/StockBrowser';
 
-const App = () => (
-  <QueryClientProvider client={queryClient}>
-    <HelmetProvider>
-      <TooltipProvider>
-        <Toaster />
-        <Sonner />
-        <BrowserRouter>
-          <AuthProvider>
-            <PreferencesProvider>
-              <Routes>
-                <Route path="/" element={<Index />} />
-                <Route path="/auth" element={<Auth />} />
-                <Route path="/reset-password" element={<ResetPassword />} />
-                <Route path="/update-password" element={<UpdatePassword />} />
-                <Route path="/home" element={
-                  <ProtectedRoute>
-                    <Home />
-                  </ProtectedRoute>
-                } />
-                <Route path="/dashboard" element={
-                  <ProtectedRoute>
-                    <Dashboard />
-                  </ProtectedRoute>
-                } />
-                <Route path="/transactions" element={
-                  <ProtectedRoute>
-                    <Transactions />
-                  </ProtectedRoute>
-                } />
-                <Route path="/watchlists" element={
-                  <ProtectedRoute>
-                    <Watchlists />
-                  </ProtectedRoute>
-                } />
-                <Route path="/stocks/:symbol" element={
-                  <ProtectedRoute>
-                    <StockDetail />
-                  </ProtectedRoute>
-                } />
-                <Route path="/trending-assets" element={<TrendingAssets />} />
-                <Route path="/trending-assets/category/:categoryId" element={<TrendingAssets />} />
-                <Route path="/news-feed" element={<NewsFeed />} />
-                {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-                <Route path="*" element={<NotFound />} />
-              </Routes>
-            </PreferencesProvider>
-          </AuthProvider>
-        </BrowserRouter>
-      </TooltipProvider>
-    </HelmetProvider>
-  </QueryClientProvider>
-);
+function App() {
+  const [isMounted, setIsMounted] = useState(false);
+  const { theme } = useTheme();
+
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
+
+  return (
+    <div className="App">
+      <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
+        {isMounted && (
+          <div className="relative flex min-h-screen flex-col">
+            <Navbar />
+            <MobileMenu />
+            
+            <Routes>
+              <Route index element={<Index />} />
+              <Route path="/auth" element={<Auth />} />
+              <Route path="/reset-password" element={<ResetPassword />} />
+              <Route path="/update-password" element={<UpdatePassword />} />
+              
+              {/* Protected routes */}
+              <Route element={<ProtectedRoute />}>
+                <Route path="/dashboard" element={<Dashboard />} />
+                <Route path="/news" element={<NewsFeed />} />
+                <Route path="/watchlists" element={<Watchlists />} />
+                <Route path="/transactions" element={<Transactions />} />
+                <Route path="/stocks" element={<StockBrowser />} />
+                <Route path="/stocks/:symbol" element={<StockDetail />} />
+                <Route path="/trending" element={<TrendingAssets />} />
+              </Route>
+              
+              <Route path="*" element={<NotFound />} />
+            </Routes>
+            
+            <Toaster richColors closeButton />
+          </div>
+        )}
+      </ThemeProvider>
+    </div>
+  );
+}
 
 export default App;
