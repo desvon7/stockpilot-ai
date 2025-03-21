@@ -86,11 +86,11 @@ export const executeTransaction = async (
       p_total_amount: totalAmount
     };
     
-    // Using a type assertion to fix the RPC call
-    const { error: transactionError } = await (supabase.rpc(
+    // Using a complete type assertion to bypass TypeScript constraints
+    const { error: transactionError } = await (supabase.rpc as any)(
       'execute_stock_transaction',
       params
-    ) as unknown as Promise<{ error: any }>);
+    );
     
     if (transactionError) throw transactionError;
     
