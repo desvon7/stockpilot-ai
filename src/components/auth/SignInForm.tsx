@@ -43,7 +43,7 @@ const SignInForm: React.FC = () => {
           <label htmlFor="signin-password" className="block text-sm font-medium">
             Password
           </label>
-          <Link to="/forgot-password" className="text-sm text-green-500 hover:underline">
+          <Link to="/reset-password" className="text-sm text-green-500 hover:underline">
             Forgot password?
           </Link>
         </div>
