@@ -1,3 +1,4 @@
+
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 
@@ -25,6 +26,16 @@ export interface Transaction {
   total_amount: number;
   status: 'pending' | 'completed' | 'failed' | 'cancelled';
   created_at: string;
+}
+
+// Define types for our RPC function parameters
+export interface StockTransactionParams {
+  p_symbol: string;
+  p_company_name: string;
+  p_transaction_type: 'buy' | 'sell';
+  p_shares: number;
+  p_price_per_share: number;
+  p_total_amount: number;
 }
 
 export const getUserPortfolio = async (): Promise<PortfolioItem[]> => {
@@ -68,15 +79,21 @@ export const executeTransaction = async (
   try {
     const totalAmount = shares * pricePerShare;
     
-    // Begin a transaction using Supabase's RPC function
-    const { error: transactionError } = await supabase.rpc('execute_stock_transaction', {
+    // Use our defined type for the RPC call parameters
+    const params: StockTransactionParams = {
       p_symbol: symbol,
       p_company_name: companyName,
       p_transaction_type: transactionType,
       p_shares: shares,
       p_price_per_share: pricePerShare,
       p_total_amount: totalAmount
-    });
+    };
+    
+    // Begin a transaction using Supabase's RPC function
+    const { error: transactionError } = await supabase.rpc(
+      'execute_stock_transaction', 
+      params
+    );
     
     if (transactionError) throw transactionError;
     
