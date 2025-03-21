@@ -5,6 +5,8 @@ import Navbar from '@/components/layout/Navbar';
 import Footer from '@/components/layout/Footer';
 import StockOverview from '@/components/dashboard/StockOverview';
 import Portfolio from '@/components/dashboard/Portfolio';
+import PortfolioPerformance from '@/components/dashboard/PortfolioPerformance';
+import PortfolioSectors from '@/components/dashboard/PortfolioSectors';
 import Recommendations from '@/components/dashboard/Recommendations';
 import { stockData, recommendationData, marketIndices } from '@/utils/mockData';
 import { formatCurrency, formatPercent, getColorByChange, getArrowByChange } from '@/utils/formatters';
@@ -37,13 +39,19 @@ const Dashboard: React.FC = () => {
             </div>
           </div>
           
+          {/* Portfolio Performance Chart */}
+          <div className="mb-8">
+            <PortfolioPerformance />
+          </div>
+          
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
             <div className="lg:col-span-2">
               <Portfolio className="mb-8" />
               <StockOverview stocks={stockData} />
             </div>
             
-            <div>
+            <div className="space-y-8">
+              <PortfolioSectors />
               <Recommendations recommendations={recommendationData} />
             </div>
           </div>

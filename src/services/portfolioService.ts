@@ -231,3 +231,70 @@ export const removeFromWatchlist = async (watchlistItemId: string): Promise<void
     throw error;
   }
 };
+
+export interface PortfolioHistoryItem {
+  date: string;
+  totalValue: number;
+  cashValue: number;
+  stocksValue: number;
+}
+
+export interface SectorAllocation {
+  name: string;
+  value: number;
+  percentage: number;
+}
+
+export const getPortfolioHistory = async (): Promise<PortfolioHistoryItem[]> => {
+  try {
+    const startDate = new Date();
+    startDate.setFullYear(startDate.getFullYear() - 1);
+    
+    const result: PortfolioHistoryItem[] = [];
+    let currentValue = 10000;
+    
+    for (let i = 0; i <= 365; i++) {
+      const currentDate = new Date(startDate);
+      currentDate.setDate(startDate.getDate() + i);
+      
+      const dailyChange = (Math.random() - 0.48) * (currentValue * 0.02);
+      currentValue += dailyChange;
+      
+      const stocksValue = currentValue * 0.7;
+      const cashValue = currentValue * 0.3;
+      
+      result.push({
+        date: currentDate.toISOString().split('T')[0],
+        totalValue: currentValue,
+        cashValue,
+        stocksValue
+      });
+    }
+    
+    return result;
+  } catch (error) {
+    console.error('Error fetching portfolio history:', error);
+    throw error;
+  }
+};
+
+export const getPortfolioSectors = async (): Promise<SectorAllocation[]> => {
+  try {
+    const mockSectors = [
+      { name: 'Technology', value: 12500, percentage: 25 },
+      { name: 'Healthcare', value: 8750, percentage: 17.5 },
+      { name: 'Financial Services', value: 7500, percentage: 15 },
+      { name: 'Consumer Cyclical', value: 6250, percentage: 12.5 },
+      { name: 'Communication Services', value: 5000, percentage: 10 },
+      { name: 'Industrials', value: 3750, percentage: 7.5 },
+      { name: 'Energy', value: 2500, percentage: 5 },
+      { name: 'Materials', value: 2500, percentage: 5 },
+      { name: 'Real Estate', value: 1250, percentage: 2.5 }
+    ];
+    
+    return mockSectors;
+  } catch (error) {
+    console.error('Error fetching portfolio sectors:', error);
+    throw error;
+  }
+};
