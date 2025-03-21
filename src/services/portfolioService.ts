@@ -1,3 +1,4 @@
+
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 
@@ -86,6 +87,7 @@ export const executeTransaction = async (
       p_total_amount: totalAmount
     };
     
+    // Fixed: Pass params as the second argument to rpc, not as spread properties
     const { error: transactionError } = await supabase.rpc(
       'execute_stock_transaction', 
       params
