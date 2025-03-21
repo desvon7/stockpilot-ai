@@ -1,0 +1,51 @@
+
+@layer utilities {
+  .glass {
+    @apply bg-white/80 dark:bg-black/30 backdrop-blur-md border border-white/20 dark:border-white/10;
+  }
+  
+  .glass-card {
+    @apply bg-white/90 dark:bg-slate-900/90 backdrop-blur-lg shadow-lg border border-slate-200/50 dark:border-slate-700/50;
+  }
+  
+  .glass-input {
+    @apply bg-white/70 dark:bg-slate-800/70 backdrop-blur-md border border-slate-200/50 dark:border-slate-700/50;
+  }
+  
+  .text-balance {
+    text-wrap: balance;
+  }
+  
+  /* Robinhood/Webull inspired utilities */
+  .trading-card {
+    @apply bg-card dark:bg-gray-900 border border-border dark:border-gray-800 rounded-xl shadow-sm;
+  }
+  
+  .trading-input {
+    @apply bg-background dark:bg-gray-900 border border-border dark:border-gray-800 rounded-lg px-4 py-2 focus:outline-none focus:ring-1 focus:ring-primary;
+  }
+  
+  .profit-text {
+    @apply text-success;
+  }
+  
+  .loss-text {
+    @apply text-destructive;
+  }
+  
+  .chart-container {
+    @apply rounded-lg overflow-hidden bg-background dark:bg-gray-900 p-4;
+  }
+  
+  .stock-card-hover {
+    @apply hover:bg-secondary/50 dark:hover:bg-gray-800/50 transition-colors duration-200;
+  }
+  
+  .neon-green-glow {
+    text-shadow: 0 0 5px rgba(50, 255, 50, 0.7);
+  }
+  
+  .neon-red-glow {
+    text-shadow: 0 0 5px rgba(255, 50, 50, 0.7);
+  }
+}
