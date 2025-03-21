@@ -11,7 +11,8 @@ import {
   Shield,
   Zap,
   Phone,
-  Settings
+  Settings,
+  ChevronRight
 } from 'lucide-react';
 import StockChart from '@/components/ui/StockChart';
 import { generateChartData } from '@/utils/mockData';
