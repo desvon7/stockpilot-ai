@@ -10,9 +10,20 @@ import { Button } from './button';
 interface StockSearchProps {
   className?: string;
   darkMode?: boolean;
+  onSelectStock?: (stock: StockSearchResult) => void;
+  isLoading?: boolean;
+  buttonText?: string;
+  disabled?: boolean;
 }
 
-const StockSearch: React.FC<StockSearchProps> = ({ className, darkMode = false }) => {
+const StockSearch: React.FC<StockSearchProps> = ({ 
+  className, 
+  darkMode = false,
+  onSelectStock,
+  isLoading: externalLoading,
+  buttonText,
+  disabled
+}) => {
   const [query, setQuery] = useState('');
   const [isOpen, setIsOpen] = useState(false);
   const [selectedIndex, setSelectedIndex] = useState(-1);
@@ -22,7 +33,7 @@ const StockSearch: React.FC<StockSearchProps> = ({ className, darkMode = false }
 
   const {
     data: searchResults,
-    isLoading,
+    isLoading: searchLoading,
     error,
     refetch
   } = useQuery({
@@ -31,6 +42,8 @@ const StockSearch: React.FC<StockSearchProps> = ({ className, darkMode = false }
     enabled: query.length >= 2,
     staleTime: 60000, // 1 minute
   });
+
+  const isLoading = externalLoading || searchLoading;
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -62,9 +75,15 @@ const StockSearch: React.FC<StockSearchProps> = ({ className, darkMode = false }
   };
 
   const handleSelectStock = (stock: StockSearchResult) => {
-    navigate(`/stocks/${stock.symbol}`);
-    setIsOpen(false);
-    setQuery('');
+    if (onSelectStock) {
+      onSelectStock(stock);
+      setIsOpen(false);
+      setQuery('');
+    } else {
+      navigate(`/stocks/${stock.symbol}`);
+      setIsOpen(false);
+      setQuery('');
+    }
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
@@ -117,9 +136,11 @@ const StockSearch: React.FC<StockSearchProps> = ({ className, darkMode = false }
             'w-full pl-10 pr-4 py-2 rounded-lg focus:outline-none focus:ring-2',
             darkMode 
               ? 'bg-gray-900 border border-gray-800 text-white focus:ring-primary/50' 
-              : 'bg-muted focus:ring-primary'
+              : 'bg-muted focus:ring-primary',
+            disabled ? 'opacity-50 cursor-not-allowed' : ''
           )}
           onFocus={() => query.length >= 2 && setIsOpen(true)}
+          disabled={disabled}
         />
         {isLoading && (
           <Loader2 
@@ -188,7 +209,7 @@ const StockSearch: React.FC<StockSearchProps> = ({ className, darkMode = false }
                     handleSelectStock(result);
                   }}
                 >
-                  <ArrowRight size={18} />
+                  {buttonText ? buttonText : <ArrowRight size={18} />}
                 </Button>
               </li>
             ))}
