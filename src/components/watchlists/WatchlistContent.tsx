@@ -10,8 +10,8 @@ import {
 } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '@/components/ui/table';
-import { Trash2, Star, Loader2 } from 'lucide-react';
-import { formatDate } from '@/utils/formatters';
+import { Trash2, Star, Loader2, ArrowUp, ArrowDown } from 'lucide-react';
+import { formatDate, formatCurrency, formatPercentage } from '@/utils/formatters';
 import { removeFromWatchlist } from '@/services/portfolioService';
 import { toast } from 'sonner';
 import {
@@ -25,6 +25,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
+import { WatchlistItem } from '@/services/portfolioService';
 
 interface WatchlistContentProps {
   activeWatchlist: any | undefined;
@@ -41,6 +42,7 @@ const WatchlistContent: React.FC<WatchlistContentProps> = ({
   const handleRemoveStock = async (itemId: string, symbol: string) => {
     try {
       setIsRemoving(true);
+      setItemToRemove({ id: itemId, symbol });
       await removeFromWatchlist(itemId);
       refetchWatchlists();
       toast.success(`Removed ${symbol} from watchlist`);
@@ -85,12 +87,14 @@ const WatchlistContent: React.FC<WatchlistContentProps> = ({
               <TableRow>
                 <TableHead>Symbol</TableHead>
                 <TableHead>Name</TableHead>
+                <TableHead className="text-right">Price</TableHead>
+                <TableHead className="text-right">Change</TableHead>
                 <TableHead>Added</TableHead>
                 <TableHead className="text-right">Actions</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
-              {activeWatchlist.watchlist_items?.map((item: any) => (
+              {activeWatchlist.watchlist_items?.map((item: WatchlistItem) => (
                 <TableRow key={item.id}>
                   <TableCell className="font-medium">
                     <Link to={`/stocks/${item.symbol}`} className="text-primary hover:underline">
@@ -98,6 +102,34 @@ const WatchlistContent: React.FC<WatchlistContentProps> = ({
                     </Link>
                   </TableCell>
                   <TableCell>{item.company_name}</TableCell>
+                  <TableCell className="text-right">
+                    {item.current_price 
+                      ? formatCurrency(item.current_price)
+                      : <span className="text-muted-foreground">--</span>
+                    }
+                  </TableCell>
+                  <TableCell className="text-right">
+                    {item.price_change_percent != null ? (
+                      <span 
+                        className={`flex items-center justify-end gap-1 ${
+                          item.price_change_percent > 0 
+                            ? 'text-green-600' 
+                            : item.price_change_percent < 0 
+                              ? 'text-red-600' 
+                              : ''
+                        }`}
+                      >
+                        {item.price_change_percent > 0 ? (
+                          <ArrowUp className="h-3 w-3" />
+                        ) : item.price_change_percent < 0 ? (
+                          <ArrowDown className="h-3 w-3" />
+                        ) : null}
+                        {formatPercentage(Math.abs(item.price_change_percent))}
+                      </span>
+                    ) : (
+                      <span className="text-muted-foreground">--</span>
+                    )}
+                  </TableCell>
                   <TableCell>{formatDate(item.created_at)}</TableCell>
                   <TableCell className="text-right">
                     <AlertDialog>

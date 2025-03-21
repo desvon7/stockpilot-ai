@@ -35,6 +35,24 @@ export interface StockTransactionParams {
   p_total_amount: number;
 }
 
+export interface WatchlistItem {
+  id: string;
+  symbol: string;
+  company_name: string;
+  created_at: string;
+  current_price?: number;
+  price_change?: number;
+  price_change_percent?: number;
+}
+
+export interface Watchlist {
+  id: string;
+  name: string;
+  created_at: string;
+  updated_at?: string;
+  watchlist_items: WatchlistItem[];
+}
+
 export const getUserPortfolio = async (): Promise<PortfolioItem[]> => {
   try {
     const { data, error } = await supabase
@@ -146,7 +164,7 @@ export const createWatchlist = async (name: string): Promise<string> => {
   }
 };
 
-export const getUserWatchlists = async () => {
+export const getUserWatchlists = async (): Promise<Watchlist[]> => {
   try {
     const { data, error } = await supabase
       .from('watchlists')
@@ -167,6 +185,22 @@ export const getUserWatchlists = async () => {
   } catch (error) {
     console.error('Error fetching watchlists:', error);
     throw error;
+  }
+};
+
+export const getWatchlistStockPrices = async (symbols: string[]): Promise<Record<string, { price: number, change: number, changePercent: number }>> => {
+  if (!symbols.length) return {};
+  
+  try {
+    const { data, error } = await supabase.functions.invoke('fetch-watchlist-prices', {
+      body: { symbols }
+    });
+    
+    if (error) throw error;
+    return data || {};
+  } catch (error) {
+    console.error('Error fetching stock prices:', error);
+    return {};
   }
 };
 
