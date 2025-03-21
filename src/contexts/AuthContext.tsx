@@ -4,7 +4,7 @@ import { Session, User, Provider } from '@supabase/supabase-js';
 import { supabase, simulateLoggedInUser } from '@/lib/supabase';
 import { toast } from 'sonner';
 
-const DEV_MODE = import.meta.env.DEV && false; // Set to true to enable dev mode
+const DEV_MODE = import.meta.env.DEV && true; // Changed to true to enable dev mode
 
 type AuthContextType = {
   session: Session | null;
@@ -61,18 +61,21 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const devModeSignIn = async () => {
     if (DEV_MODE) {
       setLoading(true);
-      // Create a mock user for development
-      const mockUser = {
-        id: 'dev-user-123',
-        email: 'dev@example.com',
-        user_metadata: { full_name: 'Development User' }
-      } as User;
+      // Use the simulateLoggedInUser function instead of creating a mock user here
+      const success = await simulateLoggedInUser();
       
-      // Set the mock user and session
-      setUser(mockUser);
-      // We don't create a real session since we're just mocking
-      navigate('/home');
-      toast.success('Signed in as Development User');
+      if (success) {
+        // The user data is set in localStorage by simulateLoggedInUser
+        // Just retrieve it to set in our state
+        const { data } = await supabase.auth.getSession();
+        if (data.session) {
+          setSession(data.session);
+          setUser(data.session.user);
+          navigate('/home');
+          toast.success('Signed in as Development User');
+        }
+      }
+      
       setLoading(false);
       return;
     }

@@ -22,7 +22,8 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
   
   // Dev mode bypass for testing - allow access if development mode is enabled
   const isDev = import.meta.env.DEV;
-  const devModeEnabled = isDev && localStorage.getItem('devModeEnabled') === 'true';
+  const devModeEnabled = isDev && (localStorage.getItem('devModeEnabled') === 'true' || 
+    !!localStorage.getItem('supabase.auth.token'));
   
   if (devModeEnabled) {
     console.log('Dev mode enabled - bypassing authentication check');
