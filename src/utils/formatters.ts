@@ -23,6 +23,11 @@ export const getColorByChange = (change: number): string => {
   return change > 0 ? 'text-green-500' : change < 0 ? 'text-red-500' : 'text-muted-foreground';
 };
 
+// Get background color class based on change value
+export const getBgColorByChange = (change: number): string => {
+  return change > 0 ? 'bg-green-500/10' : change < 0 ? 'bg-red-500/10' : 'bg-muted';
+};
+
 // Get arrow icon based on change value
 export const getArrowByChange = (change: number): string => {
   return change > 0 ? '↑' : change < 0 ? '↓' : '→';
@@ -38,4 +43,24 @@ export const formatDate = (dateString: string): string => {
     hour: '2-digit',
     minute: '2-digit'
   }).format(date);
+};
+
+// Format large currency values (millions, billions)
+export const formatLargeCurrency = (value: number): string => {
+  if (value >= 1e12) {
+    return `$${(value / 1e12).toFixed(2)}T`;
+  } else if (value >= 1e9) {
+    return `$${(value / 1e9).toFixed(2)}B`;
+  } else if (value >= 1e6) {
+    return `$${(value / 1e6).toFixed(2)}M`;
+  } else if (value >= 1e3) {
+    return `$${(value / 1e3).toFixed(2)}K`;
+  } else {
+    return formatCurrency(value);
+  }
+};
+
+// Format large numbers with commas
+export const formatNumber = (value: number): string => {
+  return new Intl.NumberFormat('en-US').format(value);
 };
