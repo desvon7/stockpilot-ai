@@ -31,7 +31,7 @@ export interface Transaction {
 export interface StockTransactionParams {
   p_symbol: string;
   p_company_name: string;
-  p_transaction_type: 'buy' | 'sell';  // Fixed: Explicitly define as union type of literal strings
+  p_transaction_type: 'buy' | 'sell';
   p_shares: number;
   p_price_per_share: number;
   p_total_amount: number;
@@ -60,7 +60,6 @@ export const getUserTransactions = async (): Promise<Transaction[]> => {
       .order('created_at', { ascending: false });
     
     if (error) throw error;
-    // Type assertion to ensure the data matches our expected Transaction type
     return (data as Transaction[]) || [];
   } catch (error) {
     console.error('Error fetching transactions:', error);
@@ -71,24 +70,22 @@ export const getUserTransactions = async (): Promise<Transaction[]> => {
 export const executeTransaction = async (
   symbol: string,
   companyName: string,
-  transactionType: 'buy' | 'sell',  // Explicitly type this parameter as literal types
+  transactionType: 'buy' | 'sell',
   shares: number,
   pricePerShare: number
 ): Promise<void> => {
   try {
     const totalAmount = shares * pricePerShare;
     
-    // Create properly typed params object conforming to StockTransactionParams interface
     const params: StockTransactionParams = {
       p_symbol: symbol,
       p_company_name: companyName,
-      p_transaction_type: transactionType,  // This is now correctly typed
+      p_transaction_type: transactionType,
       p_shares: shares,
       p_price_per_share: pricePerShare,
       p_total_amount: totalAmount
     };
     
-    // Begin a transaction using Supabase's RPC function
     const { error: transactionError } = await supabase.rpc(
       'execute_stock_transaction', 
       params
@@ -125,7 +122,6 @@ export const addToWatchlist = async (
 
 export const createWatchlist = async (name: string): Promise<string> => {
   try {
-    // Get current user's ID
     const { data: userData } = await supabase.auth.getUser();
     const userId = userData.user?.id;
     
