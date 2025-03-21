@@ -9,6 +9,21 @@ import Navbar from '@/components/layout/Navbar';
 import Footer from '@/components/layout/Footer';
 import { usePortfolio } from '@/hooks/usePortfolio';
 
+// Define a proper interface for watchlist items
+interface WatchlistItem {
+  symbol: string;
+  price: number;
+  change: number;
+  type?: string;
+  date?: string;
+}
+
+interface Watchlist {
+  id: string;
+  name: string;
+  items: WatchlistItem[];
+}
+
 const Home: React.FC = () => {
   const { portfolio, isLoading } = usePortfolio();
   
@@ -46,8 +61,8 @@ const Home: React.FC = () => {
     { symbol: 'PEPE', name: 'Pepe', price: 0.00000723, change: -4.55, holdings: 6473553.00 }
   ];
 
-  // Mock lists
-  const watchlists = [
+  // Mock lists with properly typed items
+  const watchlists: Watchlist[] = [
     { id: '1', name: 'Options Watchlist', items: [
       { symbol: 'HOOD', price: 33.93, change: 0.00, type: 'call', date: '1/16/2026' }
     ]},
@@ -280,3 +295,4 @@ const Home: React.FC = () => {
 };
 
 export default Home;
+
