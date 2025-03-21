@@ -1,25 +1,9 @@
 
 import { createClient, Provider } from '@supabase/supabase-js';
+import { supabase as integratedSupabase } from '@/integrations/supabase/client';
 
-// Use default values if environment variables are not available
-// These will be replaced with actual values in production
-const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || 'https://placeholder-project.supabase.co';
-const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || 'placeholder-anon-key';
-
-// Warn about missing credentials only in development
-if (import.meta.env.DEV && (!import.meta.env.VITE_SUPABASE_URL || !import.meta.env.VITE_SUPABASE_ANON_KEY)) {
-  console.warn('Missing Supabase credentials. Using placeholder values for development.');
-  console.warn('Please add VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY to your environment variables.');
-  console.warn('For testing, you can also use the mock user feature below.');
-}
-
-export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
-  auth: {
-    persistSession: true,
-    autoRefreshToken: true,
-    storage: localStorage
-  }
-});
+// Use the integrated Supabase client if available, otherwise use the fallback
+export const supabase = integratedSupabase;
 
 // Auth helper functions
 export const signUpWithEmail = async (email: string, password: string, name: string) => {

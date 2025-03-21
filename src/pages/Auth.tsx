@@ -13,15 +13,18 @@ import LoadingSpinner from '@/components/auth/LoadingSpinner';
 type AuthTab = 'signin' | 'signup';
 
 const Auth: React.FC = () => {
-  const [activeTab, setActiveTab] = useState<AuthTab>('signup');
+  const [activeTab, setActiveTab] = useState<AuthTab>('signin');
   const { user, loading } = useAuth();
   const [localLoading, setLocalLoading] = useState(true);
   
   // Add an effect to set local loading to false after auth context has initialized
   useEffect(() => {
-    if (!loading) {
+    // Short timeout to ensure auth context is fully initialized
+    const timer = setTimeout(() => {
       setLocalLoading(false);
-    }
+    }, 500);
+    
+    return () => clearTimeout(timer);
   }, [loading]);
   
   if (user && !loading) {

@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { User, Mail, Lock, EyeOff, Eye, ChevronRight } from 'lucide-react';
@@ -8,7 +7,7 @@ import { toast } from 'sonner';
 
 const SignUpForm: React.FC = () => {
   const [showPassword, setShowPassword] = useState(false);
-  const { loading, signUp } = useAuth();
+  const { loading: authLoading, signUp } = useAuth();
   const [signupName, setSignupName] = useState('');
   const [signupEmail, setSignupEmail] = useState('');
   const [signupPassword, setSignupPassword] = useState('');
@@ -30,15 +29,21 @@ const SignUpForm: React.FC = () => {
     
     try {
       setIsSubmitting(true);
-      await signUp(signupEmail, signupPassword, signupName);
-    } catch (error) {
+      const result = await signUp(signupEmail, signupPassword, signupName);
+      
+      if (result?.error) {
+        throw result.error;
+      }
+      
+    } catch (error: any) {
       console.error("Sign up error:", error);
+      toast.error(error.message || "Failed to sign up. Please try again.");
     } finally {
       setIsSubmitting(false);
     }
   };
 
-  const isLoading = loading || isSubmitting;
+  const isLoading = authLoading || isSubmitting;
 
   return (
     <form onSubmit={handleSignUp} className="space-y-5">

@@ -4,18 +4,18 @@ import { Session, User, Provider } from '@supabase/supabase-js';
 import { supabase, simulateLoggedInUser } from '@/lib/supabase';
 import { toast } from 'sonner';
 
-const DEV_MODE = import.meta.env.DEV && true; // Changed to true to enable dev mode
+const DEV_MODE = import.meta.env.DEV && true; // Enable dev mode in development
 
 type AuthContextType = {
   session: Session | null;
   user: User | null;
   loading: boolean;
-  signUp: (email: string, password: string, name: string) => Promise<void>;
-  signIn: (email: string, password: string) => Promise<void>;
-  signInWithProvider: (provider: Provider) => Promise<void>;
-  signOut: () => Promise<void>;
+  signUp: (email: string, password: string, name: string) => Promise<{data?: any, error?: any}>;
+  signIn: (email: string, password: string) => Promise<{data?: any, error?: any}>;
+  signInWithProvider: (provider: Provider) => Promise<{data?: any, error?: any}>;
+  signOut: () => Promise<{error?: any}>;
   resetPassword: (email: string) => Promise<void>;
-  devModeSignIn: () => Promise<void>; // New function for dev mode
+  devModeSignIn: () => Promise<void>;
 };
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -63,20 +63,25 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const devModeSignIn = async () => {
     if (DEV_MODE) {
-      setLoading(true);
-      const success = await simulateLoggedInUser();
-      
-      if (success) {
-        const { data } = await supabase.auth.getSession();
-        if (data.session) {
-          setSession(data.session);
-          setUser(data.session.user);
-          navigate('/home');
-          toast.success('Signed in as Development User');
+      try {
+        setLoading(true);
+        const success = await simulateLoggedInUser();
+        
+        if (success) {
+          const { data } = await supabase.auth.getSession();
+          if (data.session) {
+            setSession(data.session);
+            setUser(data.session.user);
+            navigate('/home');
+            toast.success('Signed in as Development User');
+          }
         }
+      } catch (error) {
+        console.error('Error with dev mode sign in:', error);
+        toast.error('Failed to initialize dev mode');
+      } finally {
+        setLoading(false);
       }
-      
-      setLoading(false);
       return;
     }
     toast.error('Development mode is disabled');
@@ -86,7 +91,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     try {
       setLoading(true);
       console.log("Attempting to sign up user:", email);
-      const { error } = await supabase.auth.signUp({
+      const { data, error } = await supabase.auth.signUp({
         email,
         password,
         options: {
@@ -98,16 +103,17 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
       if (error) {
         console.error("Sign up error details:", error);
-        throw error;
+        return { error };
       }
       
       console.log("Sign up successful, verification email sent");
       toast.success('Verification email sent! Please check your inbox.');
       navigate('/auth');
+      return { data };
     } catch (error: any) {
       console.error('Sign up error:', error);
       toast.error(error.message || 'An error occurred during sign up');
-      throw error;
+      return { error };
     } finally {
       setLoading(false);
     }
@@ -117,23 +123,24 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     try {
       setLoading(true);
       console.log("Attempting to sign in user:", email);
-      const { error } = await supabase.auth.signInWithPassword({
+      const { data, error } = await supabase.auth.signInWithPassword({
         email,
         password
       });
       
       if (error) {
         console.error("Sign in error details:", error);
-        throw error;
+        return { error };
       }
       
       console.log("Sign in successful");
       navigate('/home');
       toast.success('Signed in successfully!');
+      return { data };
     } catch (error: any) {
       console.error('Sign in error:', error);
       toast.error(error.message || 'Invalid login credentials');
-      throw error;
+      return { error };
     } finally {
       setLoading(false);
     }
@@ -142,18 +149,22 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const signInWithProvider = async (provider: Provider) => {
     try {
       setLoading(true);
-      const { error } = await supabase.auth.signInWithOAuth({
+      const { data, error } = await supabase.auth.signInWithOAuth({
         provider,
         options: {
           redirectTo: `${window.location.origin}/home`
         }
       });
       
-      if (error) throw error;
+      if (error) {
+        return { error };
+      }
       
+      return { data };
     } catch (error: any) {
       toast.error(error.message || 'Error signing in with provider');
       console.error('OAuth error:', error);
+      return { error };
     } finally {
       setLoading(false);
     }
@@ -164,13 +175,17 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setLoading(true);
       const { error } = await supabase.auth.signOut();
       
-      if (error) throw error;
+      if (error) {
+        return { error };
+      }
       
       navigate('/');
       toast.success('Signed out successfully');
+      return {};
     } catch (error: any) {
       toast.error(error.message || 'Error signing out');
       console.error('Sign out error:', error);
+      return { error };
     } finally {
       setLoading(false);
     }
