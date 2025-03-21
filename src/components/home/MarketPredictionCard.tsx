@@ -13,7 +13,7 @@ const MarketPredictionCard: React.FC<MarketPredictionCardProps> = ({ data, isInV
   // Convert ChartData to the format expected by StockChart
   const chartData = data.map(item => ({
     date: item.date,
-    price: item.value
+    price: item.value  // Here we map value to price
   }));
 
   return (
