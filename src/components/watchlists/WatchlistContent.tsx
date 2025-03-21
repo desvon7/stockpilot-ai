@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { 
   Card, 
@@ -10,14 +10,49 @@ import {
 } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '@/components/ui/table';
-import { Trash2, Star } from 'lucide-react';
+import { Trash2, Star, Loader2 } from 'lucide-react';
 import { formatDate } from '@/utils/formatters';
+import { removeFromWatchlist } from '@/services/portfolioService';
+import { toast } from 'sonner';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 
 interface WatchlistContentProps {
   activeWatchlist: any | undefined;
+  refetchWatchlists: () => void;
 }
 
-const WatchlistContent: React.FC<WatchlistContentProps> = ({ activeWatchlist }) => {
+const WatchlistContent: React.FC<WatchlistContentProps> = ({ 
+  activeWatchlist,
+  refetchWatchlists
+}) => {
+  const [isRemoving, setIsRemoving] = useState(false);
+  const [itemToRemove, setItemToRemove] = useState<{id: string, symbol: string} | null>(null);
+
+  const handleRemoveStock = async (itemId: string, symbol: string) => {
+    try {
+      setIsRemoving(true);
+      await removeFromWatchlist(itemId);
+      refetchWatchlists();
+      toast.success(`Removed ${symbol} from watchlist`);
+      setItemToRemove(null);
+    } catch (error) {
+      console.error('Error removing stock from watchlist:', error);
+      toast.error('Failed to remove stock from watchlist');
+    } finally {
+      setIsRemoving(false);
+    }
+  };
+
   return (
     <Card className="mb-6">
       <CardHeader>
@@ -65,9 +100,34 @@ const WatchlistContent: React.FC<WatchlistContentProps> = ({ activeWatchlist }) 
                   <TableCell>{item.company_name}</TableCell>
                   <TableCell>{formatDate(item.created_at)}</TableCell>
                   <TableCell className="text-right">
-                    <Button variant="ghost" size="icon">
-                      <Trash2 className="h-4 w-4 text-muted-foreground" />
-                    </Button>
+                    <AlertDialog>
+                      <AlertDialogTrigger asChild>
+                        <Button variant="ghost" size="icon">
+                          <Trash2 className="h-4 w-4 text-muted-foreground" />
+                        </Button>
+                      </AlertDialogTrigger>
+                      <AlertDialogContent>
+                        <AlertDialogHeader>
+                          <AlertDialogTitle>Remove Stock</AlertDialogTitle>
+                          <AlertDialogDescription>
+                            Are you sure you want to remove {item.symbol} from this watchlist?
+                          </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                          <AlertDialogCancel>Cancel</AlertDialogCancel>
+                          <AlertDialogAction
+                            onClick={() => handleRemoveStock(item.id, item.symbol)}
+                            disabled={isRemoving}
+                            className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                          >
+                            {isRemoving && itemToRemove?.id === item.id ? (
+                              <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                            ) : null}
+                            Remove
+                          </AlertDialogAction>
+                        </AlertDialogFooter>
+                      </AlertDialogContent>
+                    </AlertDialog>
                   </TableCell>
                 </TableRow>
               ))}

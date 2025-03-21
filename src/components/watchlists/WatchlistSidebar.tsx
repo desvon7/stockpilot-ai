@@ -11,8 +11,19 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Plus, Trash2, Loader2, AlertCircle } from 'lucide-react';
 import { toast } from 'sonner';
-import { createWatchlist } from '@/services/portfolioService';
+import { createWatchlist, deleteWatchlist } from '@/services/portfolioService';
 import { formatDate } from '@/utils/formatters';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 
 interface WatchlistSidebarProps {
   watchlists: any[] | undefined;
@@ -33,6 +44,8 @@ const WatchlistSidebar: React.FC<WatchlistSidebarProps> = ({
 }) => {
   const [newWatchlistName, setNewWatchlistName] = useState('');
   const [isCreating, setIsCreating] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [watchlistToDelete, setWatchlistToDelete] = useState<string | null>(null);
 
   const handleCreateWatchlist = async () => {
     if (!newWatchlistName.trim()) {
@@ -51,6 +64,27 @@ const WatchlistSidebar: React.FC<WatchlistSidebarProps> = ({
       toast.error('Failed to create watchlist');
     } finally {
       setIsCreating(false);
+    }
+  };
+
+  const handleDeleteWatchlist = async (watchlistId: string, watchlistName: string) => {
+    try {
+      setIsDeleting(true);
+      await deleteWatchlist(watchlistId);
+      
+      // If the deleted watchlist was the active one, reset activeWatchlistId
+      if (activeWatchlistId === watchlistId) {
+        setActiveWatchlistId('');
+      }
+      
+      refetchWatchlists();
+      toast.success(`Watchlist "${watchlistName}" deleted successfully`);
+      setWatchlistToDelete(null);
+    } catch (error) {
+      console.error('Error deleting watchlist:', error);
+      toast.error('Failed to delete watchlist');
+    } finally {
+      setIsDeleting(false);
     }
   };
 
@@ -99,17 +133,43 @@ const WatchlistSidebar: React.FC<WatchlistSidebarProps> = ({
                     ? 'bg-primary/10 border border-primary/30' 
                     : 'hover:bg-muted'
                 }`}
-                onClick={() => setActiveWatchlistId(watchlist.id)}
               >
-                <div>
+                <div 
+                  className="flex-grow"
+                  onClick={() => setActiveWatchlistId(watchlist.id)}
+                >
                   <div className="font-medium">{watchlist.name}</div>
                   <div className="text-xs text-muted-foreground">
                     {watchlist.watchlist_items?.length || 0} stocks • Created {formatDate(watchlist.created_at)}
                   </div>
                 </div>
-                <Button variant="ghost" size="icon">
-                  <Trash2 className="h-4 w-4 text-muted-foreground" />
-                </Button>
+
+                <AlertDialog>
+                  <AlertDialogTrigger asChild onClick={(e) => e.stopPropagation()}>
+                    <Button variant="ghost" size="icon" className="ml-2">
+                      <Trash2 className="h-4 w-4 text-muted-foreground" />
+                    </Button>
+                  </AlertDialogTrigger>
+                  <AlertDialogContent>
+                    <AlertDialogHeader>
+                      <AlertDialogTitle>Delete Watchlist</AlertDialogTitle>
+                      <AlertDialogDescription>
+                        Are you sure you want to delete "{watchlist.name}"? This action cannot be undone and will remove all stocks in this watchlist.
+                      </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                      <AlertDialogCancel>Cancel</AlertDialogCancel>
+                      <AlertDialogAction
+                        onClick={() => handleDeleteWatchlist(watchlist.id, watchlist.name)}
+                        disabled={isDeleting}
+                        className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                      >
+                        {isDeleting ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
+                        Delete
+                      </AlertDialogAction>
+                    </AlertDialogFooter>
+                  </AlertDialogContent>
+                </AlertDialog>
               </li>
             ))}
           </ul>

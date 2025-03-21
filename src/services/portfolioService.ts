@@ -1,4 +1,3 @@
-
 import { supabase } from '@/integrations/supabase/client';
 
 export interface PortfolioItem {
@@ -85,7 +84,6 @@ export const executeTransaction = async (
       p_total_amount: totalAmount
     };
     
-    // Using a type assertion to properly handle the supabase.functions.invoke method
     const { error: transactionError } = await supabase.functions.invoke(
       'execute-stock-transaction',
       {
@@ -168,6 +166,34 @@ export const getUserWatchlists = async () => {
     return data || [];
   } catch (error) {
     console.error('Error fetching watchlists:', error);
+    throw error;
+  }
+};
+
+export const deleteWatchlist = async (watchlistId: string): Promise<void> => {
+  try {
+    const { error } = await supabase
+      .from('watchlists')
+      .delete()
+      .eq('id', watchlistId);
+    
+    if (error) throw error;
+  } catch (error) {
+    console.error('Error deleting watchlist:', error);
+    throw error;
+  }
+};
+
+export const removeFromWatchlist = async (watchlistItemId: string): Promise<void> => {
+  try {
+    const { error } = await supabase
+      .from('watchlist_items')
+      .delete()
+      .eq('id', watchlistItemId);
+    
+    if (error) throw error;
+  } catch (error) {
+    console.error('Error removing from watchlist:', error);
     throw error;
   }
 };

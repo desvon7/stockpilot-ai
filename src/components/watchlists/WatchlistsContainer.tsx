@@ -44,6 +44,7 @@ const WatchlistsContainer: React.FC = () => {
       <div className="md:col-span-2">
         <WatchlistContent
           activeWatchlist={activeWatchlist}
+          refetchWatchlists={refetch}
         />
         
         <AddToWatchlist
