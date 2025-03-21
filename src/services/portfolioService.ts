@@ -85,8 +85,8 @@ export const executeTransaction = async (
       p_total_amount: totalAmount
     };
     
-    const { error: transactionError } = await supabase.rpc<void, StockTransactionParams>(
-      'execute_stock_transaction' as string, 
+    const { error: transactionError } = await supabase.rpc(
+      'execute_stock_transaction', 
       params
     );
     
