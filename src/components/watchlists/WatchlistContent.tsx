@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { 
@@ -11,7 +10,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '@/components/ui/table';
 import { Trash2, Star, Loader2, ArrowUp, ArrowDown } from 'lucide-react';
-import { formatDate, formatCurrency, formatPercentage } from '@/utils/formatters';
+import { formatDate, formatCurrency, formatPercent } from '@/utils/formatters';
 import { removeFromWatchlist } from '@/services/portfolioService';
 import { toast } from 'sonner';
 import {
@@ -124,7 +123,7 @@ const WatchlistContent: React.FC<WatchlistContentProps> = ({
                         ) : item.price_change_percent < 0 ? (
                           <ArrowDown className="h-3 w-3" />
                         ) : null}
-                        {formatPercentage(Math.abs(item.price_change_percent))}
+                        {formatPercent(Math.abs(item.price_change_percent))}
                       </span>
                     ) : (
                       <span className="text-muted-foreground">--</span>
