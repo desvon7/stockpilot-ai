@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { 
@@ -9,7 +10,7 @@ import {
 } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '@/components/ui/table';
-import { Trash2, Star, Loader2, ArrowUp, ArrowDown } from 'lucide-react';
+import { Trash2, Star, Loader2, ArrowUp, ArrowDown, ChevronUp, ChevronDown } from 'lucide-react';
 import { formatDate, formatCurrency, formatPercent } from '@/utils/formatters';
 import { removeFromWatchlist } from '@/services/portfolioService';
 import { toast } from 'sonner';
@@ -26,6 +27,9 @@ import {
 } from "@/components/ui/alert-dialog";
 import { WatchlistItem } from '@/services/portfolioService';
 
+type SortField = 'symbol' | 'name' | 'price' | 'change' | 'added';
+type SortDirection = 'asc' | 'desc';
+
 interface WatchlistContentProps {
   activeWatchlist: any | undefined;
   refetchWatchlists: () => void;
@@ -37,6 +41,8 @@ const WatchlistContent: React.FC<WatchlistContentProps> = ({
 }) => {
   const [isRemoving, setIsRemoving] = useState(false);
   const [itemToRemove, setItemToRemove] = useState<{id: string, symbol: string} | null>(null);
+  const [sortField, setSortField] = useState<SortField>('symbol');
+  const [sortDirection, setSortDirection] = useState<SortDirection>('asc');
 
   const handleRemoveStock = async (itemId: string, symbol: string) => {
     try {
@@ -53,6 +59,68 @@ const WatchlistContent: React.FC<WatchlistContentProps> = ({
       setIsRemoving(false);
     }
   };
+
+  const handleSort = (field: SortField) => {
+    if (sortField === field) {
+      // Toggle direction if same field
+      setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc');
+    } else {
+      // New field, default to ascending
+      setSortField(field);
+      setSortDirection('asc');
+    }
+  };
+
+  // Function to render sort icons
+  const renderSortIcon = (field: SortField) => {
+    if (sortField !== field) {
+      return <div className="ml-1 opacity-20"><ChevronUp className="h-4 w-4" /></div>;
+    }
+    return sortDirection === 'asc' 
+      ? <ChevronUp className="ml-1 h-4 w-4" /> 
+      : <ChevronDown className="ml-1 h-4 w-4" />;
+  };
+
+  // Sort the watchlist items
+  const sortedWatchlistItems = React.useMemo(() => {
+    if (!activeWatchlist?.watchlist_items) return [];
+    
+    return [...activeWatchlist.watchlist_items].sort((a, b) => {
+      // Default cases for null/undefined values
+      if (sortField === 'price') {
+        const priceA = a.current_price ?? 0;
+        const priceB = b.current_price ?? 0;
+        return sortDirection === 'asc' ? priceA - priceB : priceB - priceA;
+      }
+      
+      if (sortField === 'change') {
+        const changeA = a.price_change_percent ?? 0;
+        const changeB = b.price_change_percent ?? 0;
+        return sortDirection === 'asc' ? changeA - changeB : changeB - changeA;
+      }
+      
+      if (sortField === 'added') {
+        const dateA = new Date(a.created_at).getTime();
+        const dateB = new Date(b.created_at).getTime();
+        return sortDirection === 'asc' ? dateA - dateB : dateB - dateA;
+      }
+
+      if (sortField === 'name') {
+        const nameA = a.company_name?.toLowerCase() ?? '';
+        const nameB = b.company_name?.toLowerCase() ?? '';
+        return sortDirection === 'asc' 
+          ? nameA.localeCompare(nameB) 
+          : nameB.localeCompare(nameA);
+      }
+      
+      // Default: sort by symbol
+      const symbolA = a.symbol.toLowerCase();
+      const symbolB = b.symbol.toLowerCase();
+      return sortDirection === 'asc' 
+        ? symbolA.localeCompare(symbolB) 
+        : symbolB.localeCompare(symbolA);
+    });
+  }, [activeWatchlist, sortField, sortDirection]);
 
   return (
     <Card className="mb-6">
@@ -84,16 +152,56 @@ const WatchlistContent: React.FC<WatchlistContentProps> = ({
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Symbol</TableHead>
-                <TableHead>Name</TableHead>
-                <TableHead className="text-right">Price</TableHead>
-                <TableHead className="text-right">Change</TableHead>
-                <TableHead>Added</TableHead>
+                <TableHead 
+                  className="cursor-pointer hover:text-primary flex items-center transition-colors"
+                  onClick={() => handleSort('symbol')}
+                >
+                  <span className="flex items-center">
+                    Symbol
+                    {renderSortIcon('symbol')}
+                  </span>
+                </TableHead>
+                <TableHead 
+                  className="cursor-pointer hover:text-primary flex items-center transition-colors"
+                  onClick={() => handleSort('name')}
+                >
+                  <span className="flex items-center">
+                    Name
+                    {renderSortIcon('name')}
+                  </span>
+                </TableHead>
+                <TableHead 
+                  className="text-right cursor-pointer hover:text-primary transition-colors"
+                  onClick={() => handleSort('price')}
+                >
+                  <span className="flex items-center justify-end">
+                    Price
+                    {renderSortIcon('price')}
+                  </span>
+                </TableHead>
+                <TableHead 
+                  className="text-right cursor-pointer hover:text-primary transition-colors"
+                  onClick={() => handleSort('change')}
+                >
+                  <span className="flex items-center justify-end">
+                    Change
+                    {renderSortIcon('change')}
+                  </span>
+                </TableHead>
+                <TableHead 
+                  className="cursor-pointer hover:text-primary transition-colors"
+                  onClick={() => handleSort('added')}
+                >
+                  <span className="flex items-center">
+                    Added
+                    {renderSortIcon('added')}
+                  </span>
+                </TableHead>
                 <TableHead className="text-right">Actions</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
-              {activeWatchlist.watchlist_items?.map((item: WatchlistItem) => (
+              {sortedWatchlistItems.map((item: WatchlistItem) => (
                 <TableRow key={item.id}>
                   <TableCell className="font-medium">
                     <Link to={`/stocks/${item.symbol}`} className="text-primary hover:underline">
