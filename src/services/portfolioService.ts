@@ -27,7 +27,6 @@ export interface Transaction {
   created_at: string;
 }
 
-// Define types for our RPC function parameters
 export interface StockTransactionParams {
   p_symbol: string;
   p_company_name: string;
@@ -86,7 +85,7 @@ export const executeTransaction = async (
       p_total_amount: totalAmount
     };
     
-    const { error: transactionError } = await supabase.rpc<any>(
+    const { error: transactionError } = await supabase.rpc<void, StockTransactionParams>(
       'execute_stock_transaction' as string, 
       params
     );
