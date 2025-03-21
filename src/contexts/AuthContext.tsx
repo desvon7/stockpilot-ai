@@ -73,7 +73,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       if (error) throw error;
       
       toast.success('Verification email sent! Please check your inbox.');
-      navigate('/dashboard');
+      navigate('/home');
     } catch (error: any) {
       toast.error(error.message || 'An error occurred during sign up');
       console.error('Sign up error:', error);
@@ -92,7 +92,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       
       if (error) throw error;
       
-      navigate('/dashboard');
+      navigate('/home');
       toast.success('Signed in successfully!');
     } catch (error: any) {
       toast.error(error.message || 'Invalid login credentials');
@@ -108,7 +108,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       const { error } = await supabase.auth.signInWithOAuth({
         provider,
         options: {
-          redirectTo: `${window.location.origin}/dashboard`
+          redirectTo: `${window.location.origin}/home`
         }
       });
       
