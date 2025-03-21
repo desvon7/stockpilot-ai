@@ -85,8 +85,8 @@ export const executeTransaction = async (
       p_total_amount: totalAmount
     };
     
-    // Using a type assertion to properly handle the supabase.rpc method
-    const { error: transactionError } = await (supabase.functions.invoke as any)(
+    // Using a type assertion to properly handle the supabase.functions.invoke method
+    const { error: transactionError } = await supabase.functions.invoke(
       'execute-stock-transaction',
       {
         body: params
