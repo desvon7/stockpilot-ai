@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { PieChart, Pie, Cell, ResponsiveContainer, Legend, Tooltip } from 'recharts';
 import { cn } from '@/lib/utils';
@@ -7,12 +6,12 @@ import { usePortfolioSectors } from '@/hooks/usePortfolioSectors';
 import { Loader2 } from 'lucide-react';
 
 interface PortfolioSectorsProps {
+  sectors: any; // Using any temporarily for the fix
+  isLoading: boolean;
   className?: string;
 }
 
-const PortfolioSectors: React.FC<PortfolioSectorsProps> = ({ className }) => {
-  const { sectors, isLoading, error } = usePortfolioSectors();
-  
+const PortfolioSectors: React.FC<PortfolioSectorsProps> = ({ sectors, isLoading, className }) => {
   // Colors for the pie chart
   const COLORS = ['#3B82F6', '#10B981', '#6366F1', '#F59E0B', '#EF4444', '#8B5CF6', '#EC4899', '#0EA5E9', '#14B8A6', '#6D28D9'];
   

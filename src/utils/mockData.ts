@@ -1,4 +1,3 @@
-
 // Stock Data
 export type StockData = {
   id: string;
@@ -130,6 +129,9 @@ export const stockData: StockData[] = [
   }
 ];
 
+// Export the mockStocks alias for the stockData
+export const mockStocks = stockData;
+
 // Historical Data for Charts
 export const generateChartData = (days = 30, volatility = 0.02, trend = 0.001) => {
   const now = new Date();
@@ -247,6 +249,9 @@ export const recommendationData: Recommendation[] = [
     currentPrice: 42.50
   }
 ];
+
+// Export the mockRecommendations alias for the recommendationData
+export const mockRecommendations = recommendationData;
 
 // Market Indices
 export type MarketIndex = {

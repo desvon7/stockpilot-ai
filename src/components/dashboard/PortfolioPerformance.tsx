@@ -1,4 +1,3 @@
-
 import React, { useState, useMemo } from 'react';
 import { format, subDays, subMonths, subYears } from 'date-fns';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from 'recharts';
@@ -10,15 +9,17 @@ import { Loader2 } from 'lucide-react';
 type TimeRange = '1W' | '1M' | '3M' | '1Y' | 'All';
 
 interface PortfolioPerformanceProps {
+  history: any; // Using any temporarily for the fix
+  isLoading: boolean;
   className?: string;
 }
 
-const PortfolioPerformance: React.FC<PortfolioPerformanceProps> = ({ className }) => {
+const PortfolioPerformance: React.FC<PortfolioPerformanceProps> = ({ history, isLoading, className }) => {
   const [timeRange, setTimeRange] = useState<TimeRange>('1M');
-  const { history, isLoading, error } = usePortfolioHistory();
+  const { history: historyData, isLoading: loading, error } = usePortfolioHistory();
   
   const filteredData = useMemo(() => {
-    if (!history) return [];
+    if (!historyData) return [];
     
     const now = new Date();
     let filterDate = new Date();
@@ -37,15 +38,15 @@ const PortfolioPerformance: React.FC<PortfolioPerformanceProps> = ({ className }
         filterDate = subYears(now, 1);
         break;
       case 'All':
-        return history;
+        return historyData;
       default:
         filterDate = subMonths(now, 1);
     }
     
-    return history.filter(item => new Date(item.date) >= filterDate);
-  }, [history, timeRange]);
+    return historyData.filter(item => new Date(item.date) >= filterDate);
+  }, [historyData, timeRange]);
   
-  if (isLoading) {
+  if (isLoading || loading) {
     return (
       <div className={cn('glass-card rounded-lg p-6 flex justify-center items-center', className)} style={{ minHeight: '300px' }}>
         <Loader2 className="h-8 w-8 animate-spin text-primary" />
@@ -54,7 +55,7 @@ const PortfolioPerformance: React.FC<PortfolioPerformanceProps> = ({ className }
     );
   }
   
-  if (error || !history) {
+  if (error || !historyData) {
     return (
       <div className={cn('glass-card rounded-lg p-6 text-center', className)} style={{ minHeight: '300px' }}>
         <h2 className="text-2xl font-semibold mb-4">Portfolio Performance</h2>

@@ -19,9 +19,9 @@ import { usePortfolioSectors } from '@/hooks/usePortfolioSectors';
 const Dashboard: React.FC = () => {
   const { user } = useAuth();
   const [activeTab, setActiveTab] = useState('portfolio');
-  const { portfolioData, isLoading: portfolioLoading } = usePortfolio();
-  const { historyData, isLoading: historyLoading } = usePortfolioHistory();
-  const { sectorData, isLoading: sectorsLoading } = usePortfolioSectors();
+  const { portfolio, isLoading: portfolioLoading } = usePortfolio();
+  const { history, isLoading: historyLoading } = usePortfolioHistory();
+  const { sectors, isLoading: sectorsLoading } = usePortfolioSectors();
 
   const welcomeMessage = `Welcome, ${user?.user_metadata?.full_name || 'Investor'}`;
 
@@ -66,21 +66,21 @@ const Dashboard: React.FC = () => {
           <div className="lg:col-span-2 space-y-6">
             <TabsContent value="portfolio" className="m-0">
               <Portfolio 
-                portfolioData={portfolioData}
+                portfolio={portfolio}
                 isLoading={portfolioLoading}
               />
             </TabsContent>
             
             <TabsContent value="performance" className="m-0">
               <PortfolioPerformance 
-                chartData={historyData}
+                history={history}
                 isLoading={historyLoading}
               />
             </TabsContent>
             
             <TabsContent value="sectors" className="m-0">
               <PortfolioSectors 
-                sectorData={sectorData}
+                sectors={sectors}
                 isLoading={sectorsLoading}
               />
             </TabsContent>

@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { cn } from '@/lib/utils';
 import { formatCurrency, formatPercent, getColorByChange } from '@/utils/formatters';
@@ -10,11 +9,12 @@ import { Link } from 'react-router-dom';
 import { usePortfolio } from '@/hooks/usePortfolio';
 
 interface PortfolioProps {
+  portfolio: any; // Using any temporarily for the fix
+  isLoading: boolean;
   className?: string;
 }
 
-const Portfolio: React.FC<PortfolioProps> = ({ className }) => {
-  const { portfolio, isLoading, error } = usePortfolio();
+const Portfolio: React.FC<PortfolioProps> = ({ portfolio, isLoading, className }) => {
   
   if (isLoading) {
     return (
