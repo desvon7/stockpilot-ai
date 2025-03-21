@@ -3,8 +3,8 @@ import React, { useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { StockSearchResult } from '@/services/stockService';
 import { useStockSearch } from '@/hooks/useStockSearch';
-import SearchInput from '@/components/search/SearchInput';
-import StockResultsList from '@/components/search/StockResultsList';
+import StockSearchInput from '@/components/search/StockSearchInput';
+import StockSearchResults from '@/components/search/StockSearchResults';
 
 interface StockSearchProps {
   className?: string;
@@ -59,7 +59,7 @@ const StockSearch: React.FC<StockSearchProps> = ({
 
   return (
     <div ref={searchRef} className={className}>
-      <SearchInput
+      <StockSearchInput
         ref={inputRef}
         value={query}
         onChange={handleInputChange}
@@ -70,10 +70,10 @@ const StockSearch: React.FC<StockSearchProps> = ({
         disabled={disabled}
       />
 
-      <StockResultsList
+      <StockSearchResults
         isOpen={isOpen}
         query={query}
-        searchResults={searchResults}
+        results={searchResults}
         selectedIndex={selectedIndex}
         darkMode={darkMode}
         buttonText={buttonText}
