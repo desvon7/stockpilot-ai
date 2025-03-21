@@ -9,6 +9,7 @@ import Index from "./pages/Index";
 import Dashboard from "./pages/Dashboard";
 import StockDetail from "./pages/StockDetail";
 import Transactions from "./pages/Transactions";
+import Watchlists from "./pages/Watchlists";
 import Auth from "./pages/Auth";
 import NotFound from "./pages/NotFound";
 import ProtectedRoute from "./components/auth/ProtectedRoute";
@@ -33,6 +34,11 @@ const App = () => (
             <Route path="/transactions" element={
               <ProtectedRoute>
                 <Transactions />
+              </ProtectedRoute>
+            } />
+            <Route path="/watchlists" element={
+              <ProtectedRoute>
+                <Watchlists />
               </ProtectedRoute>
             } />
             <Route path="/stocks/:symbol" element={
