@@ -10,8 +10,20 @@ import {
   Sun, 
   Moon,
   Search,
-  User
+  User,
+  TrendingUp,
+  Newspaper
 } from 'lucide-react';
+import {
+  NavigationMenu,
+  NavigationMenuContent,
+  NavigationMenuItem,
+  NavigationMenuLink,
+  NavigationMenuList,
+  NavigationMenuTrigger,
+  navigationMenuTriggerStyle,
+} from "@/components/ui/navigation-menu";
+import { useAuth } from '@/contexts/AuthContext';
 
 const Navbar: React.FC = () => {
   const [isScrolled, setIsScrolled] = useState(false);
@@ -19,6 +31,7 @@ const Navbar: React.FC = () => {
   const [isDarkMode, setIsDarkMode] = useState(false);
   const location = useLocation();
   const scrollProgress = useScrollProgress();
+  const { user } = useAuth();
   
   useEffect(() => {
     const handleScroll = () => {
@@ -46,7 +59,11 @@ const Navbar: React.FC = () => {
   const navLinks = [
     { name: 'Home', path: '/' },
     { name: 'Dashboard', path: '/dashboard' },
-    { name: 'Stocks', path: '/stocks' },
+    { name: 'Stocks', path: '/stocks', children: [
+      { name: 'Browse Stocks', path: '/stocks' },
+      { name: 'Trending Assets', path: '/trending-assets' },
+      { name: 'News Feed', path: '/news-feed' },
+    ] },
     { name: 'AI Advisor', path: '/advisor' },
     { name: 'Learn', path: '/learn' },
   ];
@@ -55,7 +72,7 @@ const Navbar: React.FC = () => {
     if (path === '/') return location.pathname === '/';
     return location.pathname.startsWith(path);
   };
-  
+
   return (
     <header className={cn(
       'fixed top-0 left-0 right-0 z-50 transition-all duration-300',
@@ -81,20 +98,58 @@ const Navbar: React.FC = () => {
           
           {/* Desktop Navigation */}
           <nav className="hidden md:flex items-center space-x-1">
-            {navLinks.map((link) => (
-              <Link
-                key={link.path}
-                to={link.path}
-                className={cn(
-                  'px-3 py-2 rounded-md text-sm font-medium transition-colors',
-                  isActive(link.path)
-                    ? 'bg-secondary text-foreground'
-                    : 'text-muted-foreground hover:bg-secondary hover:text-foreground'
-                )}
-              >
-                {link.name}
-              </Link>
-            ))}
+            {navLinks.map((link) => 
+              link.children ? (
+                <NavigationMenu key={link.path}>
+                  <NavigationMenuList>
+                    <NavigationMenuItem>
+                      <NavigationMenuTrigger 
+                        className={cn(
+                          'px-3 py-2 rounded-md text-sm font-medium transition-colors',
+                          isActive(link.path)
+                            ? 'bg-secondary text-foreground'
+                            : 'text-muted-foreground hover:bg-secondary hover:text-foreground'
+                        )}
+                      >
+                        {link.name}
+                      </NavigationMenuTrigger>
+                      <NavigationMenuContent>
+                        <ul className="grid gap-3 p-4 w-[200px]">
+                          {link.children.map((child) => (
+                            <li key={child.path}>
+                              <NavigationMenuLink asChild>
+                                <Link
+                                  to={child.path}
+                                  className={cn(
+                                    'block select-none space-y-1 rounded-md p-3 leading-none no-underline outline-none transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground',
+                                    isActive(child.path) && 'bg-accent text-accent-foreground'
+                                  )}
+                                >
+                                  <div className="text-sm font-medium leading-none">{child.name}</div>
+                                </Link>
+                              </NavigationMenuLink>
+                            </li>
+                          ))}
+                        </ul>
+                      </NavigationMenuContent>
+                    </NavigationMenuItem>
+                  </NavigationMenuList>
+                </NavigationMenu>
+              ) : (
+                <Link
+                  key={link.path}
+                  to={link.path}
+                  className={cn(
+                    'px-3 py-2 rounded-md text-sm font-medium transition-colors',
+                    isActive(link.path)
+                      ? 'bg-secondary text-foreground'
+                      : 'text-muted-foreground hover:bg-secondary hover:text-foreground'
+                  )}
+                >
+                  {link.name}
+                </Link>
+              )
+            )}
           </nav>
           
           {/* Right side actions */}
@@ -115,11 +170,11 @@ const Navbar: React.FC = () => {
             </button>
             
             <Link 
-              to="/auth" 
+              to={user ? "/dashboard" : "/auth"}
               className="hidden sm:flex items-center gap-1.5 bg-primary text-primary-foreground px-4 py-2 rounded-md text-sm font-medium hover:bg-primary/90 transition-colors"
             >
               <User size={16} />
-              <span>Sign In</span>
+              <span>{user ? 'Dashboard' : 'Sign In'}</span>
             </Link>
             
             {/* Mobile menu button */}
@@ -144,30 +199,51 @@ const Navbar: React.FC = () => {
         <div className="flex flex-col h-full pt-20 px-4 pb-6">
           <nav className="flex flex-col space-y-1 mt-6">
             {navLinks.map((link) => (
-              <Link
-                key={link.path}
-                to={link.path}
-                className={cn(
-                  'px-4 py-3 rounded-md text-base font-medium transition-colors',
-                  isActive(link.path)
-                    ? 'bg-secondary text-foreground'
-                    : 'text-muted-foreground hover:bg-secondary hover:text-foreground'
+              <React.Fragment key={link.path}>
+                <Link
+                  to={link.path}
+                  className={cn(
+                    'px-4 py-3 rounded-md text-base font-medium transition-colors',
+                    isActive(link.path)
+                      ? 'bg-secondary text-foreground'
+                      : 'text-muted-foreground hover:bg-secondary hover:text-foreground'
+                  )}
+                  onClick={() => setMobileMenuOpen(false)}
+                >
+                  {link.name}
+                </Link>
+                {link.children && (
+                  <div className="pl-4 space-y-1 mt-1">
+                    {link.children.map((child) => (
+                      <Link
+                        key={child.path}
+                        to={child.path}
+                        className={cn(
+                          'px-4 py-2 rounded-md text-sm font-medium transition-colors flex items-center',
+                          isActive(child.path)
+                            ? 'bg-accent text-accent-foreground'
+                            : 'text-muted-foreground hover:bg-secondary hover:text-foreground'
+                        )}
+                        onClick={() => setMobileMenuOpen(false)}
+                      >
+                        <ChevronDown size={16} className="mr-2" />
+                        {child.name}
+                      </Link>
+                    ))}
+                  </div>
                 )}
-                onClick={() => setMobileMenuOpen(false)}
-              >
-                {link.name}
-              </Link>
+              </React.Fragment>
             ))}
           </nav>
           
           <div className="mt-auto pt-6 border-t border-border">
             <Link 
-              to="/auth" 
+              to={user ? "/dashboard" : "/auth"}
               className="flex items-center justify-center gap-2 w-full bg-primary text-primary-foreground px-4 py-3 rounded-md text-base font-medium hover:bg-primary/90 transition-colors"
               onClick={() => setMobileMenuOpen(false)}
             >
               <User size={18} />
-              <span>Sign In</span>
+              <span>{user ? 'Dashboard' : 'Sign In'}</span>
             </Link>
           </div>
         </div>
