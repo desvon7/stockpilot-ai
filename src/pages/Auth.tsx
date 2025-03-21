@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Navigate } from 'react-router-dom';
 import Navbar from '@/components/layout/Navbar';
 import Footer from '@/components/layout/Footer';
@@ -15,6 +15,14 @@ type AuthTab = 'signin' | 'signup';
 const Auth: React.FC = () => {
   const [activeTab, setActiveTab] = useState<AuthTab>('signup');
   const { user, loading } = useAuth();
+  const [localLoading, setLocalLoading] = useState(true);
+  
+  // Add an effect to set local loading to false after auth context has initialized
+  useEffect(() => {
+    if (!loading) {
+      setLocalLoading(false);
+    }
+  }, [loading]);
   
   if (user && !loading) {
     return <Navigate to="/home" replace />;
@@ -26,7 +34,7 @@ const Auth: React.FC = () => {
       <main className="flex-grow pt-12 pb-12 flex items-center justify-center">
         <div className="container max-w-md mx-auto px-4">
           <div className="bg-[#171B2D] rounded-lg p-6">
-            {loading ? (
+            {localLoading ? (
               <LoadingSpinner />
             ) : (
               <>

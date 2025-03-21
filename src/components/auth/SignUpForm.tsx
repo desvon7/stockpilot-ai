@@ -4,6 +4,7 @@ import { Link } from 'react-router-dom';
 import { User, Mail, Lock, EyeOff, Eye, ChevronRight } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { useAuth } from '@/contexts/AuthContext';
+import { toast } from 'sonner';
 
 const SignUpForm: React.FC = () => {
   const [showPassword, setShowPassword] = useState(false);
@@ -12,14 +13,32 @@ const SignUpForm: React.FC = () => {
   const [signupEmail, setSignupEmail] = useState('');
   const [signupPassword, setSignupPassword] = useState('');
   const [agreeToTerms, setAgreeToTerms] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
+    
     if (!agreeToTerms) {
+      toast.error("Please agree to the Terms of Service and Privacy Policy");
       return;
     }
-    await signUp(signupEmail, signupPassword, signupName);
+    
+    if (signupPassword.length < 6) {
+      toast.error("Password must be at least 6 characters");
+      return;
+    }
+    
+    try {
+      setIsSubmitting(true);
+      await signUp(signupEmail, signupPassword, signupName);
+    } catch (error) {
+      console.error("Sign up error:", error);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
+
+  const isLoading = loading || isSubmitting;
 
   return (
     <form onSubmit={handleSignUp} className="space-y-5">
@@ -39,6 +58,7 @@ const SignUpForm: React.FC = () => {
             placeholder="Your full name"
             required
             className="bg-[#1B203A] border-[#2A3052] pl-10 pr-4 py-2 w-full rounded-md"
+            disabled={isLoading}
           />
         </div>
       </div>
@@ -59,6 +79,7 @@ const SignUpForm: React.FC = () => {
             placeholder="Your email address"
             required
             className="bg-[#1B203A] border-[#2A3052] pl-10 pr-4 py-2 w-full rounded-md"
+            disabled={isLoading}
           />
         </div>
       </div>
@@ -78,12 +99,15 @@ const SignUpForm: React.FC = () => {
             onChange={(e) => setSignupPassword(e.target.value)}
             placeholder="Create a password"
             required
+            minLength={6}
             className="bg-[#1B203A] border-[#2A3052] pl-10 pr-10 py-2 w-full rounded-md"
+            disabled={isLoading}
           />
           <button
             type="button"
             className="absolute inset-y-0 right-0 flex items-center pr-3"
             onClick={() => setShowPassword(!showPassword)}
+            disabled={isLoading}
           >
             {showPassword ? (
               <EyeOff size={18} className="text-gray-400" />
@@ -93,7 +117,7 @@ const SignUpForm: React.FC = () => {
           </button>
         </div>
         <p className="text-xs text-gray-400 mt-1">
-          Password must be at least 8 characters and include a number and a special character.
+          Password must be at least 6 characters.
         </p>
       </div>
       
@@ -105,6 +129,7 @@ const SignUpForm: React.FC = () => {
           onChange={(e) => setAgreeToTerms(e.target.checked)}
           required
           className="w-4 h-4 text-green-500 rounded border-[#2A3052] bg-[#1B203A] focus:ring-green-500"
+          disabled={isLoading}
         />
         <label htmlFor="terms" className="ml-2 text-sm text-gray-400">
           I agree to the{' '}
@@ -120,10 +145,10 @@ const SignUpForm: React.FC = () => {
       
       <button 
         type="submit"
-        disabled={loading || !agreeToTerms}
+        disabled={isLoading || !agreeToTerms}
         className="bg-green-500 text-white hover:bg-green-600 w-full py-3 rounded-md font-medium flex items-center justify-center gap-2 transition-colors disabled:opacity-50 disabled:pointer-events-none"
       >
-        {loading ? (
+        {isLoading ? (
           <div className="animate-spin w-5 h-5 border-2 border-white border-t-transparent rounded-full"></div>
         ) : (
           <>

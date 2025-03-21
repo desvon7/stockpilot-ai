@@ -27,26 +27,29 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const navigate = useNavigate();
 
   useEffect(() => {
-    const getInitialSession = async () => {
-      try {
-        const { data } = await supabase.auth.getSession();
-        setSession(data.session);
-        setUser(data.session?.user ?? null);
-      } catch (error) {
-        console.error('Error getting session:', error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    getInitialSession();
-
     try {
       const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+        console.log("Auth state changed:", _event, session ? "User logged in" : "No session");
         setSession(session);
         setUser(session?.user ?? null);
         setLoading(false);
       });
+
+      const getInitialSession = async () => {
+        try {
+          console.log("Getting initial session");
+          const { data } = await supabase.auth.getSession();
+          console.log("Initial session:", data.session ? "Found session" : "No session found");
+          setSession(data.session);
+          setUser(data.session?.user ?? null);
+        } catch (error) {
+          console.error('Error getting session:', error);
+        } finally {
+          setLoading(false);
+        }
+      };
+
+      getInitialSession();
 
       return () => {
         subscription.unsubscribe();
@@ -61,12 +64,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const devModeSignIn = async () => {
     if (DEV_MODE) {
       setLoading(true);
-      // Use the simulateLoggedInUser function instead of creating a mock user here
       const success = await simulateLoggedInUser();
       
       if (success) {
-        // The user data is set in localStorage by simulateLoggedInUser
-        // Just retrieve it to set in our state
         const { data } = await supabase.auth.getSession();
         if (data.session) {
           setSession(data.session);
@@ -85,6 +85,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const signUp = async (email: string, password: string, name: string) => {
     try {
       setLoading(true);
+      console.log("Attempting to sign up user:", email);
       const { error } = await supabase.auth.signUp({
         email,
         password,
@@ -95,13 +96,18 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         }
       });
 
-      if (error) throw error;
+      if (error) {
+        console.error("Sign up error details:", error);
+        throw error;
+      }
       
+      console.log("Sign up successful, verification email sent");
       toast.success('Verification email sent! Please check your inbox.');
-      navigate('/home');
+      navigate('/auth');
     } catch (error: any) {
-      toast.error(error.message || 'An error occurred during sign up');
       console.error('Sign up error:', error);
+      toast.error(error.message || 'An error occurred during sign up');
+      throw error;
     } finally {
       setLoading(false);
     }
@@ -110,18 +116,24 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const signIn = async (email: string, password: string) => {
     try {
       setLoading(true);
+      console.log("Attempting to sign in user:", email);
       const { error } = await supabase.auth.signInWithPassword({
         email,
         password
       });
       
-      if (error) throw error;
+      if (error) {
+        console.error("Sign in error details:", error);
+        throw error;
+      }
       
+      console.log("Sign in successful");
       navigate('/home');
       toast.success('Signed in successfully!');
     } catch (error: any) {
-      toast.error(error.message || 'Invalid login credentials');
       console.error('Sign in error:', error);
+      toast.error(error.message || 'Invalid login credentials');
+      throw error;
     } finally {
       setLoading(false);
     }
