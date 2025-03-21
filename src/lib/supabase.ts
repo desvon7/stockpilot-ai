@@ -1,5 +1,5 @@
 
-import { createClient } from '@supabase/supabase-js';
+import { createClient, Provider } from '@supabase/supabase-js';
 
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
 const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
@@ -37,9 +37,12 @@ export const signInWithEmail = async (email: string, password: string) => {
   return { data, error };
 };
 
-export const signInWithProvider = async (provider: 'google' | 'facebook' | 'github') => {
+export const signInWithProvider = async (provider: Provider) => {
   const { data, error } = await supabase.auth.signInWithOAuth({
     provider,
+    options: {
+      redirectTo: `${window.location.origin}/dashboard`
+    }
   });
   
   return { data, error };

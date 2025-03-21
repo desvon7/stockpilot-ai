@@ -1,7 +1,7 @@
 
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Session, User } from '@supabase/supabase-js';
+import { Session, User, Provider } from '@supabase/supabase-js';
 import { supabase } from '@/lib/supabase';
 import { toast } from 'sonner';
 
@@ -11,7 +11,7 @@ type AuthContextType = {
   loading: boolean;
   signUp: (email: string, password: string, name: string) => Promise<void>;
   signIn: (email: string, password: string) => Promise<void>;
-  signInWithProvider: (provider: 'google' | 'facebook' | 'github') => Promise<void>;
+  signInWithProvider: (provider: Provider) => Promise<void>;
   signOut: () => Promise<void>;
 };
 
@@ -88,11 +88,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
-  const signInWithProvider = async (provider: 'google' | 'facebook' | 'github') => {
+  const signInWithProvider = async (provider: Provider) => {
     try {
       setLoading(true);
       const { error } = await supabase.auth.signInWithOAuth({
         provider,
+        options: {
+          redirectTo: `${window.location.origin}/dashboard`
+        }
       });
       
       if (error) throw error;
