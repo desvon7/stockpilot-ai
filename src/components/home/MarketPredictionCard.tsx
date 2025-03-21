@@ -10,6 +10,12 @@ interface MarketPredictionCardProps {
 }
 
 const MarketPredictionCard: React.FC<MarketPredictionCardProps> = ({ data, isInView }) => {
+  // Convert ChartData to the format expected by StockChart
+  const chartData = data.map(item => ({
+    date: item.date,
+    price: item.value
+  }));
+
   return (
     <div className={cn(
       'glass-card rounded-lg p-6 transition-all duration-700 transform',
@@ -19,7 +25,7 @@ const MarketPredictionCard: React.FC<MarketPredictionCardProps> = ({ data, isInV
         <h3 className="text-lg font-medium">Market Prediction</h3>
         <p className="text-muted-foreground">AI-powered forecast with 89% confidence</p>
       </div>
-      <StockChart data={data} />
+      <StockChart data={chartData} />
       <div className="mt-4 pt-4 border-t border-border">
         <p className="text-sm text-muted-foreground">
           Our AI predicts a potential uptrend based on technical indicators, sentiment analysis, and market conditions.
