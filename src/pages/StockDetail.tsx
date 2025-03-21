@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
-import Navbar from '@/components/layout/Navbar';
+import { Navbar } from '@/components/layout/Navbar';
 import Footer from '@/components/layout/Footer';
 import StockChart from '@/components/ui/StockChart';
 import { stockData, generateChartData } from '@/utils/mockData';

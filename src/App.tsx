@@ -1,7 +1,8 @@
+
 import React, { useState, useEffect } from 'react';
 import { Routes, Route } from 'react-router-dom';
-import { ThemeProvider } from "@/components/theme-provider"
-import { useTheme } from "next-themes"
+import { ThemeProvider } from "@/components/theme-provider";
+import { useTheme } from "@/hooks/useTheme";
 import { Toaster } from 'sonner';
 
 import Index from '@/pages/Index';
@@ -36,7 +37,6 @@ function App() {
         {isMounted && (
           <div className="relative flex min-h-screen flex-col">
             <Navbar />
-            <MobileMenu />
             
             <Routes>
               <Route index element={<Index />} />
@@ -45,15 +45,41 @@ function App() {
               <Route path="/update-password" element={<UpdatePassword />} />
               
               {/* Protected routes */}
-              <Route element={<ProtectedRoute />}>
-                <Route path="/dashboard" element={<Dashboard />} />
-                <Route path="/news" element={<NewsFeed />} />
-                <Route path="/watchlists" element={<Watchlists />} />
-                <Route path="/transactions" element={<Transactions />} />
-                <Route path="/stocks" element={<StockBrowser />} />
-                <Route path="/stocks/:symbol" element={<StockDetail />} />
-                <Route path="/trending" element={<TrendingAssets />} />
-              </Route>
+              <Route path="/dashboard" element={
+                <ProtectedRoute>
+                  <Dashboard />
+                </ProtectedRoute>
+              } />
+              <Route path="/news" element={
+                <ProtectedRoute>
+                  <NewsFeed />
+                </ProtectedRoute>
+              } />
+              <Route path="/watchlists" element={
+                <ProtectedRoute>
+                  <Watchlists />
+                </ProtectedRoute>
+              } />
+              <Route path="/transactions" element={
+                <ProtectedRoute>
+                  <Transactions />
+                </ProtectedRoute>
+              } />
+              <Route path="/stocks" element={
+                <ProtectedRoute>
+                  <StockBrowser />
+                </ProtectedRoute>
+              } />
+              <Route path="/stocks/:symbol" element={
+                <ProtectedRoute>
+                  <StockDetail />
+                </ProtectedRoute>
+              } />
+              <Route path="/trending" element={
+                <ProtectedRoute>
+                  <TrendingAssets />
+                </ProtectedRoute>
+              } />
               
               <Route path="*" element={<NotFound />} />
             </Routes>

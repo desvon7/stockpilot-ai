@@ -1,23 +1,22 @@
-import { useState } from "react"
-import { Link } from "react-router-dom"
-import { Moon, Sun, Menu } from "lucide-react"
 
-import { useTheme } from "@/hooks/useTheme"
-import { Button } from "@/components/ui/button"
-import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet"
-import { useAuth } from "@/contexts/AuthContext"
-import { MobileMenu } from "@/components/layout/MobileMenu"
-import { Search } from 'lucide-react';
+import { useState } from "react";
+import { Link } from "react-router-dom";
+import { Moon, Sun, Menu, Search } from "lucide-react";
+
+import { useTheme } from "@/hooks/useTheme";
+import { Button } from "@/components/ui/button";
+import { useAuth } from "@/contexts/AuthContext";
+import MobileMenu from "@/components/layout/MobileMenu";
 import StockSearch from '@/components/ui/StockSearch';
 
 export function Navbar() {
-  const { theme, setTheme } = useTheme()
+  const { theme, setTheme } = useTheme();
   const { user, signOut } = useAuth();
   const [showMobileMenu, setShowMobileMenu] = useState(false);
   const [showSearch, setShowSearch] = useState(false);
 
   const toggleTheme = () => {
-    setTheme(theme === "dark" ? "light" : "dark")
+    setTheme(theme === "dark" ? "light" : "dark");
   }
 
   return (
@@ -94,7 +93,7 @@ export function Navbar() {
           </Button>
 
           {/* Mobile menu */}
-          <MobileMenu />
+          <MobileMenu isOpen={showMobileMenu} setIsOpen={setShowMobileMenu} />
         </div>
       </div>
       
@@ -104,8 +103,8 @@ export function Navbar() {
           <StockSearch darkMode={theme === 'dark'} />
         </div>
       )}
-      
-      {/* Mobile menu */}
     </header>
   );
 }
+
+export default Navbar;

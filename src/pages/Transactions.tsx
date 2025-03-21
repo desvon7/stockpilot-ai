@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { Link } from 'react-router-dom';
-import Navbar from '@/components/layout/Navbar';
+import { Navbar } from '@/components/layout/Navbar';
 import Footer from '@/components/layout/Footer';
 import { useQuery } from '@tanstack/react-query';
 import { getUserTransactions } from '@/services/portfolioService';
