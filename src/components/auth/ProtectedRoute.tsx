@@ -20,6 +20,15 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
     }
   }, [user, loading]);
   
+  // Dev mode bypass for testing - allow access if development mode is enabled
+  const isDev = import.meta.env.DEV;
+  const devModeEnabled = isDev && localStorage.getItem('devModeEnabled') === 'true';
+  
+  if (devModeEnabled) {
+    console.log('Dev mode enabled - bypassing authentication check');
+    return <>{children}</>;
+  }
+  
   // Show a more friendly loading state
   if (loading) {
     return (

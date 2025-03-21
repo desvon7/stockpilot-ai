@@ -1,8 +1,10 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Session, User, Provider } from '@supabase/supabase-js';
-import { supabase } from '@/lib/supabase';
+import { supabase, simulateLoggedInUser } from '@/lib/supabase';
 import { toast } from 'sonner';
+
+const DEV_MODE = import.meta.env.DEV && false; // Set to true to enable dev mode
 
 type AuthContextType = {
   session: Session | null;
@@ -13,6 +15,7 @@ type AuthContextType = {
   signInWithProvider: (provider: Provider) => Promise<void>;
   signOut: () => Promise<void>;
   resetPassword: (email: string) => Promise<void>;
+  devModeSignIn: () => Promise<void>; // New function for dev mode
 };
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -54,6 +57,27 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       return () => {}; // Return empty cleanup function
     }
   }, []);
+
+  const devModeSignIn = async () => {
+    if (DEV_MODE) {
+      setLoading(true);
+      // Create a mock user for development
+      const mockUser = {
+        id: 'dev-user-123',
+        email: 'dev@example.com',
+        user_metadata: { full_name: 'Development User' }
+      } as User;
+      
+      // Set the mock user and session
+      setUser(mockUser);
+      // We don't create a real session since we're just mocking
+      navigate('/home');
+      toast.success('Signed in as Development User');
+      setLoading(false);
+      return;
+    }
+    toast.error('Development mode is disabled');
+  };
 
   const signUp = async (email: string, password: string, name: string) => {
     try {
@@ -165,7 +189,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       signIn, 
       signInWithProvider, 
       signOut,
-      resetPassword
+      resetPassword,
+      devModeSignIn
     }}>
       {children}
     </AuthContext.Provider>

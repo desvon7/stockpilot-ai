@@ -4,12 +4,14 @@ import { Link } from 'react-router-dom';
 import { Mail, Lock, EyeOff, Eye, ArrowRight } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { useAuth } from '@/contexts/AuthContext';
+import { Button } from '@/components/ui/button';
 
 const SignInForm: React.FC = () => {
   const [showPassword, setShowPassword] = useState(false);
-  const { loading, signIn } = useAuth();
+  const { loading, signIn, devModeSignIn } = useAuth();
   const [signinEmail, setSigninEmail] = useState('');
   const [signinPassword, setSigninPassword] = useState('');
+  const isDev = import.meta.env.DEV;
 
   const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -88,6 +90,19 @@ const SignInForm: React.FC = () => {
           </>
         )}
       </button>
+
+      {isDev && (
+        <div className="pt-3">
+          <Button
+            type="button"
+            variant="outline"
+            onClick={devModeSignIn}
+            className="w-full border-amber-500 text-amber-500 hover:bg-amber-500 hover:text-black"
+          >
+            Development Mode: Skip Authentication
+          </Button>
+        </div>
+      )}
     </form>
   );
 };
