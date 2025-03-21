@@ -58,58 +58,58 @@ const Dashboard: React.FC = () => {
                 <span className="hidden sm:inline">Settings</span>
               </TabsTrigger>
             </TabsList>
-          </Tabs>
-        </div>
-        
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* Left Column - Portfolio and Recommendations */}
-          <div className="lg:col-span-2 space-y-6">
-            <TabsContent value="portfolio" className="m-0">
-              <Portfolio 
-                portfolio={portfolio}
-                isLoading={portfolioLoading}
-              />
-            </TabsContent>
-            
-            <TabsContent value="performance" className="m-0">
-              <PortfolioPerformance 
-                history={history}
-                isLoading={historyLoading}
-              />
-            </TabsContent>
-            
-            <TabsContent value="sectors" className="m-0">
-              <PortfolioSectors 
-                sectors={sectors}
-                isLoading={sectorsLoading}
-              />
-            </TabsContent>
-            
-            <TabsContent value="settings" className="m-0">
-              <DashboardSettings />
-            </TabsContent>
-            
-            {activeTab !== 'settings' && (
-              <StockOverview 
-                stocks={mockStocks} 
-                className="lg:hidden"
-              />
-            )}
-          </div>
           
-          {/* Right Column - Market Overview and stats */}
-          <div className="space-y-6">
-            <LiveMarketData />
-            
-            <StockOverview 
-              stocks={mockStocks} 
-              className="hidden lg:block"
-            />
-            
-            <Recommendations 
-              recommendations={mockRecommendations} 
-            />
-          </div>
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-6">
+              {/* Left Column - Portfolio and Recommendations */}
+              <div className="lg:col-span-2 space-y-6">
+                <TabsContent value="portfolio" className="m-0">
+                  <Portfolio 
+                    portfolio={portfolio}
+                    isLoading={portfolioLoading}
+                  />
+                </TabsContent>
+                
+                <TabsContent value="performance" className="m-0">
+                  <PortfolioPerformance 
+                    history={history}
+                    isLoading={historyLoading}
+                  />
+                </TabsContent>
+                
+                <TabsContent value="sectors" className="m-0">
+                  <PortfolioSectors 
+                    sectors={sectors}
+                    isLoading={sectorsLoading}
+                  />
+                </TabsContent>
+                
+                <TabsContent value="settings" className="m-0">
+                  <DashboardSettings />
+                </TabsContent>
+                
+                {activeTab !== 'settings' && (
+                  <StockOverview 
+                    stocks={mockStocks} 
+                    className="lg:hidden"
+                  />
+                )}
+              </div>
+              
+              {/* Right Column - Market Overview and stats */}
+              <div className="space-y-6">
+                <LiveMarketData />
+                
+                <StockOverview 
+                  stocks={mockStocks} 
+                  className="hidden lg:block"
+                />
+                
+                <Recommendations 
+                  recommendations={mockRecommendations} 
+                />
+              </div>
+            </div>
+          </Tabs>
         </div>
       </div>
     </>
