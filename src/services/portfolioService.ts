@@ -32,7 +32,7 @@ export interface Transaction {
 export interface StockTransactionParams {
   p_symbol: string;
   p_company_name: string;
-  p_transaction_type: 'buy' | 'sell';
+  p_transaction_type: 'buy' | 'sell';  // Fixed: Explicitly define as union type of literal strings
   p_shares: number;
   p_price_per_share: number;
   p_total_amount: number;
@@ -79,11 +79,11 @@ export const executeTransaction = async (
   try {
     const totalAmount = shares * pricePerShare;
     
-    // Use our defined type for the RPC call parameters
+    // Create properly typed params object conforming to StockTransactionParams interface
     const params: StockTransactionParams = {
       p_symbol: symbol,
       p_company_name: companyName,
-      p_transaction_type: transactionType,
+      p_transaction_type: transactionType,  // This is now correctly typed
       p_shares: shares,
       p_price_per_share: pricePerShare,
       p_total_amount: totalAmount
