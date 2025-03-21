@@ -20,10 +20,12 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
     }
   }, [user, loading]);
   
+  // Show a more friendly loading state
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-black">
-        <div className="animate-spin w-10 h-10 border-4 border-green-500 border-t-transparent rounded-full"></div>
+      <div className="min-h-screen flex flex-col items-center justify-center bg-black">
+        <div className="animate-spin w-10 h-10 border-4 border-green-500 border-t-transparent rounded-full mb-4"></div>
+        <p className="text-white text-sm">Loading your profile...</p>
       </div>
     );
   }
