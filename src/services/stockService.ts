@@ -83,6 +83,21 @@ export const searchStocks = async (query: string): Promise<StockSearchResult[]> 
   }
 };
 
+export const fetchMarketData = async () => {
+  try {
+    const { data, error } = await supabase.functions.invoke('fetch-market-data', {
+      body: { function: 'TOP_GAINERS_LOSERS' },
+    });
+
+    if (error) throw error;
+    
+    return data;
+  } catch (error) {
+    console.error('Error fetching market data:', error);
+    throw error;
+  }
+};
+
 export const getAIRecommendations = async (symbol: string) => {
   try {
     const { data, error } = await supabase.functions.invoke('stock-ai-recommendations', {

@@ -1,86 +1,118 @@
 
-import React from 'react';
-import { Link } from 'react-router-dom';
-import Navbar from '@/components/layout/Navbar';
-import Footer from '@/components/layout/Footer';
-import StockOverview from '@/components/dashboard/StockOverview';
+import React, { useState } from 'react';
+import { Helmet } from 'react-helmet-async';
+import { useAuth } from '@/contexts/AuthContext';
 import Portfolio from '@/components/dashboard/Portfolio';
 import PortfolioPerformance from '@/components/dashboard/PortfolioPerformance';
 import PortfolioSectors from '@/components/dashboard/PortfolioSectors';
 import Recommendations from '@/components/dashboard/Recommendations';
+import StockOverview from '@/components/dashboard/StockOverview';
+import LiveMarketData from '@/components/market/LiveMarketData';
 import DashboardSettings from '@/components/dashboard/DashboardSettings';
-import { stockData, recommendationData, marketIndices } from '@/utils/mockData';
-import { formatCurrency, formatPercent, getColorByChange, getArrowByChange } from '@/utils/formatters';
-import { usePreferences } from '@/contexts/PreferencesContext';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { DollarSign, BarChart3, PieChart, Settings } from 'lucide-react';
+import { mockStocks, mockRecommendations } from '@/utils/mockData';
+import { usePortfolio } from '@/hooks/usePortfolio';
+import { usePortfolioHistory } from '@/hooks/usePortfolioHistory';
+import { usePortfolioSectors } from '@/hooks/usePortfolioSectors';
 
 const Dashboard: React.FC = () => {
-  const { preferences } = usePreferences();
-  const { dashboardLayout } = preferences;
-  
+  const { user } = useAuth();
+  const [activeTab, setActiveTab] = useState('portfolio');
+  const { portfolioData, isLoading: portfolioLoading } = usePortfolio();
+  const { historyData, isLoading: historyLoading } = usePortfolioHistory();
+  const { sectorData, isLoading: sectorsLoading } = usePortfolioSectors();
+
+  const welcomeMessage = `Welcome, ${user?.user_metadata?.full_name || 'Investor'}`;
+
   return (
-    <div className="min-h-screen flex flex-col">
-      <Navbar />
-      <main className="flex-grow pt-20 pb-16">
-        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center mb-8">
-            <div>
-              <h1 className="text-3xl md:text-4xl font-bold mb-2">Dashboard</h1>
-              <p className="text-muted-foreground">
-                Welcome back! Here's your financial overview for today.
-              </p>
-            </div>
-            <DashboardSettings />
+    <>
+      <Helmet>
+        <title>Dashboard | StockPilot</title>
+      </Helmet>
+      
+      <div className="container mx-auto px-4 pt-24 pb-16 min-h-screen">
+        <div className="flex flex-col md:flex-row items-start md:items-center justify-between mb-6">
+          <h1 className="text-3xl font-bold mb-2 md:mb-0">{welcomeMessage}</h1>
+          
+          <Tabs 
+            value={activeTab} 
+            onValueChange={setActiveTab}
+            className="w-full md:w-auto"
+          >
+            <TabsList className="grid grid-cols-4 w-full md:w-auto">
+              <TabsTrigger value="portfolio" className="flex items-center gap-1.5">
+                <DollarSign className="h-4 w-4" />
+                <span className="hidden sm:inline">Portfolio</span>
+              </TabsTrigger>
+              <TabsTrigger value="performance" className="flex items-center gap-1.5">
+                <BarChart3 className="h-4 w-4" />
+                <span className="hidden sm:inline">Performance</span>
+              </TabsTrigger>
+              <TabsTrigger value="sectors" className="flex items-center gap-1.5">
+                <PieChart className="h-4 w-4" />
+                <span className="hidden sm:inline">Sectors</span>
+              </TabsTrigger>
+              <TabsTrigger value="settings" className="flex items-center gap-1.5">
+                <Settings className="h-4 w-4" />
+                <span className="hidden sm:inline">Settings</span>
+              </TabsTrigger>
+            </TabsList>
+          </Tabs>
+        </div>
+        
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          {/* Left Column - Portfolio and Recommendations */}
+          <div className="lg:col-span-2 space-y-6">
+            <TabsContent value="portfolio" className="m-0">
+              <Portfolio 
+                portfolioData={portfolioData}
+                isLoading={portfolioLoading}
+              />
+            </TabsContent>
+            
+            <TabsContent value="performance" className="m-0">
+              <PortfolioPerformance 
+                chartData={historyData}
+                isLoading={historyLoading}
+              />
+            </TabsContent>
+            
+            <TabsContent value="sectors" className="m-0">
+              <PortfolioSectors 
+                sectorData={sectorData}
+                isLoading={sectorsLoading}
+              />
+            </TabsContent>
+            
+            <TabsContent value="settings" className="m-0">
+              <DashboardSettings />
+            </TabsContent>
+            
+            {activeTab !== 'settings' && (
+              <StockOverview 
+                stocks={mockStocks} 
+                className="lg:hidden"
+              />
+            )}
           </div>
           
-          {dashboardLayout.showMarketIndices && (
-            <div className="mb-8">
-              <h2 className="text-xl font-semibold mb-4">Market Indices</h2>
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                {marketIndices.map((index) => (
-                  <div key={index.id} className="glass-card rounded-lg p-5">
-                    <p className="text-muted-foreground mb-1">{index.name}</p>
-                    <p className="text-2xl font-semibold">{formatCurrency(index.value)}</p>
-                    <p className={getColorByChange(index.change)}>
-                      {getArrowByChange(index.change)} {formatCurrency(index.change)} ({formatPercent(index.changePercent)})
-                    </p>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-          
-          {/* Portfolio Performance Chart */}
-          {dashboardLayout.showPortfolioPerformance && (
-            <div className="mb-8">
-              <PortfolioPerformance />
-            </div>
-          )}
-          
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            <div className="lg:col-span-2">
-              {dashboardLayout.showPortfolio && (
-                <Portfolio className="mb-8" />
-              )}
-              
-              {dashboardLayout.showStockOverview && (
-                <StockOverview stocks={stockData} />
-              )}
-            </div>
+          {/* Right Column - Market Overview and stats */}
+          <div className="space-y-6">
+            <LiveMarketData />
             
-            <div className="space-y-8">
-              {dashboardLayout.showSectors && (
-                <PortfolioSectors />
-              )}
-              
-              {dashboardLayout.showRecommendations && (
-                <Recommendations recommendations={recommendationData} />
-              )}
-            </div>
+            <StockOverview 
+              stocks={mockStocks} 
+              className="hidden lg:block"
+            />
+            
+            <Recommendations 
+              recommendations={mockRecommendations} 
+            />
           </div>
         </div>
-      </main>
-      <Footer />
-    </div>
+      </div>
+    </>
   );
 };
 
