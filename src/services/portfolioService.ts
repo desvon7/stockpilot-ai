@@ -72,7 +72,7 @@ export const getUserTransactions = async (): Promise<Transaction[]> => {
 export const executeTransaction = async (
   symbol: string,
   companyName: string,
-  transactionType: 'buy' | 'sell',
+  transactionType: 'buy' | 'sell',  // Explicitly type this parameter as literal types
   shares: number,
   pricePerShare: number
 ): Promise<void> => {
