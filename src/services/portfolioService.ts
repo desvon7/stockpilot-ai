@@ -1,5 +1,6 @@
 
 import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/contexts/AuthContext';
 
 export interface PortfolioItem {
   id: string;
@@ -50,7 +51,8 @@ export const getUserTransactions = async (): Promise<Transaction[]> => {
       .order('created_at', { ascending: false });
     
     if (error) throw error;
-    return data || [];
+    // Type assertion to ensure the data matches our expected Transaction type
+    return (data as Transaction[]) || [];
   } catch (error) {
     console.error('Error fetching transactions:', error);
     throw error;
@@ -110,9 +112,20 @@ export const addToWatchlist = async (
 // Function to create a new watchlist
 export const createWatchlist = async (name: string): Promise<string> => {
   try {
+    // Get current user's ID
+    const { data: userData } = await supabase.auth.getUser();
+    const userId = userData.user?.id;
+    
+    if (!userId) {
+      throw new Error('User not authenticated');
+    }
+    
     const { data, error } = await supabase
       .from('watchlists')
-      .insert({ name })
+      .insert({ 
+        name,
+        user_id: userId
+      })
       .select('id')
       .single();
     
