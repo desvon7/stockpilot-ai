@@ -9,13 +9,26 @@ interface SearchResultsListProps {
   results: StockSearchResult[];
   selectedIndex: number;
   onSelect: (symbol: string) => void;
+  highlightQuery?: string;
 }
 
 const SearchResultsList: React.FC<SearchResultsListProps> = ({ 
   results, 
   selectedIndex, 
-  onSelect 
+  onSelect,
+  highlightQuery 
 }) => {
+  const highlightMatchedText = (text: string) => {
+    if (!highlightQuery || highlightQuery.length < 2) return text;
+    
+    const regex = new RegExp(`(${highlightQuery})`, 'gi');
+    const parts = text.split(regex);
+    
+    return parts.map((part, i) => 
+      regex.test(part) ? <span key={i} className="font-bold text-primary">{part}</span> : part
+    );
+  };
+
   return (
     <div className="py-2">
       {results.map((result, index) => (
@@ -29,12 +42,14 @@ const SearchResultsList: React.FC<SearchResultsListProps> = ({
         >
           <div>
             <div className="font-medium flex items-center gap-1">
-              {result.symbol}
+              {highlightQuery ? highlightMatchedText(result.symbol) : result.symbol}
               {result.type === 'ETF' && (
                 <Badge variant="outline" className="text-xs bg-primary/10 text-primary border-primary/20">ETF</Badge>
               )}
             </div>
-            <div className="text-sm text-muted-foreground">{result.name}</div>
+            <div className="text-sm text-muted-foreground">
+              {highlightQuery ? highlightMatchedText(result.name) : result.name}
+            </div>
           </div>
           <ChevronRight className="h-4 w-4 text-muted-foreground" />
         </div>
