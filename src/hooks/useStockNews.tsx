@@ -3,7 +3,7 @@ import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabase';
 import { toast } from 'sonner';
 
-interface NewsItem {
+export interface NewsItem {
   id: string;
   title: string;
   summary: string;
@@ -17,14 +17,16 @@ interface NewsItem {
 
 export const useStockNews = (symbols: string[], categories?: string[]) => {
   const {
-    data: news,
+    data: response,
     isLoading,
     error,
     refetch
   } = useQuery({
     queryKey: ['stockNews', symbols.sort().join(','), categories?.join(',')],
-    queryFn: async (): Promise<NewsItem[]> => {
+    queryFn: async (): Promise<{news: NewsItem[], source?: string}> => {
       try {
+        console.log(`Fetching news for symbols: ${symbols.join(', ')}`);
+        
         if (!symbols || symbols.length === 0) {
           // Use general market news if no specific symbols provided
           const { data, error } = await supabase.functions.invoke('fetch-financial-news', {
@@ -36,12 +38,14 @@ export const useStockNews = (symbols: string[], categories?: string[]) => {
           
           if (error) throw error;
           
+          console.log(`Received news response:`, data);
+          
           if (!data.news || data.news.length === 0) {
             console.log('No news returned from API');
-            return [];
+            return { news: [] };
           }
           
-          return data.news;
+          return data;
         }
         
         const { data, error } = await supabase.functions.invoke('fetch-financial-news', {
@@ -53,12 +57,14 @@ export const useStockNews = (symbols: string[], categories?: string[]) => {
         
         if (error) throw error;
         
+        console.log(`Received news response:`, data);
+        
         if (!data.news || data.news.length === 0) {
           console.log('No news returned from API for the specified symbols');
-          return [];
+          return { news: [] };
         }
         
-        return data.news;
+        return data;
       } catch (error) {
         console.error('Error fetching stock news:', error);
         toast.error('Failed to fetch financial news');
@@ -71,7 +77,8 @@ export const useStockNews = (symbols: string[], categories?: string[]) => {
   });
   
   return {
-    news: news || [],
+    news: response?.news || [],
+    newsSource: response?.source,
     isLoading,
     error,
     refetch

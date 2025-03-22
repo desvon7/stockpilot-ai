@@ -1,9 +1,10 @@
 
 import React from 'react';
-import { Calendar, ExternalLink, ThumbsUp, ThumbsDown } from 'lucide-react';
+import { Calendar, ExternalLink, ThumbsUp, ThumbsDown, Globe } from 'lucide-react';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
+import { Button } from '@/components/ui/button';
 
 interface NewsItem {
   id: string;
@@ -24,7 +25,13 @@ interface NewsCardProps {
 }
 
 const NewsCard: React.FC<NewsCardProps> = ({ article, onSave, className }) => {
-  const formattedDate = new Date(article.publishedAt).toLocaleDateString();
+  const formattedDate = new Date(article.publishedAt).toLocaleDateString(undefined, {
+    year: 'numeric',
+    month: 'short',
+    day: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit'
+  });
   
   // Determine sentiment status
   const getSentimentColor = (sentiment?: number) => {
@@ -37,6 +44,12 @@ const NewsCard: React.FC<NewsCardProps> = ({ article, onSave, className }) => {
   const getSentimentIcon = (sentiment?: number) => {
     if (sentiment === undefined || sentiment === null) return null;
     return sentiment > 0 ? <ThumbsUp className="h-4 w-4 mr-1" /> : <ThumbsDown className="h-4 w-4 mr-1" />;
+  };
+
+  const openArticle = () => {
+    if (article.url) {
+      window.open(article.url, '_blank', 'noopener,noreferrer');
+    }
   };
   
   return (
@@ -57,7 +70,8 @@ const NewsCard: React.FC<NewsCardProps> = ({ article, onSave, className }) => {
       )}
       <CardHeader>
         <div className="flex items-center justify-between mb-2">
-          <Badge variant="outline" className="font-medium">
+          <Badge variant="outline" className="font-medium flex items-center">
+            <Globe className="h-3 w-3 mr-1" />
             {article.source}
           </Badge>
           {article.sentiment !== undefined && article.sentiment !== null && (
@@ -67,7 +81,9 @@ const NewsCard: React.FC<NewsCardProps> = ({ article, onSave, className }) => {
             </div>
           )}
         </div>
-        <CardTitle className="text-xl line-clamp-2">{article.title}</CardTitle>
+        <CardTitle className="text-xl line-clamp-2 hover:text-primary cursor-pointer" onClick={openArticle}>
+          {article.title}
+        </CardTitle>
         <CardDescription className="flex items-center text-sm">
           <Calendar className="h-3 w-3 mr-1" />
           <span>{formattedDate}</span>
@@ -87,22 +103,24 @@ const NewsCard: React.FC<NewsCardProps> = ({ article, onSave, className }) => {
         )}
       </CardContent>
       <CardFooter className="flex justify-between pt-3 border-t">
-        <a 
-          href={article.url} 
-          target="_blank" 
-          rel="noopener noreferrer"
-          className="text-primary hover:underline text-sm flex items-center"
+        <Button 
+          variant="ghost"
+          size="sm"
+          className="text-primary hover:text-primary-focus text-sm flex items-center"
+          onClick={openArticle}
         >
           Read more <ExternalLink size={14} className="ml-1" />
-        </a>
+        </Button>
         
         {onSave && (
-          <button 
+          <Button 
+            variant="ghost"
+            size="sm"
             onClick={() => onSave(article)} 
             className="text-sm text-muted-foreground hover:text-primary transition-colors"
           >
             Save for later
-          </button>
+          </Button>
         )}
       </CardFooter>
     </Card>
