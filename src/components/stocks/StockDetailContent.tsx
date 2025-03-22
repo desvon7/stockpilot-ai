@@ -7,14 +7,14 @@ import StockChartControls from '@/components/stocks/StockChartControls';
 import StockOverviewTab from '@/components/stocks/StockOverviewTab';
 import StockNewsTab from '@/components/stocks/StockNewsTab';
 import StockPlaceholderTab from '@/components/stocks/StockPlaceholderTab';
-import StockChart from '@/components/ui/StockChart';
+import StockChart, { TimeRange } from '@/components/ui/StockChart';
 import StockHeader from '@/components/stocks/StockHeader';
 import { useStockDetail, MockStockData } from '@/hooks/useStockDetail';
 
 interface StockDetailContentProps {
   symbol: string;
-  timeframe: string;
-  setTimeframe: (timeframe: any) => void;
+  timeframe: TimeRange;
+  setTimeframe: (timeframe: TimeRange) => void;
   mockChartData: any[];
   stockData: any;
   mockStockData: MockStockData;

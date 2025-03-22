@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { fetchStockDetails } from '@/services/stockService';
@@ -119,12 +118,11 @@ export const useStockDetail = (symbol: string | undefined) => {
     timestamp: new Date().toISOString()
   };
 
-  // Prepare the stats object for StockStatsCard
   const statsData = stockData ? {
     open: stockData.open || 0,
     previousClose: stockData.previousClose || 0,
-    dayHigh: stockData.yearHigh || 0, // Use yearHigh as dayHigh if actual dayHigh is missing
-    dayLow: stockData.yearLow || 0,   // Use yearLow as dayLow if actual dayLow is missing
+    dayHigh: stockData.yearHigh || 0,
+    dayLow: stockData.yearLow || 0,
     volume: stockData.volume || 0,
     avgVolume: stockData.avgVolume || 0
   } : {

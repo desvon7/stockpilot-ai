@@ -5,6 +5,7 @@ import { Helmet } from 'react-helmet-async';
 import StockDetailContent from '@/components/stocks/StockDetailContent';
 import StockDetailSidebar from '@/components/stocks/StockDetailSidebar';
 import { useStockDetail } from '@/hooks/useStockDetail';
+import { TimeRange } from '@/components/ui/StockChart';
 
 const StockDetail: React.FC = () => {
   const { symbol } = useParams<{ symbol: string }>();

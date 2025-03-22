@@ -6,7 +6,7 @@ import { TimeRange } from '@/components/ui/StockChart';
 
 interface StockChartControlsProps {
   timeframe: TimeRange;
-  setTimeframe: React.Dispatch<React.SetStateAction<TimeRange>>;
+  setTimeframe: (timeframe: TimeRange) => void;
 }
 
 const StockChartControls: React.FC<StockChartControlsProps> = ({
