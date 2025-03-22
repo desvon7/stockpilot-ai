@@ -7,7 +7,7 @@ const corsHeaders = {
 };
 
 const ALPHA_VANTAGE_API_KEY = Deno.env.get('ALPHA_VANTAGE_API_KEY') || '';
-const FINNHUB_API_KEY = Deno.env.get('FINNHUB_API_KEY') || '';
+const FINNHUB_API_KEY = Deno.env.get('FINN_HUB_API_KEY') || '';
 
 // Enhanced fallback data with more diverse assets
 const FALLBACK_SEARCH_RESULTS = [
