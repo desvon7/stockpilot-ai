@@ -9,6 +9,33 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      news_cache: {
+        Row: {
+          category: string | null
+          expires_at: string | null
+          fetched_at: string | null
+          id: string
+          news: Json
+          symbols: string[] | null
+        }
+        Insert: {
+          category?: string | null
+          expires_at?: string | null
+          fetched_at?: string | null
+          id?: string
+          news: Json
+          symbols?: string[] | null
+        }
+        Update: {
+          category?: string | null
+          expires_at?: string | null
+          fetched_at?: string | null
+          id?: string
+          news?: Json
+          symbols?: string[] | null
+        }
+        Relationships: []
+      }
       portfolios: {
         Row: {
           average_price: number

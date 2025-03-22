@@ -62,8 +62,11 @@ const NewsCard: React.FC<NewsCardProps> = ({ article, onSave, className }) => {
             className="w-full h-full object-cover transition-transform hover:scale-105"
             onError={(e) => {
               // Hide image container if image fails to load
-              (e.target as HTMLImageElement).style.display = 'none';
-              (e.target as HTMLImageElement).parentElement!.style.display = 'none';
+              const target = e.target as HTMLImageElement;
+              target.style.display = 'none';
+              if (target.parentElement) {
+                target.parentElement.style.display = 'none';
+              }
             }}
           />
         </div>

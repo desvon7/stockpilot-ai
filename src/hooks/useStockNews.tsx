@@ -29,6 +29,7 @@ export const useStockNews = (symbols: string[], categories?: string[]) => {
         
         if (!symbols || symbols.length === 0) {
           // Use general market news if no specific symbols provided
+          console.log('No symbols provided, fetching general market news');
           const { data, error } = await supabase.functions.invoke('fetch-financial-news', {
             body: { 
               symbols: ['SPY', 'QQQ', 'DIA'], // Major market ETFs as fallback
@@ -36,12 +37,15 @@ export const useStockNews = (symbols: string[], categories?: string[]) => {
             }
           });
           
-          if (error) throw error;
+          if (error) {
+            console.error('Error fetching general news:', error);
+            throw error;
+          }
           
-          console.log(`Received news response:`, data);
+          console.log(`Received general news response:`, data);
           
           if (!data.news || data.news.length === 0) {
-            console.log('No news returned from API');
+            console.log('No general news returned from API');
             return { news: [] };
           }
           
@@ -55,9 +59,12 @@ export const useStockNews = (symbols: string[], categories?: string[]) => {
           }
         });
         
-        if (error) throw error;
+        if (error) {
+          console.error('Error fetching stock news:', error);
+          throw error;
+        }
         
-        console.log(`Received news response:`, data);
+        console.log(`Received news response for ${symbols.join(',')}:`, data);
         
         if (!data.news || data.news.length === 0) {
           console.log('No news returned from API for the specified symbols');
