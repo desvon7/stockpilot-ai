@@ -13,23 +13,41 @@ interface StockNewsTabProps {
 const StockNewsTab: React.FC<StockNewsTabProps> = ({ stockName, symbol }) => {
   const { news, isLoading, error } = useStockNews([symbol]);
 
-  // If we have the existing mock data, let's use it as a fallback
-  const useMockData = (!news || news.length === 0) && !isLoading && !error;
+  // Mock data as fallback if API doesn't return results
+  const fallbackNews = [
+    {
+      id: '1',
+      title: `${stockName} Reports Strong Q3 Earnings`,
+      summary: `${stockName} exceeded analyst expectations with impressive revenue growth and strong margins.`,
+      source: 'Market Watch',
+      publishedAt: new Date().toISOString(),
+      url: '#',
+      symbols: [symbol]
+    },
+    {
+      id: '2',
+      title: `New Product Launch Boosts ${symbol} Outlook`,
+      summary: 'Analysts raise price targets following successful product launch event.',
+      source: 'Bloomberg',
+      publishedAt: new Date().toISOString(),
+      url: '#',
+      symbols: [symbol]
+    },
+    {
+      id: '3',
+      title: `${stockName} Sector Showing Growth Despite Market Headwinds`,
+      summary: `${stockName} and peers demonstrate resilience in challenging economic environment.`,
+      source: 'Financial Times',
+      publishedAt: new Date().toISOString(),
+      url: '#',
+      symbols: [symbol]
+    },
+  ];
   
-  // Convert the existing mock data to our new format if needed
-  const displayedNews = useMockData ? 
-    [
-      {
-        id: "1",
-        title: `Latest news about ${stockName}`,
-        summary: `Recent developments and market movements related to ${stockName} (${symbol}).`,
-        source: "Market News",
-        publishedAt: new Date().toISOString(),
-        url: "#",
-        symbols: [symbol]
-      }
-    ] : 
-    news;
+  // If no news is returned from API and we're not loading, use fallback data
+  const displayedNews = (!news || news.length === 0) && !isLoading && !error 
+    ? fallbackNews 
+    : news;
 
   return (
     <Card>
