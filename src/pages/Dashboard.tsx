@@ -8,11 +8,17 @@ import Recommendations from '@/components/dashboard/Recommendations';
 import { useAuth } from '@/contexts/AuthContext';
 import AccountSidebar from '@/components/layout/AccountSidebar';
 import usePortfolio from '@/hooks/usePortfolio';
+import { mockStocks } from '@/utils/mockData';
 
 const Dashboard: React.FC = () => {
   const { user } = useAuth();
   const [selectedStock, setSelectedStock] = useState<string | null>(null);
   const { portfolio, isLoading } = usePortfolio();
+  
+  // Filter stocks based on selected symbol if needed
+  const stocksToDisplay = selectedStock 
+    ? mockStocks.filter(stock => stock.symbol === selectedStock)
+    : mockStocks;
 
   return (
     <div className="min-h-screen flex flex-col bg-background">
@@ -29,7 +35,7 @@ const Dashboard: React.FC = () => {
                   portfolio={portfolio} 
                   isLoading={isLoading} 
                 />
-                {selectedStock && <StockOverview symbol={selectedStock} />}
+                <StockOverview stocks={stocksToDisplay} />
               </div>
               
               <div className="space-y-6">
