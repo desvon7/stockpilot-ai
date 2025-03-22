@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
@@ -57,17 +56,14 @@ export const useRealTimeMarketData = ({
   const symbolsRef = useRef<string[]>(symbols);
   const reconnectTimeoutRef = useRef<number | null>(null);
   
-  // Update symbolsRef when symbols prop changes
   useEffect(() => {
     symbolsRef.current = symbols;
     
-    // If we have an active connection, update subscriptions
     if (wsRef.current && wsRef.current.readyState === WebSocket.OPEN) {
       updateSubscriptions();
     }
   }, [symbols]);
   
-  // Function to update WebSocket subscriptions
   const updateSubscriptions = useCallback(() => {
     if (!wsRef.current || wsRef.current.readyState !== WebSocket.OPEN) return;
     
@@ -77,7 +73,6 @@ export const useRealTimeMarketData = ({
     }));
   }, []);
 
-  // Initial data fetch
   const fetchInitialData = useCallback(async () => {
     if (!symbols.length || !enabled) return;
     
@@ -101,25 +96,19 @@ export const useRealTimeMarketData = ({
     }
   }, [symbols, enabled]);
   
-  // Establish WebSocket connection
   useEffect(() => {
     if (!enabled || !symbols.length) return;
     
-    // First fetch initial data
     fetchInitialData();
     
-    // Then establish WebSocket connection
     const connectWebSocket = () => {
       try {
-        // Determine the correct WebSocket URL based on the environment
         const wsProtocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
         let wsUrl = '';
         
         if (import.meta.env.MODE === 'development') {
-          // Development - use localhost with correct Supabase Function port
           wsUrl = `${wsProtocol}//${window.location.hostname}:54321/functions/v1/stock-market-websocket`;
         } else {
-          // Production - use the Supabase project URL
           wsUrl = `wss://fansbktmwnskvolllfhk.supabase.co/functions/v1/stock-market-websocket`;
         }
         
@@ -133,13 +122,11 @@ export const useRealTimeMarketData = ({
           setWsStatus('connected');
           toast.success('Connected to real-time market data');
           
-          // Subscribe to symbols
           ws.send(JSON.stringify({
             action: "subscribe",
             symbols: symbolsRef.current
           }));
           
-          // Clear any reconnect timeout
           if (reconnectTimeoutRef.current) {
             clearTimeout(reconnectTimeoutRef.current);
             reconnectTimeoutRef.current = null;
@@ -150,11 +137,9 @@ export const useRealTimeMarketData = ({
           try {
             const data = JSON.parse(event.data);
             
-            // Handle different message types
             if (Array.isArray(data)) {
-              // Process quote and trade updates
               data.forEach(item => {
-                if (item.T === 'q') { // Quote update
+                if (item.T === 'q') {
                   const quoteUpdate: Quote = {
                     symbol: item.S,
                     price: (item.ap || item.bp) || 0,
@@ -166,19 +151,17 @@ export const useRealTimeMarketData = ({
                   };
                   
                   setQuotes(prev => {
-                    const prevQuote = prev[item.S] || {};
+                    const prevQuote = prev[item.S] as Quote || {};
                     const newQuote = {
                       ...prevQuote,
                       ...quoteUpdate
                     };
                     
-                    // Calculate change if we have previous close data
-                    if (prevQuote.previousClose) {
+                    if (prevQuote.previousClose !== undefined) {
                       newQuote.change = newQuote.price - prevQuote.previousClose;
                       newQuote.changePercent = (newQuote.change / prevQuote.previousClose) * 100;
                     }
                     
-                    // Call the onQuoteUpdate callback if provided
                     if (onQuoteUpdate) {
                       onQuoteUpdate(item.S, newQuote);
                     }
@@ -188,7 +171,7 @@ export const useRealTimeMarketData = ({
                       [item.S]: newQuote
                     };
                   });
-                } else if (item.T === 't') { // Trade update
+                } else if (item.T === 't') {
                   const tradeUpdate: Trade = {
                     symbol: item.S,
                     price: item.p || 0,
@@ -203,7 +186,6 @@ export const useRealTimeMarketData = ({
                       [item.S]: tradeUpdate
                     };
                     
-                    // Call the onTradeUpdate callback if provided
                     if (onTradeUpdate) {
                       onTradeUpdate(item.S, tradeUpdate);
                     }
@@ -211,7 +193,6 @@ export const useRealTimeMarketData = ({
                     return newTrades;
                   });
                   
-                  // Update volume in quotes if we have this symbol
                   setQuotes(prev => {
                     if (!prev[item.S]) return prev;
                     
@@ -256,7 +237,6 @@ export const useRealTimeMarketData = ({
           console.log('WebSocket disconnected:', event.code, event.reason);
           setWsStatus('disconnected');
           
-          // Attempt to reconnect after a delay, with exponential backoff
           const reconnectDelay = reconnectTimeoutRef.current ? Math.min(30000, (reconnectTimeoutRef.current * 1.5)) : 3000;
           console.log(`Attempting to reconnect in ${reconnectDelay}ms`);
           
@@ -279,10 +259,8 @@ export const useRealTimeMarketData = ({
     
     const ws = connectWebSocket();
     
-    // Cleanup
     return () => {
       if (wsRef.current) {
-        // Send unsubscribe message before closing
         if (wsRef.current.readyState === WebSocket.OPEN && symbolsRef.current.length > 0) {
           wsRef.current.send(JSON.stringify({
             action: "unsubscribe",
@@ -301,7 +279,6 @@ export const useRealTimeMarketData = ({
     };
   }, [enabled, fetchInitialData, onQuoteUpdate, onTradeUpdate]);
   
-  // Function to manually refresh data
   const refresh = async () => {
     await fetchInitialData();
     toast.success('Market data refreshed');
