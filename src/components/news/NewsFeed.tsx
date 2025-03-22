@@ -1,12 +1,14 @@
 
-import React, { useState } from 'react';
-import { Loader2, RefreshCcw, AlertCircle, Search, X } from 'lucide-react';
+import React, { useState, useCallback } from 'react';
+import { Loader2, RefreshCcw, AlertCircle, Search, X, Filter } from 'lucide-react';
 import { useStockNews } from '@/hooks/useStockNews';
 import NewsCard from './NewsCard';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
+import { toast } from 'sonner';
+import { Skeleton } from '@/components/ui/skeleton';
 
 interface NewsItem {
   id: string;
@@ -24,28 +26,45 @@ interface NewsFeedProps {
   symbols: string[];
   title?: string;
   maxItems?: number;
+  showRefresh?: boolean;
+  compact?: boolean;
 }
 
 const NewsFeed: React.FC<NewsFeedProps> = ({ 
   symbols, 
   title = "Financial News", 
-  maxItems = 20
+  maxItems = 20,
+  showRefresh = true,
+  compact = false
 }) => {
   const [categories, setCategories] = useState<string[]>([]);
   const [searchInput, setSearchInput] = useState('');
+  const [isFiltering, setIsFiltering] = useState(false);
   
   const { news, isLoading, error, refetch, newsSource } = useStockNews(symbols, categories);
   
-  const addCategory = (category: string) => {
+  const handleRefresh = useCallback(() => {
+    toast.promise(refetch(), {
+      loading: 'Refreshing news...',
+      success: 'Latest news loaded',
+      error: 'Failed to refresh news'
+    });
+  }, [refetch]);
+  
+  const addCategory = useCallback((category: string) => {
     if (category && !categories.includes(category)) {
       setCategories([...categories, category]);
       setSearchInput('');
     }
-  };
+  }, [categories]);
   
-  const removeCategory = (category: string) => {
+  const removeCategory = useCallback((category: string) => {
     setCategories(categories.filter(c => c !== category));
-  };
+  }, [categories]);
+  
+  const clearAllCategories = useCallback(() => {
+    setCategories([]);
+  }, []);
   
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Enter' && searchInput.trim()) {
@@ -53,7 +72,7 @@ const NewsFeed: React.FC<NewsFeedProps> = ({
     }
   };
   
-  // Filter news based on search input
+  // Filter news based on search input for immediate results
   const filteredNews = searchInput
     ? news.filter(article => 
         article.title.toLowerCase().includes(searchInput.toLowerCase()) ||
@@ -70,8 +89,19 @@ const NewsFeed: React.FC<NewsFeedProps> = ({
     return acc;
   }, {});
   
+  // Suggested common categories
+  const suggestedCategories = ['earnings', 'market', 'tech', 'economy', 'crypto'];
+  
+  // Select display style based on compact mode
+  const getCardStyle = () => {
+    if (compact) {
+      return "grid grid-cols-1 gap-4";
+    }
+    return "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6";
+  };
+  
   return (
-    <Card>
+    <Card className="h-full">
       <CardHeader>
         <div className="flex items-center justify-between">
           <div>
@@ -82,44 +112,93 @@ const NewsFeed: React.FC<NewsFeedProps> = ({
                 : 'Latest financial market news'}
             </CardDescription>
           </div>
-          <Button 
-            variant="ghost" 
-            size="sm" 
-            onClick={() => refetch()} 
-            disabled={isLoading}
-          >
-            <RefreshCcw className={`h-4 w-4 mr-2 ${isLoading ? 'animate-spin' : ''}`} />
-            Refresh
-          </Button>
+          {showRefresh && (
+            <Button 
+              variant="ghost" 
+              size="sm" 
+              onClick={handleRefresh} 
+              disabled={isLoading}
+            >
+              <RefreshCcw className={`h-4 w-4 mr-2 ${isLoading ? 'animate-spin' : ''}`} />
+              Refresh
+            </Button>
+          )}
         </div>
       </CardHeader>
       
       <CardContent>
         <div className="flex flex-col space-y-3 mb-4">
-          <div className="relative">
-            <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
-            <Input
-              placeholder="Search news or add category..."
-              value={searchInput}
-              onChange={(e) => setSearchInput(e.target.value)}
-              onKeyDown={handleKeyDown}
-              className="pl-8"
-            />
+          <div className="flex gap-2">
+            <div className="relative flex-grow">
+              <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
+              <Input
+                placeholder="Search news or add category..."
+                value={searchInput}
+                onChange={(e) => setSearchInput(e.target.value)}
+                onKeyDown={handleKeyDown}
+                className="pl-8"
+              />
+            </div>
+            <Button 
+              variant="outline" 
+              size="icon"
+              onClick={() => setIsFiltering(!isFiltering)}
+              className={isFiltering ? 'bg-secondary' : ''}
+            >
+              <Filter size={16} />
+            </Button>
           </div>
           
-          {categories.length > 0 && (
-            <div className="flex flex-wrap gap-2">
-              {categories.map(category => (
-                <Badge key={category} variant="secondary" className="flex items-center gap-1">
-                  {category}
-                  <button 
-                    onClick={() => removeCategory(category)}
-                    className="ml-1 rounded-full hover:bg-muted"
+          {isFiltering && (
+            <div className="p-3 border rounded-md bg-background">
+              <div className="flex justify-between items-center mb-2">
+                <h4 className="text-sm font-medium">Filter by Categories</h4>
+                {categories.length > 0 && (
+                  <Button 
+                    variant="ghost" 
+                    size="sm" 
+                    onClick={clearAllCategories}
+                    className="h-7 text-xs"
                   >
-                    <X size={14} />
-                  </button>
-                </Badge>
-              ))}
+                    Clear all
+                  </Button>
+                )}
+              </div>
+              
+              <div className="flex flex-wrap gap-1.5 mb-3">
+                {suggestedCategories.map(category => (
+                  <Badge 
+                    key={category} 
+                    variant={categories.includes(category) ? "default" : "outline"}
+                    className="cursor-pointer capitalize"
+                    onClick={() => categories.includes(category) 
+                      ? removeCategory(category) 
+                      : addCategory(category)
+                    }
+                  >
+                    {category}
+                  </Badge>
+                ))}
+              </div>
+              
+              {categories.length > 0 && (
+                <div className="mt-2">
+                  <h4 className="text-xs font-medium text-muted-foreground mb-1.5">Active filters:</h4>
+                  <div className="flex flex-wrap gap-1.5">
+                    {categories.map(category => (
+                      <Badge key={category} className="flex items-center gap-1 capitalize">
+                        {category}
+                        <button 
+                          onClick={() => removeCategory(category)}
+                          className="ml-1 rounded-full hover:bg-muted"
+                        >
+                          <X size={14} />
+                        </button>
+                      </Badge>
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
           )}
         </div>
@@ -165,22 +244,46 @@ const NewsFeed: React.FC<NewsFeedProps> = ({
           </div>
         ) : displayedNews.length === 0 ? (
           <div className="text-center py-8 text-muted-foreground">
-            <p>No news articles found.</p>
-            {categories.length > 0 && (
-              <p className="text-sm mt-2">Try removing some category filters.</p>
-            )}
-            {symbols.length > 0 && (
-              <p className="text-sm mt-2">No recent news for these symbols. Try different ones.</p>
+            {searchInput.trim() ? (
+              <p>No news articles found matching "{searchInput.trim()}".</p>
+            ) : categories.length > 0 ? (
+              <>
+                <p>No news articles found for the selected categories.</p>
+                <Button 
+                  variant="ghost" 
+                  size="sm" 
+                  onClick={clearAllCategories}
+                  className="mt-2"
+                >
+                  Clear All Filters
+                </Button>
+              </>
+            ) : (
+              <p>No news articles found for these symbols.</p>
             )}
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {displayedNews.map(article => (
-              <NewsCard 
-                key={article.id} 
-                article={article} 
-              />
-            ))}
+          <div className={getCardStyle()}>
+            {isLoading && news.length === 0 ? (
+              // Skeleton loading state
+              Array(compact ? 3 : 6).fill(0).map((_, i) => (
+                <div key={i} className="flex flex-col space-y-3">
+                  <Skeleton className="h-[180px] w-full rounded-md" />
+                  <div className="space-y-2">
+                    <Skeleton className="h-4 w-full" />
+                    <Skeleton className="h-4 w-3/4" />
+                  </div>
+                </div>
+              ))
+            ) : (
+              displayedNews.map(article => (
+                <NewsCard 
+                  key={article.id} 
+                  article={article} 
+                  compact={compact}
+                />
+              ))
+            )}
           </div>
         )}
         
@@ -190,6 +293,14 @@ const NewsFeed: React.FC<NewsFeedProps> = ({
           </div>
         )}
       </CardContent>
+      
+      {(!compact && news.length > maxItems) && (
+        <CardFooter className="flex justify-center border-t pt-4">
+          <Button variant="outline" size="sm">
+            View More News
+          </Button>
+        </CardFooter>
+      )}
     </Card>
   );
 };

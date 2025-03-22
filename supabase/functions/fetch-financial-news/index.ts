@@ -32,10 +32,18 @@ serve(async (req) => {
     // Check cache first
     const cachedNews = await getNewsFromCache(symbols, categories);
     if (cachedNews && cachedNews.length > 0) {
-      console.log('Returning cached news');
+      console.log(`Returning ${cachedNews.length} cached news items`);
+      
+      // Apply category filtering even to cached news to ensure freshness
+      let filteredCachedNews = cachedNews;
+      if (categories && categories.length > 0) {
+        console.log('Filtering cached news by categories');
+        filteredCachedNews = filterNewsByCategories(cachedNews, categories);
+        console.log(`After filtering: ${filteredCachedNews.length} cached news items`);
+      }
       
       return new Response(JSON.stringify({ 
-        news: cachedNews,
+        news: filteredCachedNews,
         source: 'cache'
       }), {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
@@ -48,31 +56,60 @@ serve(async (req) => {
     let dataSource = '';
     
     // Try each news source in sequence until we get some news
-    if (news.length === 0) {
+    try {
       news = await fetchAlphaVantageNews(tickers);
-      if (news.length > 0) dataSource = 'Alpha Vantage';
+      if (news.length > 0) {
+        console.log(`Successfully fetched ${news.length} news items from Alpha Vantage`);
+        dataSource = 'Alpha Vantage';
+      }
+    } catch (error) {
+      console.error('Error with Alpha Vantage news fetch:', error);
     }
     
     if (news.length === 0) {
-      news = await fetchFinnhubNews(symbols);
-      if (news.length > 0) dataSource = 'Finnhub';
+      try {
+        news = await fetchFinnhubNews(symbols);
+        if (news.length > 0) {
+          console.log(`Successfully fetched ${news.length} news items from Finnhub`);
+          dataSource = 'Finnhub';
+        }
+      } catch (error) {
+        console.error('Error with Finnhub news fetch:', error);
+      }
     }
     
     if (news.length === 0) {
-      news = await fetchNewsApi(symbols);
-      if (news.length > 0) dataSource = 'News API';
+      try {
+        news = await fetchNewsApi(symbols);
+        if (news.length > 0) {
+          console.log(`Successfully fetched ${news.length} news items from News API`);
+          dataSource = 'News API';
+        }
+      } catch (error) {
+        console.error('Error with News API fetch:', error);
+      }
     }
     
     // Last resort - try to get any financial news if specific news failed
     if (news.length === 0) {
       console.log('No specific news found, trying fallback news');
-      news = await fetchFallbackNews();
-      if (news.length > 0) dataSource = 'Fallback';
+      try {
+        news = await fetchFallbackNews();
+        if (news.length > 0) {
+          console.log(`Successfully fetched ${news.length} fallback news items`);
+          dataSource = 'Fallback';
+        }
+      } catch (error) {
+        console.error('Error with fallback news fetch:', error);
+      }
     }
     
     // Filter by categories if specified
     if (categories && categories.length > 0 && news.length > 0) {
-      news = filterNewsByCategories(news, categories);
+      console.log(`Filtering news by categories: ${categories.join(', ')}`);
+      const filteredNews = filterNewsByCategories(news, categories);
+      console.log(`Filtered news: ${filteredNews.length} of ${news.length} articles match the categories`);
+      news = filteredNews;
     }
     
     // Sort by publishedAt date (newest first)
@@ -84,7 +121,13 @@ serve(async (req) => {
     
     // Save to cache for future use
     if (news.length > 0) {
-      await saveNewsToCache(news, symbols, categories);
+      console.log('Saving news to cache');
+      // Use try/catch to prevent cache errors from affecting response
+      try {
+        await saveNewsToCache(news, symbols, categories);
+      } catch (cacheError) {
+        console.error('Error saving to cache, but continuing with response:', cacheError);
+      }
     }
     
     return new Response(JSON.stringify({ 

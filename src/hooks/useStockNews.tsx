@@ -16,16 +16,27 @@ export interface NewsItem {
 }
 
 export const useStockNews = (symbols: string[], categories?: string[]) => {
+  // Create stable query keys by sorting arrays
+  const sortedSymbols = [...symbols].sort().join(',');
+  const sortedCategories = categories ? [...categories].sort().join(',') : undefined;
+  
+  const queryKey = ['stockNews', sortedSymbols, sortedCategories];
+  
   const {
     data: response,
     isLoading,
     error,
-    refetch
+    refetch,
+    isFetching
   } = useQuery({
-    queryKey: ['stockNews', symbols.sort().join(','), categories?.join(',')],
+    queryKey: queryKey,
     queryFn: async (): Promise<{news: NewsItem[], source?: string}> => {
       try {
         console.log(`Fetching news for symbols: ${symbols.join(', ')}`);
+        
+        if (categories && categories.length > 0) {
+          console.log(`With categories: ${categories.join(', ')}`);
+        }
         
         if (!symbols || symbols.length === 0) {
           // Use general market news if no specific symbols provided
@@ -74,19 +85,24 @@ export const useStockNews = (symbols: string[], categories?: string[]) => {
         return data;
       } catch (error) {
         console.error('Error fetching stock news:', error);
-        toast.error('Failed to fetch financial news');
         throw error;
       }
     },
-    staleTime: 5 * 60 * 1000, // 5 minutes
-    retry: 2,
+    staleTime: 10 * 60 * 1000, // 10 minutes
+    gcTime: 15 * 60 * 1000, // 15 minutes
+    retry: (failureCount, error) => {
+      // Retry logic with exponential backoff
+      console.log(`Retry attempt ${failureCount} for news fetch`);
+      return failureCount < 3;
+    },
+    retryDelay: attemptIndex => Math.min(1000 * 2 ** attemptIndex, 30000),
     refetchOnWindowFocus: false
   });
   
   return {
     news: response?.news || [],
     newsSource: response?.source,
-    isLoading,
+    isLoading: isLoading || isFetching,
     error,
     refetch
   };

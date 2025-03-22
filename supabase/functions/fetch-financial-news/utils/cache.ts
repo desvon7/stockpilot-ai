@@ -12,23 +12,19 @@ export async function getNewsFromCache(symbols: string[], categories?: string[])
   try {
     console.log('Checking news cache for symbols:', symbols);
     
-    // Basic query for cache
-    let query = supabaseAdmin
+    // Cache key is more specific now with both symbols and categories
+    const cacheKey = `${symbols.sort().join(',')}_${categories?.sort().join(',') || 'all'}`;
+    console.log('Using cache key:', cacheKey);
+    
+    // More targeted cache query
+    const { data, error } = await supabaseAdmin
       .from('news_cache')
-      .select('news, fetched_at')
-      .lt('expires_at', new Date().toISOString());
-    
-    // If we have symbols, add them to the query
-    if (symbols && symbols.length > 0) {
-      query = query.contains('symbols', symbols);
-    }
-    
-    // If we have categories, add them to the query
-    if (categories && categories.length > 0) {
-      query = query.eq('category', categories[0]); // For simplicity, use first category
-    }
-    
-    const { data, error } = await query.order('fetched_at', { ascending: false }).limit(1).maybeSingle();
+      .select('news, fetched_at, expires_at')
+      .contains('symbols', symbols)
+      .lt('expires_at', new Date().toISOString())
+      .order('fetched_at', { ascending: false })
+      .limit(1)
+      .maybeSingle();
     
     if (error) {
       console.error('Error checking news cache:', error);
@@ -36,10 +32,13 @@ export async function getNewsFromCache(symbols: string[], categories?: string[])
     }
     
     if (data) {
-      console.log(`Found cached news from ${data.fetched_at}`);
+      const cacheAge = new Date().getTime() - new Date(data.fetched_at).getTime();
+      const cacheAgeMinutes = Math.floor(cacheAge / 60000);
+      console.log(`Found cached news from ${data.fetched_at} (${cacheAgeMinutes} minutes old)`);
       return data.news;
     }
     
+    console.log('No suitable cache found');
     return null;
   } catch (error) {
     console.error('Failed to check cache:', error);
@@ -47,7 +46,7 @@ export async function getNewsFromCache(symbols: string[], categories?: string[])
   }
 }
 
-// Save news to cache for future use
+// Save news to cache for future use with improved expiry
 export async function saveNewsToCache(news: NewsItem[], symbols: string[], categories?: string[]): Promise<void> {
   try {
     if (news.length === 0) {
@@ -55,7 +54,14 @@ export async function saveNewsToCache(news: NewsItem[], symbols: string[], categ
       return;
     }
     
-    console.log(`Caching ${news.length} news items`);
+    console.log(`Caching ${news.length} news items for symbols: ${symbols.join(',')}`);
+    
+    // Calculate appropriate cache expiry based on number of items
+    // More items = longer cache time as it's likely better quality data
+    const expiryHours = Math.min(3, Math.max(1, Math.ceil(news.length / 10)));
+    const expiryTime = new Date(Date.now() + expiryHours * 60 * 60 * 1000);
+    
+    console.log(`Setting cache expiry for ${expiryHours} hours (until ${expiryTime.toISOString()})`);
     
     const { error } = await supabaseAdmin
       .from('news_cache')
@@ -64,11 +70,13 @@ export async function saveNewsToCache(news: NewsItem[], symbols: string[], categ
         category: categories && categories.length > 0 ? categories[0] : null,
         news,
         fetched_at: new Date().toISOString(),
-        expires_at: new Date(Date.now() + 60 * 60 * 1000).toISOString() // 1 hour expiry
+        expires_at: expiryTime.toISOString()
       });
     
     if (error) {
       console.error('Error saving to news cache:', error);
+    } else {
+      console.log('Successfully cached news data');
     }
   } catch (error) {
     console.error('Failed to save news to cache:', error);
