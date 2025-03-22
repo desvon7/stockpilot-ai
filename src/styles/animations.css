@@ -1,6 +1,43 @@
-
 @keyframes shimmer {
   100% {
     transform: translateX(100%);
   }
+}
+
+@keyframes priceUp {
+  0% {
+    transform: translateY(0);
+    opacity: 1;
+  }
+  50% {
+    background-color: rgba(34, 197, 94, 0.2);
+    transform: translateY(-4px);
+  }
+  100% {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+@keyframes priceDown {
+  0% {
+    transform: translateY(0);
+    opacity: 1;
+  }
+  50% {
+    background-color: rgba(239, 68, 68, 0.2);
+    transform: translateY(4px);
+  }
+  100% {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.animate-price-up {
+  animation: priceUp 1s ease;
+}
+
+.animate-price-down {
+  animation: priceDown 1s ease;
 }

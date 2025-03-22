@@ -1,3 +1,4 @@
+
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 
@@ -52,8 +53,9 @@ serve(async (req) => {
         // Check if it's an authentication response
         if (data[0]?.T === "success" && data[0]?.msg === "authenticated") {
           console.log("Authenticated with Alpaca WebSocket");
+          socket.send(JSON.stringify({ type: "status", status: "authenticated" }));
         } 
-        // Otherwise forward the data to the client
+        // Forward quote and trade data to the client
         else if (data[0]?.T === "q" || data[0]?.T === "t") {
           socket.send(event.data);
         }
@@ -62,13 +64,13 @@ serve(async (req) => {
       // Handle Alpaca socket errors
       alpacaSocket.onerror = (e) => {
         console.error("Alpaca WebSocket error:", e);
-        socket.send(JSON.stringify({ error: "Data provider connection error" }));
+        socket.send(JSON.stringify({ type: "error", message: "Data provider connection error" }));
       };
       
       // Handle Alpaca socket close
       alpacaSocket.onclose = () => {
         console.log("Alpaca WebSocket closed");
-        socket.send(JSON.stringify({ message: "Data provider connection closed" }));
+        socket.send(JSON.stringify({ type: "status", status: "disconnected", message: "Data provider connection closed" }));
       };
     };
     
@@ -81,10 +83,11 @@ serve(async (req) => {
         if (message.action === "subscribe" && Array.isArray(message.symbols)) {
           console.log(`Subscribing to symbols: ${message.symbols.join(', ')}`);
           
-          // Subscribe to quotes for the symbols
+          // Subscribe to both quotes and trades for the symbols
           alpacaSocket.send(JSON.stringify({
             action: "subscribe",
-            quotes: message.symbols
+            quotes: message.symbols,
+            trades: message.symbols
           }));
           
           // Acknowledge the subscription
@@ -100,7 +103,8 @@ serve(async (req) => {
           
           alpacaSocket.send(JSON.stringify({
             action: "unsubscribe",
-            quotes: message.symbols
+            quotes: message.symbols,
+            trades: message.symbols
           }));
           
           socket.send(JSON.stringify({
@@ -111,7 +115,7 @@ serve(async (req) => {
         }
       } catch (error) {
         console.error("Error handling client message:", error);
-        socket.send(JSON.stringify({ error: "Invalid message format" }));
+        socket.send(JSON.stringify({ type: "error", message: "Invalid message format" }));
       }
     };
     
@@ -121,6 +125,11 @@ serve(async (req) => {
       if (alpacaSocket.readyState === WebSocket.OPEN) {
         alpacaSocket.close();
       }
+    };
+    
+    // Handle client connection error
+    socket.onerror = (e) => {
+      console.error("Client connection error:", e);
     };
     
     return response;
