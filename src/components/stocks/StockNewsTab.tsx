@@ -4,8 +4,6 @@ import { useStockNews } from '@/hooks/useStockNews';
 import NewsCard from '@/components/news/NewsCard';
 import { Loader2 } from 'lucide-react';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Calendar, ChevronRight } from 'lucide-react';
 
 interface StockNewsTabProps {
   stockName: string;
