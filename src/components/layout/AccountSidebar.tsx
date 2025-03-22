@@ -1,4 +1,5 @@
-import React from 'react';
+
+import React, { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { 
@@ -17,10 +18,18 @@ import {
   SidebarProvider,
 } from '@/components/ui/sidebar';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 const AccountSidebar: React.FC = () => {
   const { user, signOut } = useAuth();
   const location = useLocation();
+  const [isOpen, setIsOpen] = useState(true);
 
   const getUserInitials = () => {
     if (!user?.user_metadata?.full_name) return 'U';
@@ -49,7 +58,7 @@ const AccountSidebar: React.FC = () => {
   ];
 
   return (
-    <SidebarProvider defaultOpen={true}>
+    <SidebarProvider defaultOpen={isOpen}>
       <Sidebar variant="sidebar" collapsible="offcanvas">
         <SidebarHeader className="flex flex-col items-start py-4">
           <div className="flex items-center px-4 py-2 w-full">
@@ -78,16 +87,39 @@ const AccountSidebar: React.FC = () => {
         <SidebarFooter className="border-t pt-4">
           {user && (
             <div className="px-4 py-2 mb-2">
-              <div className="flex items-center mb-2">
-                <Avatar className="h-10 w-10 mr-3">
-                  <AvatarImage src={user.user_metadata?.avatar_url} />
-                  <AvatarFallback>{getUserInitials()}</AvatarFallback>
-                </Avatar>
-                <div>
-                  <p className="text-sm font-medium">{user.user_metadata?.full_name || user.email}</p>
-                  <p className="text-xs text-muted-foreground">{user.email}</p>
-                </div>
-              </div>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <div className="flex items-center mb-2 cursor-pointer hover:bg-muted/50 p-2 rounded-md">
+                    <Avatar className="h-10 w-10 mr-3">
+                      <AvatarImage src={user.user_metadata?.avatar_url} />
+                      <AvatarFallback>{getUserInitials()}</AvatarFallback>
+                    </Avatar>
+                    <div>
+                      <p className="text-sm font-medium">{user.user_metadata?.full_name || user.email}</p>
+                      <p className="text-xs text-muted-foreground">{user.email}</p>
+                    </div>
+                  </div>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="start" className="w-56">
+                  <DropdownMenuItem asChild>
+                    <Link to="/profile" className="cursor-pointer">
+                      <User className="mr-2 h-4 w-4" />
+                      <span>Profile</span>
+                    </Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem asChild>
+                    <Link to="/settings" className="cursor-pointer">
+                      <Settings className="mr-2 h-4 w-4" />
+                      <span>Settings</span>
+                    </Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem onClick={() => signOut()} className="text-red-500 cursor-pointer">
+                    <LogOut className="mr-2 h-4 w-4" />
+                    <span>Log Out</span>
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
               <button 
                 onClick={() => signOut()} 
                 className="flex items-center w-full px-3 py-2 text-sm text-red-500 hover:bg-red-50 dark:hover:bg-red-950/20 rounded-md"
