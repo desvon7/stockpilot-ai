@@ -21,6 +21,18 @@ import { AuthProvider } from "@/contexts/AuthContext";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
 import { HelmetProvider } from "react-helmet-async";
+import Investing from "@/pages/Investing";
+import Spending from "@/pages/Spending";
+import Crypto from "@/pages/Crypto";
+import Transfers from "@/pages/Transfers";
+import Recurring from "@/pages/Recurring";
+import StockLending from "@/pages/StockLending";
+import ReportsAndStatements from "@/pages/ReportsAndStatements";
+import TaxCenter from "@/pages/TaxCenter";
+import History from "@/pages/History";
+import Settings from "@/pages/Settings";
+import Help from "@/pages/Help";
+import KeyboardShortcuts from "@/pages/KeyboardShortcuts";
 
 const queryClient = new QueryClient();
 
@@ -51,6 +63,102 @@ function App() {
                   element={
                     <ProtectedRoute>
                       <Profile />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/investing"
+                  element={
+                    <ProtectedRoute>
+                      <Investing />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/spending"
+                  element={
+                    <ProtectedRoute>
+                      <Spending />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/crypto"
+                  element={
+                    <ProtectedRoute>
+                      <Crypto />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/transfers"
+                  element={
+                    <ProtectedRoute>
+                      <Transfers />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/recurring"
+                  element={
+                    <ProtectedRoute>
+                      <Recurring />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/stock-lending"
+                  element={
+                    <ProtectedRoute>
+                      <StockLending />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/reports-and-statements"
+                  element={
+                    <ProtectedRoute>
+                      <ReportsAndStatements />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/tax-center"
+                  element={
+                    <ProtectedRoute>
+                      <TaxCenter />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/history"
+                  element={
+                    <ProtectedRoute>
+                      <History />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/settings"
+                  element={
+                    <ProtectedRoute>
+                      <Settings />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/help"
+                  element={
+                    <ProtectedRoute>
+                      <Help />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/keyboard-shortcuts"
+                  element={
+                    <ProtectedRoute>
+                      <KeyboardShortcuts />
                     </ProtectedRoute>
                   }
                 />

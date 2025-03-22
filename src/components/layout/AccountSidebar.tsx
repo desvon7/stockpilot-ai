@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { 
   User, Briefcase, DollarSign, Bitcoin, ArrowRightLeft, 
@@ -21,6 +21,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 
 const AccountSidebar: React.FC = () => {
   const { user, signOut } = useAuth();
+  const location = useLocation();
 
   // Get the user's initials for the avatar fallback
   const getUserInitials = () => {
@@ -32,6 +33,22 @@ const AccountSidebar: React.FC = () => {
     }
     return nameParts[0][0] || 'U';
   };
+
+  const menuItems = [
+    { icon: User, title: 'Profile', path: '/profile' },
+    { icon: Briefcase, title: 'Investing', path: '/investing' },
+    { icon: DollarSign, title: 'Spending', path: '/spending' },
+    { icon: Bitcoin, title: 'Crypto', path: '/crypto' },
+    { icon: ArrowRightLeft, title: 'Transfers', path: '/transfers' },
+    { icon: RefreshCw, title: 'Recurring', path: '/recurring' },
+    { icon: BookText, title: 'Stock Lending', path: '/stock-lending' },
+    { icon: FileText, title: 'Reports and statements', path: '/reports-and-statements' },
+    { icon: Calculator, title: 'Tax center', path: '/tax-center' },
+    { icon: History, title: 'History', path: '/history' },
+    { icon: Settings, title: 'Settings', path: '/settings' },
+    { icon: HelpCircle, title: 'Help', path: '/help' },
+    { icon: Keyboard, title: 'Keyboard Shortcuts', path: '/keyboard-shortcuts' }
+  ];
 
   return (
     <SidebarProvider defaultOpen={true}>
@@ -47,122 +64,16 @@ const AccountSidebar: React.FC = () => {
 
         <SidebarContent>
           <SidebarMenu>
-            <SidebarMenuItem>
-              <SidebarMenuButton asChild>
-                <Link to="/profile" className="flex items-center">
-                  <User className="mr-3" />
-                  <span>Profile</span>
-                </Link>
-              </SidebarMenuButton>
-            </SidebarMenuItem>
-
-            <SidebarMenuItem>
-              <SidebarMenuButton asChild>
-                <Link to="/investing" className="flex items-center">
-                  <Briefcase className="mr-3" />
-                  <span>Investing</span>
-                </Link>
-              </SidebarMenuButton>
-            </SidebarMenuItem>
-
-            <SidebarMenuItem>
-              <SidebarMenuButton asChild>
-                <Link to="/spending" className="flex items-center">
-                  <DollarSign className="mr-3" />
-                  <span>Spending</span>
-                </Link>
-              </SidebarMenuButton>
-            </SidebarMenuItem>
-
-            <SidebarMenuItem>
-              <SidebarMenuButton asChild>
-                <Link to="/crypto" className="flex items-center">
-                  <Bitcoin className="mr-3" />
-                  <span>Crypto</span>
-                </Link>
-              </SidebarMenuButton>
-            </SidebarMenuItem>
-
-            <SidebarMenuItem>
-              <SidebarMenuButton asChild>
-                <Link to="/transfers" className="flex items-center">
-                  <ArrowRightLeft className="mr-3" />
-                  <span>Transfers</span>
-                </Link>
-              </SidebarMenuButton>
-            </SidebarMenuItem>
-
-            <SidebarMenuItem>
-              <SidebarMenuButton asChild>
-                <Link to="/recurring" className="flex items-center">
-                  <RefreshCw className="mr-3" />
-                  <span>Recurring</span>
-                </Link>
-              </SidebarMenuButton>
-            </SidebarMenuItem>
-
-            <SidebarMenuItem>
-              <SidebarMenuButton asChild>
-                <Link to="/stock-lending" className="flex items-center">
-                  <BookText className="mr-3" />
-                  <span>Stock Lending</span>
-                </Link>
-              </SidebarMenuButton>
-            </SidebarMenuItem>
-
-            <SidebarMenuItem>
-              <SidebarMenuButton asChild>
-                <Link to="/reports" className="flex items-center">
-                  <FileText className="mr-3" />
-                  <span>Reports and statements</span>
-                </Link>
-              </SidebarMenuButton>
-            </SidebarMenuItem>
-
-            <SidebarMenuItem>
-              <SidebarMenuButton asChild>
-                <Link to="/tax" className="flex items-center">
-                  <Calculator className="mr-3" />
-                  <span>Tax center</span>
-                </Link>
-              </SidebarMenuButton>
-            </SidebarMenuItem>
-
-            <SidebarMenuItem>
-              <SidebarMenuButton asChild>
-                <Link to="/history" className="flex items-center">
-                  <History className="mr-3" />
-                  <span>History</span>
-                </Link>
-              </SidebarMenuButton>
-            </SidebarMenuItem>
-
-            <SidebarMenuItem>
-              <SidebarMenuButton asChild>
-                <Link to="/settings" className="flex items-center">
-                  <Settings className="mr-3" />
-                  <span>Settings</span>
-                </Link>
-              </SidebarMenuButton>
-            </SidebarMenuItem>
-
-            <SidebarMenuItem>
-              <SidebarMenuButton asChild>
-                <Link to="/help" className="flex items-center">
-                  <HelpCircle className="mr-3" />
-                  <span>Help</span>
-                </Link>
-              </SidebarMenuButton>
-            </SidebarMenuItem>
-
-            <SidebarMenuItem>
-              <SidebarMenuButton asChild>
-                <Link to="/keyboard-shortcuts" className="flex items-center">
-                  <Keyboard className="mr-3" />
-                  <span>Keyboard Shortcuts</span>
-                </Link>
-              </SidebarMenuButton>
-            </SidebarMenuItem>
+            {menuItems.map((item) => (
+              <SidebarMenuItem key={item.title}>
+                <SidebarMenuButton asChild isActive={location.pathname === item.path}>
+                  <Link to={item.path} className="flex items-center">
+                    <item.icon className="mr-3" />
+                    <span>{item.title}</span>
+                  </Link>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+            ))}
           </SidebarMenu>
         </SidebarContent>
 
