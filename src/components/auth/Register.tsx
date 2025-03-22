@@ -53,14 +53,14 @@ const Register = () => {
     setIsLoading(true);
     try {
       if (values.password !== values.password2) {
-        dispatch(setAlert('Passwords do not match', 'danger'));
+        dispatch(setAlert('Passwords do not match', 'danger') as any);
       } else {
         await dispatch(register({
           firstName: values.firstName,
           lastName: values.lastName,
           email: values.email,
           password: values.password
-        }));
+        }) as any);
       }
     } finally {
       setIsLoading(false);

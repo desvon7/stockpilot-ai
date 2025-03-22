@@ -49,7 +49,7 @@ export const loadUser = () => async (dispatch: any) => {
     const userData: UserData = {
       id: user.id,
       email: user.email || '',
-      firstName: profileData?.first_name || '',
+      firstName: profileData?.first_name || profileData?.full_name || '',
       lastName: profileData?.last_name || '',
       buyingPower: profileData?.buying_power || 0
     };
@@ -92,9 +92,10 @@ export const register = ({ firstName, lastName, email, password }: {
       // Create a profile for the user
       const { error: profileError } = await supabase
         .from('profiles')
-        .insert([
+        .upsert([
           { 
             id: data.user.id, 
+            full_name: `${firstName} ${lastName}`,
             first_name: firstName, 
             last_name: lastName,
             email,

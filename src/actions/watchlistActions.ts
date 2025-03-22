@@ -151,7 +151,11 @@ export const addStockToWatchlist = (watchlistId: string, symbol: string) => asyn
     // Add stock to watchlist
     const { data, error } = await supabase
       .from('watchlist_items')
-      .insert([{ watchlist_id: watchlistId, symbol }])
+      .insert({ 
+        watchlist_id: watchlistId, 
+        symbol,
+        company_name: symbol // Using symbol as company name temporarily
+      })
       .select('*, watchlists(*)')
       .single();
 

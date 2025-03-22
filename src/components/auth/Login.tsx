@@ -42,7 +42,7 @@ const Login = () => {
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
     setIsLoading(true);
     try {
-      await dispatch(login(values.email, values.password));
+      await dispatch(login(values.email, values.password) as any);
     } finally {
       setIsLoading(false);
     }
