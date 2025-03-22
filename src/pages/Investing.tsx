@@ -35,7 +35,7 @@ const Investing: React.FC = () => {
         <title>Investing | StockPilot</title>
       </Helmet>
       
-      <AccountLayout title="">
+      <AccountLayout>
         <div className="border-b border-border pb-4 mb-6">
           <div className="flex justify-between items-center mb-4">
             <nav className="flex space-x-4 text-sm font-medium">
