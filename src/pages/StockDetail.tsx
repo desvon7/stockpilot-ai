@@ -109,6 +109,23 @@ const StockDetail: React.FC = () => {
     reasoning: `${mockStockData.name} shows strong fundamentals with consistent revenue growth and expanding margins. The company's strategic investments in AI and new product lines position it well for future growth.`,
     timestamp: new Date().toISOString()
   };
+
+  // Prepare the stats object for StockStatsCard
+  const statsData = stockData ? {
+    open: stockData.open || 0,
+    previousClose: stockData.previousClose || 0,
+    dayHigh: stockData.yearHigh || 0, // Use yearHigh as dayHigh if actual dayHigh is missing
+    dayLow: stockData.yearLow || 0,   // Use yearLow as dayLow if actual dayLow is missing
+    volume: stockData.volume || 0,
+    avgVolume: stockData.avgVolume || 0
+  } : {
+    open: mockStockData.open,
+    previousClose: mockStockData.previousClose,
+    dayHigh: mockStockData.dayHigh,
+    dayLow: mockStockData.dayLow,
+    volume: mockStockData.volume,
+    avgVolume: mockStockData.avgVolume
+  };
   
   return (
     <>
@@ -191,7 +208,7 @@ const StockDetail: React.FC = () => {
               className="mb-6"
             />
             
-            <StockStatsCard stats={stockData || mockStockData} />
+            <StockStatsCard stats={statsData} />
           </div>
         </div>
       </div>

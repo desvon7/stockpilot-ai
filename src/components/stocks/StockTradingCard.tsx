@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { 
   Card, 
@@ -75,7 +74,8 @@ const StockTradingCard: React.FC<StockTradingCardProps> = ({
       return;
     }
 
-    const stockName = companyName || stockData?.name || symbol;
+    // Use the provided companyName prop instead of trying to access stockData.name
+    const stockName = companyName || symbol;
     
     if (orderType === 'buy') {
       buyStock({
