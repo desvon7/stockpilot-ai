@@ -1,26 +1,23 @@
 
 import React from 'react';
-import { Navbar } from '@/components/layout/Navbar';
-import Footer from '@/components/layout/Footer';
+import { Outlet } from 'react-router-dom';
+import Navbar from '@/components/layout/Navbar';
 import AccountSidebar from '@/components/layout/AccountSidebar';
 
-interface AccountLayoutProps {
-  children: React.ReactNode;
-  title?: string;
-}
-
-const AccountLayout: React.FC<AccountLayoutProps> = ({ children, title }) => {
+const AccountLayout = () => {
   return (
-    <div className="min-h-screen flex flex-col">
+    <div className="min-h-screen bg-background">
       <Navbar />
-      <div className="flex-grow flex mt-16">
-        <AccountSidebar />
-        <main className="flex-grow p-6">
-          {title && <h1 className="text-2xl font-bold mb-6">{title}</h1>}
-          {children}
-        </main>
+      <div className="container mx-auto px-4 py-8">
+        <div className="flex flex-col md:flex-row gap-6">
+          <div className="w-full md:w-64 lg:w-72">
+            <AccountSidebar />
+          </div>
+          <div className="flex-1">
+            <Outlet />
+          </div>
+        </div>
       </div>
-      <Footer />
     </div>
   );
 };

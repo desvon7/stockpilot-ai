@@ -46,11 +46,12 @@ export const loadUser = () => async (dispatch: any) => {
       console.error('Error fetching profile:', profileError);
     }
 
+    // Create user data object using profile data (which now has the new columns)
     const userData: UserData = {
       id: user.id,
       email: user.email || '',
-      firstName: profileData?.first_name || profileData?.full_name || '',
-      lastName: profileData?.last_name || '',
+      firstName: profileData?.first_name || profileData?.full_name?.split(' ')[0] || '',
+      lastName: profileData?.last_name || profileData?.full_name?.split(' ')[1] || '',
       buyingPower: profileData?.buying_power || 0
     };
 
@@ -89,7 +90,7 @@ export const register = ({ firstName, lastName, email, password }: {
     if (error) throw error;
 
     if (data.user) {
-      // Create a profile for the user
+      // Create a profile for the user with the new columns
       const { error: profileError } = await supabase
         .from('profiles')
         .upsert([
@@ -98,7 +99,6 @@ export const register = ({ firstName, lastName, email, password }: {
             full_name: `${firstName} ${lastName}`,
             first_name: firstName, 
             last_name: lastName,
-            email,
             buying_power: 10000 // Start with $10,000
           }
         ]);

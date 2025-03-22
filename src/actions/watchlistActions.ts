@@ -1,4 +1,3 @@
-
 import { supabase } from '@/lib/supabase';
 import { setAlert } from './alertActions';
 import {
@@ -135,26 +134,16 @@ export const deleteWatchlist = (id: string) => async (dispatch: any) => {
 // Add stock to watchlist
 export const addStockToWatchlist = (watchlistId: string, symbol: string) => async (dispatch: any) => {
   try {
-    // Check if stock already exists in watchlist
-    const { data: existingItems, error: checkError } = await supabase
-      .from('watchlist_items')
-      .select('*')
-      .eq('watchlist_id', watchlistId)
-      .eq('symbol', symbol);
-
-    if (checkError) throw checkError;
-
-    if (existingItems && existingItems.length > 0) {
-      throw new Error('Stock already exists in watchlist');
-    }
-
-    // Add stock to watchlist
+    // First get company name from stock data (mock for now)
+    const companyName = `${symbol} Company`; // In a real app, we would fetch this from an API
+    
+    // Add stock to watchlist with company name
     const { data, error } = await supabase
       .from('watchlist_items')
       .insert({ 
         watchlist_id: watchlistId, 
         symbol,
-        company_name: symbol // Using symbol as company name temporarily
+        company_name: companyName
       })
       .select('*, watchlists(*)')
       .single();
@@ -163,16 +152,18 @@ export const addStockToWatchlist = (watchlistId: string, symbol: string) => asyn
 
     dispatch({
       type: ADD_STOCK_TO_WATCHLIST,
-      payload: {
-        watchlistId,
-        item: data
-      }
+      payload: data
     });
 
     dispatch(setAlert(`${symbol} added to watchlist`, 'success'));
   } catch (err: any) {
-    console.error('Add stock to watchlist error:', err);
-    dispatch(setAlert(err.message || 'Failed to add stock to watchlist', 'danger'));
+    console.error('Add to watchlist error:', err);
+    
+    if (err.message.includes('duplicate key')) {
+      dispatch(setAlert(`${symbol} is already in this watchlist`, 'warning'));
+    } else {
+      dispatch(setAlert(err.message || 'Failed to add stock to watchlist', 'danger'));
+    }
     
     dispatch({
       type: WATCHLIST_ERROR,
