@@ -151,7 +151,7 @@ export const useRealTimeMarketData = ({
                   };
                   
                   setQuotes(prev => {
-                    const prevQuote = prev[item.S] as Quote || {};
+                    const prevQuote = prev[item.S] || {} as Quote;
                     const newQuote = {
                       ...prevQuote,
                       ...quoteUpdate
