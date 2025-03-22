@@ -1,4 +1,3 @@
-
 import { DollarSign } from "lucide-react";
 
 // Mock data for portfolio
@@ -21,7 +20,7 @@ export const mockActivities = [
     shares: 5,
     price: 250.09,
     date: '2023-06-15T10:30:00Z',
-    status: 'completed'
+    status: 'completed' as const
   },
   {
     id: '2',
@@ -31,14 +30,14 @@ export const mockActivities = [
     shares: 2,
     price: 420.16,
     date: '2023-06-14T14:45:00Z',
-    status: 'completed'
+    status: 'completed' as const
   },
   {
     id: '3',
     type: 'deposit' as const,
     amount: 2000.00,
     date: '2023-06-12T09:15:00Z',
-    status: 'completed'
+    status: 'completed' as const
   },
   {
     id: '4',
@@ -46,7 +45,7 @@ export const mockActivities = [
     symbol: 'VTI',
     amount: 32.17,
     date: '2023-06-10T08:00:00Z',
-    status: 'completed'
+    status: 'completed' as const
   },
   {
     id: '5',
@@ -56,7 +55,7 @@ export const mockActivities = [
     shares: 10,
     price: 154.84,
     date: '2023-06-08T11:20:00Z',
-    status: 'completed'
+    status: 'completed' as const
   }
 ];
 
