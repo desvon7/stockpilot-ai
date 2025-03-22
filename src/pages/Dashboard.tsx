@@ -29,16 +29,43 @@ const Dashboard: React.FC = () => {
       if (!user) return;
       
       try {
-        const { data, error } = await supabase
+        // First, check if the user has a default watchlist
+        const { data: watchlists, error: watchlistError } = await supabase
+          .from('watchlists')
+          .select('id')
+          .eq('user_id', user.id)
+          .limit(1);
+        
+        if (watchlistError) throw watchlistError;
+        
+        // If no watchlist exists, create one
+        let watchlistId;
+        if (!watchlists || watchlists.length === 0) {
+          const { data: newWatchlist, error: createError } = await supabase
+            .from('watchlists')
+            .insert({
+              name: 'Default Watchlist',
+              user_id: user.id
+            })
+            .select('id')
+            .single();
+          
+          if (createError) throw createError;
+          watchlistId = newWatchlist.id;
+        } else {
+          watchlistId = watchlists[0].id;
+        }
+        
+        // Now fetch watchlist items
+        const { data: items, error: itemsError } = await supabase
           .from('watchlist_items')
           .select('symbol')
-          .eq('user_id', user.id)
-          .limit(10);
+          .eq('watchlist_id', watchlistId);
         
-        if (error) throw error;
+        if (itemsError) throw itemsError;
         
-        if (data && data.length > 0) {
-          setWatchlistSymbols(data.map(item => item.symbol));
+        if (items && items.length > 0) {
+          setWatchlistSymbols(items.map(item => item.symbol));
         }
       } catch (error) {
         console.error('Error fetching watchlist symbols:', error);
@@ -62,12 +89,28 @@ const Dashboard: React.FC = () => {
     // If user is logged in, save to database
     if (user) {
       try {
+        // Get the user's default watchlist ID
+        const { data: watchlists, error: watchlistError } = await supabase
+          .from('watchlists')
+          .select('id')
+          .eq('user_id', user.id)
+          .limit(1);
+        
+        if (watchlistError) throw watchlistError;
+        
+        if (!watchlists || watchlists.length === 0) {
+          throw new Error('No watchlist found');
+        }
+        
+        const watchlistId = watchlists[0].id;
+        
+        // Add the symbol to the watchlist
         const { error } = await supabase
           .from('watchlist_items')
           .insert({
-            user_id: user.id,
+            watchlist_id: watchlistId,
             symbol,
-            added_at: new Date().toISOString()
+            company_name: symbol // Ideally, fetch the company name from an API
           });
         
         if (error) throw error;
