@@ -1,8 +1,12 @@
 
-// Fix the AddToWatchlist component to match how it's used in WatchlistsContainer.tsx
-import React from 'react';
+import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { Heart } from 'lucide-react';
+import { Input } from '@/components/ui/input';
+import { Heart, Plus, Loader2 } from 'lucide-react';
+import { toast } from 'sonner';
+import { addStockToWatchlist } from '@/services/portfolioService';
+import { StockSearchResult } from '@/services/stockService';
+import StockSearch from '@/components/ui/StockSearch';
 
 export interface AddToWatchlistProps {
   stockSymbol?: string;
@@ -21,32 +25,97 @@ const AddToWatchlist: React.FC<AddToWatchlistProps> = ({
   setIsAddingStock,
   refetchWatchlists
 }) => {
-  const handleAddToWatchlist = () => {
-    // Implementation would go here
-    console.log(`Adding ${stockSymbol} to watchlist`);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [symbol, setSymbol] = useState('');
+
+  const handleAddToWatchlist = async () => {
+    if (!stockSymbol || !activeWatchlistId) return;
+    
+    try {
+      setIsSubmitting(true);
+      await addStockToWatchlist(activeWatchlistId, stockSymbol);
+      toast.success(`Added ${stockSymbol} to watchlist`);
+      if (refetchWatchlists) refetchWatchlists();
+    } catch (error) {
+      console.error('Error adding stock to watchlist:', error);
+      toast.error('Failed to add stock to watchlist');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleSelectStock = async (stock: StockSearchResult) => {
+    if (!activeWatchlistId) {
+      toast.error('Please select a watchlist first');
+      return;
+    }
+    
+    try {
+      setIsSubmitting(true);
+      await addStockToWatchlist(activeWatchlistId, stock.symbol);
+      toast.success(`Added ${stock.symbol} to watchlist`);
+      if (refetchWatchlists) refetchWatchlists();
+      if (setIsAddingStock) setIsAddingStock(false);
+    } catch (error) {
+      console.error('Error adding stock to watchlist:', error);
+      toast.error('Failed to add stock to watchlist');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   // Use stockSymbol prop when it's passed directly (from StockDetail page)
-  // OR render watchlist selection UI when in Watchlists context
   if (stockSymbol) {
     return (
       <Button 
         variant="outline" 
         className="w-full"
         onClick={handleAddToWatchlist}
+        disabled={isSubmitting || !activeWatchlistId}
       >
-        <Heart className="h-4 w-4 mr-2" />
+        {isSubmitting ? (
+          <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+        ) : (
+          <Heart className="h-4 w-4 mr-2" />
+        )}
         Add to Watchlist
       </Button>
     );
   }
 
-  // This part would handle the watchlist management UI
-  // when used from WatchlistsContainer
+  // This is the watchlist management UI (used in WatchlistsContainer)
   return (
-    <div>
-      {/* Implement watchlist management UI here */}
-      {/* This would use the activeWatchlist, activeWatchlistId props */}
+    <div className="mt-6">
+      <div className="flex items-center justify-between mb-4">
+        <h3 className="text-lg font-medium">Add Stock to Watchlist</h3>
+        {isAddingStock && setIsAddingStock && (
+          <Button 
+            variant="ghost" 
+            size="sm" 
+            onClick={() => setIsAddingStock(false)}
+          >
+            Cancel
+          </Button>
+        )}
+      </div>
+      
+      {!isAddingStock && setIsAddingStock ? (
+        <Button
+          variant="outline"
+          className="w-full"
+          onClick={() => setIsAddingStock(true)}
+          disabled={!activeWatchlistId}
+        >
+          <Plus className="h-4 w-4 mr-2" />
+          Add Stock to {activeWatchlist?.name || 'Watchlist'}
+        </Button>
+      ) : (
+        <StockSearch
+          onSelectStock={handleSelectStock}
+          isLoading={isSubmitting}
+          buttonText="Add to Watchlist"
+        />
+      )}
     </div>
   );
 };
