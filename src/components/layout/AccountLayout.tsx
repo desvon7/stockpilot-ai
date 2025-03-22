@@ -1,10 +1,14 @@
 
-import React from 'react';
+import React, { ReactNode } from 'react';
 import { Outlet } from 'react-router-dom';
 import Navbar from '@/components/layout/Navbar';
 import AccountSidebar from '@/components/layout/AccountSidebar';
 
-const AccountLayout = () => {
+interface AccountLayoutProps {
+  children?: ReactNode;
+}
+
+const AccountLayout = ({ children }: AccountLayoutProps) => {
   return (
     <div className="min-h-screen bg-background">
       <Navbar />
@@ -14,7 +18,7 @@ const AccountLayout = () => {
             <AccountSidebar />
           </div>
           <div className="flex-1">
-            <Outlet />
+            {children || <Outlet />}
           </div>
         </div>
       </div>
