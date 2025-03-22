@@ -8,7 +8,7 @@ import {
   CardContent 
 } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
-import { formatCurrency, formatPercent } from '@/utils/formatters';
+import { formatCurrency, formatPercent, formatLargeCurrency } from '@/utils/formatters';
 
 interface StockData {
   symbol: string;
@@ -40,7 +40,7 @@ const StockOverviewTab: React.FC<StockOverviewTabProps> = ({ stockData }) => {
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           <div>
             <p className="text-sm text-muted-foreground">Market Cap</p>
-            <p className="font-medium">{formatCurrency(stockData.marketCap, true)}</p>
+            <p className="font-medium">{formatLargeCurrency(stockData.marketCap)}</p>
           </div>
           <div>
             <p className="text-sm text-muted-foreground">P/E Ratio</p>
