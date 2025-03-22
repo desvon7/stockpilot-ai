@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
@@ -119,12 +120,12 @@ const StockDetail: React.FC = () => {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           <div className="md:col-span-2">
             <StockHeader 
-              symbol={mockStockData.symbol}
-              name={mockStockData.name}
-              sector={mockStockData.sector}
-              price={mockStockData.price}
-              change={mockStockData.change}
-              changePercent={mockStockData.changePercent}
+              symbol={stockData?.symbol || mockStockData.symbol}
+              name={stockData?.name || mockStockData.name}
+              sector={stockData?.sector || mockStockData.sector}
+              price={stockData?.price || mockStockData.price}
+              change={stockData?.change || mockStockData.change}
+              changePercent={parseFloat(stockData?.changePercent || mockStockData.changePercent.toString())}
             />
             
             <Card className="mb-6">
@@ -151,7 +152,7 @@ const StockDetail: React.FC = () => {
               </TabsList>
               
               <TabsContent value="overview" className="mt-6">
-                <StockOverviewTab stockData={mockStockData} />
+                <StockOverviewTab stockData={stockData || mockStockData} />
               </TabsContent>
               
               <TabsContent value="financials" className="mt-6">
@@ -164,8 +165,8 @@ const StockDetail: React.FC = () => {
               
               <TabsContent value="news" className="mt-6">
                 <StockNewsTab 
-                  stockName={mockStockData.name} 
-                  symbol={mockStockData.symbol}
+                  stockName={stockData?.name || mockStockData.name} 
+                  symbol={stockData?.symbol || mockStockData.symbol}
                 />
               </TabsContent>
               
@@ -180,14 +181,17 @@ const StockDetail: React.FC = () => {
           </div>
           
           <div>
-            <StockTradingCard symbol={mockStockData.symbol} />
+            <StockTradingCard 
+              symbol={stockData?.symbol || mockStockData.symbol} 
+              companyName={stockData?.name || mockStockData.name}
+            />
             
             <AIRecommendationCard 
               recommendation={mockRecommendation}
               className="mb-6"
             />
             
-            <StockStatsCard stats={mockStockData} />
+            <StockStatsCard stats={stockData || mockStockData} />
           </div>
         </div>
       </div>
