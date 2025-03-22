@@ -9,6 +9,10 @@ import { useAuth } from '@/contexts/AuthContext';
 import AccountSidebar from '@/components/layout/AccountSidebar';
 import usePortfolio from '@/hooks/usePortfolio';
 import { mockStocks } from '@/utils/mockData';
+import PortfolioSummary from '@/components/dashboard/PortfolioSummary';
+import RecentActivity from '@/components/dashboard/RecentActivity';
+import MarketOverview from '@/components/dashboard/MarketOverview';
+import { mockPortfolioData, mockActivities, mockMarketIndices, getFormattedDateTime } from '@/utils/mockMarketData';
 
 const Dashboard: React.FC = () => {
   const { user } = useAuth();
@@ -29,6 +33,18 @@ const Dashboard: React.FC = () => {
           <div className="container mx-auto">
             <h1 className="text-2xl font-bold mb-6">Dashboard</h1>
             
+            {/* Portfolio Summary */}
+            <div className="mb-8">
+              <PortfolioSummary 
+                portfolioValue={mockPortfolioData.portfolioValue}
+                dailyChange={mockPortfolioData.dailyChange}
+                dailyChangePercent={mockPortfolioData.dailyChangePercent}
+                totalGain={mockPortfolioData.totalGain}
+                totalGainPercent={mockPortfolioData.totalGainPercent}
+                buyingPower={mockPortfolioData.buyingPower}
+              />
+            </div>
+            
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
               <div className="lg:col-span-2 space-y-6">
                 <Portfolio 
@@ -36,9 +52,14 @@ const Dashboard: React.FC = () => {
                   isLoading={isLoading} 
                 />
                 <StockOverview stocks={stocksToDisplay} />
+                <RecentActivity activities={mockActivities} />
               </div>
               
               <div className="space-y-6">
+                <MarketOverview 
+                  indices={mockMarketIndices}
+                  lastUpdated={getFormattedDateTime()}
+                />
                 <Recommendations recommendations={[]} />
               </div>
             </div>
