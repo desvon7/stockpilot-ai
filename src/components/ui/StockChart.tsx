@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { 
   LineChart, 
@@ -14,22 +13,24 @@ import {
 import { cn } from '@/lib/utils';
 import { formatCurrency } from '@/utils/formatters';
 
-type TimeRange = '1D' | '1W' | '1M' | '3M' | '1Y' | '5Y';
+export type TimeRange = '1D' | '1W' | '1M' | '3M' | '1Y' | '5Y';
 
 interface StockChartProps {
   data: Array<{ date: string; price: number }>;
   positiveChange?: boolean;
   className?: string;
   minimal?: boolean;
+  timeframe?: TimeRange;
 }
 
 const StockChart: React.FC<StockChartProps> = ({ 
   data, 
   positiveChange = true, 
   className,
-  minimal = false 
+  minimal = false,
+  timeframe = '1M'
 }) => {
-  const [timeRange, setTimeRange] = useState<TimeRange>('1M');
+  const [timeRange, setTimeRange] = useState<TimeRange>(timeframe);
   
   const getFilteredData = () => {
     const now = new Date();

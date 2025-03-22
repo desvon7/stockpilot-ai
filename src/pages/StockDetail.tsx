@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
@@ -9,7 +10,7 @@ import { Separator } from '@/components/ui/separator';
 import { useToast } from '@/components/ui/use-toast';
 import { ArrowDownIcon, ArrowUpIcon, BookmarkIcon, DollarSign, LineChart, BarChart3, Calendar, Timer, Clock, FileText, ChevronRight } from 'lucide-react';
 import { formatCurrency, formatPercent } from '@/utils/formatters';
-import StockChart from '@/components/ui/StockChart';
+import StockChart, { TimeRange } from '@/components/ui/StockChart';
 import { useQuery } from '@tanstack/react-query';
 import { fetchStockDetails } from '@/services/stockService';
 import AddToWatchlist from '@/components/watchlists/AddToWatchlist';
@@ -29,7 +30,7 @@ interface AIRecommendation {
 const StockDetail: React.FC = () => {
   const { symbol } = useParams<{ symbol: string }>();
   const { toast } = useToast();
-  const [timeframe, setTimeframe] = useState<'1D' | '1W' | '1M' | '3M' | '1Y' | '5Y'>('1M');
+  const [timeframe, setTimeframe] = useState<TimeRange>('1M');
   
   const { data: stockData, isLoading } = useQuery({
     queryKey: ['stock-details', symbol],

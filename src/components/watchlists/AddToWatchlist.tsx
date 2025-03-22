@@ -6,9 +6,23 @@ import { useToast } from '@/components/ui/use-toast';
 
 interface AddToWatchlistProps {
   stockSymbol: string;
+  // Expanded props to match what WatchlistsContainer is passing
+  activeWatchlist?: any;
+  activeWatchlistId?: string | null;
+  isAddingStock?: boolean;
+  setIsAddingStock?: React.Dispatch<React.SetStateAction<boolean>>;
+  refetchWatchlists?: () => void;
 }
 
-const AddToWatchlist: React.FC<AddToWatchlistProps> = ({ stockSymbol }) => {
+const AddToWatchlist: React.FC<AddToWatchlistProps> = ({ 
+  stockSymbol,
+  // Optionally use the expanded props
+  activeWatchlist,
+  activeWatchlistId,
+  isAddingStock,
+  setIsAddingStock,
+  refetchWatchlists
+}) => {
   const { toast } = useToast();
 
   const handleAddToWatchlist = () => {
@@ -16,6 +30,11 @@ const AddToWatchlist: React.FC<AddToWatchlistProps> = ({ stockSymbol }) => {
       title: "Added to Watchlist",
       description: `${stockSymbol} has been added to your watchlist`,
     });
+    
+    // If refetchWatchlists was provided, call it to update the watchlists
+    if (refetchWatchlists) {
+      refetchWatchlists();
+    }
   };
 
   return (
