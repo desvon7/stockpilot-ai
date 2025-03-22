@@ -7,10 +7,12 @@ import StockOverview from '@/components/dashboard/StockOverview';
 import Recommendations from '@/components/dashboard/Recommendations';
 import { useAuth } from '@/contexts/AuthContext';
 import AccountSidebar from '@/components/layout/AccountSidebar';
+import usePortfolio from '@/hooks/usePortfolio';
 
 const Dashboard: React.FC = () => {
   const { user } = useAuth();
   const [selectedStock, setSelectedStock] = useState<string | null>(null);
+  const { portfolio, isLoading } = usePortfolio();
 
   return (
     <div className="min-h-screen flex flex-col bg-background">
@@ -23,12 +25,15 @@ const Dashboard: React.FC = () => {
             
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
               <div className="lg:col-span-2 space-y-6">
-                <Portfolio onStockSelect={setSelectedStock} />
+                <Portfolio 
+                  portfolio={portfolio} 
+                  isLoading={isLoading} 
+                />
                 {selectedStock && <StockOverview symbol={selectedStock} />}
               </div>
               
               <div className="space-y-6">
-                <Recommendations />
+                <Recommendations recommendations={[]} />
               </div>
             </div>
           </div>
