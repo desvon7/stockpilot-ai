@@ -28,14 +28,14 @@ const NewsCard: React.FC<NewsCardProps> = ({ article, onSave, className }) => {
   
   // Determine sentiment status
   const getSentimentColor = (sentiment?: number) => {
-    if (!sentiment) return 'text-muted-foreground';
+    if (sentiment === undefined || sentiment === null) return 'text-muted-foreground';
     if (sentiment > 0.25) return 'text-green-500 dark:text-green-400';
     if (sentiment < -0.25) return 'text-red-500 dark:text-red-400';
     return 'text-muted-foreground';
   };
   
   const getSentimentIcon = (sentiment?: number) => {
-    if (!sentiment) return null;
+    if (sentiment === undefined || sentiment === null) return null;
     return sentiment > 0 ? <ThumbsUp className="h-4 w-4 mr-1" /> : <ThumbsDown className="h-4 w-4 mr-1" />;
   };
   
@@ -47,6 +47,11 @@ const NewsCard: React.FC<NewsCardProps> = ({ article, onSave, className }) => {
             src={article.imageUrl} 
             alt={article.title} 
             className="w-full h-full object-cover transition-transform hover:scale-105"
+            onError={(e) => {
+              // Hide image container if image fails to load
+              (e.target as HTMLImageElement).style.display = 'none';
+              (e.target as HTMLImageElement).parentElement!.style.display = 'none';
+            }}
           />
         </div>
       )}
@@ -55,10 +60,10 @@ const NewsCard: React.FC<NewsCardProps> = ({ article, onSave, className }) => {
           <Badge variant="outline" className="font-medium">
             {article.source}
           </Badge>
-          {article.sentiment !== undefined && (
+          {article.sentiment !== undefined && article.sentiment !== null && (
             <div className={cn("flex items-center text-sm", getSentimentColor(article.sentiment))}>
               {getSentimentIcon(article.sentiment)}
-              <span>{Math.abs(article.sentiment).toFixed(2)}</span>
+              <span>{Math.abs(Number(article.sentiment)).toFixed(2)}</span>
             </div>
           )}
         </div>
