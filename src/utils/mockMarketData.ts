@@ -15,7 +15,7 @@ export const mockPortfolioData = {
 export const mockActivities = [
   {
     id: '1',
-    type: 'buy',
+    type: 'buy' as const,
     symbol: 'AAPL',
     amount: 1250.45,
     shares: 5,
@@ -25,7 +25,7 @@ export const mockActivities = [
   },
   {
     id: '2',
-    type: 'sell',
+    type: 'sell' as const,
     symbol: 'MSFT',
     amount: 840.32,
     shares: 2,
@@ -35,14 +35,14 @@ export const mockActivities = [
   },
   {
     id: '3',
-    type: 'deposit',
+    type: 'deposit' as const,
     amount: 2000.00,
     date: '2023-06-12T09:15:00Z',
     status: 'completed'
   },
   {
     id: '4',
-    type: 'dividend',
+    type: 'dividend' as const,
     symbol: 'VTI',
     amount: 32.17,
     date: '2023-06-10T08:00:00Z',
@@ -50,7 +50,7 @@ export const mockActivities = [
   },
   {
     id: '5',
-    type: 'buy',
+    type: 'buy' as const,
     symbol: 'GOOGL',
     amount: 1548.36,
     shares: 10,
