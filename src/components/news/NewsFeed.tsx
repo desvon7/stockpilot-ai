@@ -7,7 +7,7 @@ import NewsLoadingState from './states/NewsLoadingState';
 import NewsErrorState from './states/NewsErrorState';
 import NewsEmptyState from './states/NewsEmptyState';
 import NewsSourceInfo from './NewsSourceInfo';
-import useStockNews from '@/hooks/useStockNews';
+import { useStockNews } from '@/hooks/useStockNews';
 import { Button } from '@/components/ui/button';
 
 interface NewsFeedProps {
@@ -29,21 +29,21 @@ const NewsFeed: React.FC<NewsFeedProps> = ({
 }) => {
   const [activeCategory, setActiveCategory] = useState<string>(categories[0] || 'general');
   const [viewAll, setViewAll] = useState(false);
+  const [searchInput, setSearchInput] = useState('');
   
   // Use the stock news hook for fetching data
   const {
-    data: newsResponse,
+    news,
     isLoading,
     error,
     refetch,
     newsSource
-  } = useStockNews({ symbols, category: activeCategory });
+  } = useStockNews(symbols, [activeCategory]);
   
   // Calculate number of items to show
   const displayCount = viewAll ? undefined : maxItems;
   
   // Filter and slice the news items
-  const news = newsResponse?.news || [];
   const displayedNews = news.slice(0, displayCount);
   
   // Calculate source distribution
@@ -57,6 +57,11 @@ const NewsFeed: React.FC<NewsFeedProps> = ({
   
   const sourceCount = getSourceCount();
   
+  // Function to clear all category filters
+  const clearAllCategories = () => {
+    setActiveCategory(categories[0] || 'general');
+  };
+  
   // Show the appropriate state based on the query status
   if (isLoading) {
     return <NewsLoadingState isFullPage={false} />;
@@ -67,7 +72,11 @@ const NewsFeed: React.FC<NewsFeedProps> = ({
   }
   
   if (!news.length) {
-    return <NewsEmptyState />;
+    return <NewsEmptyState 
+      searchInput={searchInput} 
+      categories={[activeCategory]} 
+      clearAllCategories={clearAllCategories} 
+    />;
   }
   
   return (
@@ -94,14 +103,16 @@ const NewsFeed: React.FC<NewsFeedProps> = ({
       {showFilters && categories.length > 1 && (
         <NewsFilterBar 
           categories={categories}
-          activeCategory={activeCategory}
-          setActiveCategory={setActiveCategory}
+          onSelectCategory={(category) => setActiveCategory(category)}
+          activeFilter={activeCategory}
         />
       )}
       
       <NewsGrid 
         news={displayedNews} 
-        isCompact={isCompact} 
+        displayedNews={displayedNews}
+        isLoading={false}
+        compact={isCompact} 
       />
       
       {news.length > maxItems && !viewAll && (

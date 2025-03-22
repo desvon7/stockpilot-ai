@@ -58,7 +58,6 @@ const StockTradingCard: React.FC<StockTradingCardProps> = ({
               currentPrice={currentPrice}
               availableShares={ownedStock?.shares}
               onOrderSuccess={handleOrderSuccess}
-              onInsufficientFunds={handleInsufficientFunds}
               executionType="market"
             />
           </TabsContent>
@@ -69,7 +68,6 @@ const StockTradingCard: React.FC<StockTradingCardProps> = ({
               currentPrice={currentPrice}
               availableShares={ownedStock?.shares}
               onOrderSuccess={handleOrderSuccess}
-              onInsufficientFunds={handleInsufficientFunds}
               executionType="limit"
             />
           </TabsContent>
