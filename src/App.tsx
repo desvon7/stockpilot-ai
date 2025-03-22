@@ -1,4 +1,3 @@
-
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { ThemeProvider } from "@/components/theme-provider";
 import Dashboard from "@/pages/Dashboard";
@@ -43,13 +42,13 @@ function App() {
         <HelmetProvider>
           <BrowserRouter>
             <AuthProvider>
-              <MobileMenu />
               <Routes>
-                <Route path="/" element={<Index />} />
-                <Route path="/auth" element={<Auth />} />
-                <Route path="/reset-password" element={<ResetPassword />} />
-                <Route path="/update-password" element={<UpdatePassword />} />
-                <Route path="/home" element={<Home />} />
+                <Route path="/" element={<Index />}>
+                  <Route index element={<Home />} />
+                  <Route path="/auth" element={<Auth />} />
+                  <Route path="/reset-password" element={<ResetPassword />} />
+                  <Route path="/update-password" element={<UpdatePassword />} />
+                </Route>
                 <Route
                   path="/dashboard"
                   element={
@@ -212,6 +211,7 @@ function App() {
                 />
                 <Route path="*" element={<NotFound />} />
               </Routes>
+              <MobileMenu />
               <Toaster />
             </AuthProvider>
           </BrowserRouter>
