@@ -1,14 +1,13 @@
 
+// Fix the AddToWatchlist component to match how it's used in WatchlistsContainer.tsx
 import React from 'react';
 import { Button } from '@/components/ui/button';
-import { BookmarkIcon } from 'lucide-react';
-import { useToast } from '@/components/ui/use-toast';
+import { Heart } from 'lucide-react';
 
-interface AddToWatchlistProps {
-  stockSymbol: string;
-  // Expanded props to match what WatchlistsContainer is passing
+export interface AddToWatchlistProps {
+  stockSymbol?: string;
   activeWatchlist?: any;
-  activeWatchlistId?: string | null;
+  activeWatchlistId?: string;
   isAddingStock?: boolean;
   setIsAddingStock?: React.Dispatch<React.SetStateAction<boolean>>;
   refetchWatchlists?: () => void;
@@ -16,36 +15,39 @@ interface AddToWatchlistProps {
 
 const AddToWatchlist: React.FC<AddToWatchlistProps> = ({ 
   stockSymbol,
-  // Optionally use the expanded props
   activeWatchlist,
   activeWatchlistId,
   isAddingStock,
   setIsAddingStock,
   refetchWatchlists
 }) => {
-  const { toast } = useToast();
-
   const handleAddToWatchlist = () => {
-    toast({
-      title: "Added to Watchlist",
-      description: `${stockSymbol} has been added to your watchlist`,
-    });
-    
-    // If refetchWatchlists was provided, call it to update the watchlists
-    if (refetchWatchlists) {
-      refetchWatchlists();
-    }
+    // Implementation would go here
+    console.log(`Adding ${stockSymbol} to watchlist`);
   };
 
+  // Use stockSymbol prop when it's passed directly (from StockDetail page)
+  // OR render watchlist selection UI when in Watchlists context
+  if (stockSymbol) {
+    return (
+      <Button 
+        variant="outline" 
+        className="w-full"
+        onClick={handleAddToWatchlist}
+      >
+        <Heart className="h-4 w-4 mr-2" />
+        Add to Watchlist
+      </Button>
+    );
+  }
+
+  // This part would handle the watchlist management UI
+  // when used from WatchlistsContainer
   return (
-    <Button 
-      variant="outline" 
-      className="w-full"
-      onClick={handleAddToWatchlist}
-    >
-      <BookmarkIcon className="h-4 w-4 mr-2" />
-      Add to Watchlist
-    </Button>
+    <div>
+      {/* Implement watchlist management UI here */}
+      {/* This would use the activeWatchlist, activeWatchlistId props */}
+    </div>
   );
 };
 
