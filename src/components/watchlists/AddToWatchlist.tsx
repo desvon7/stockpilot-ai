@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Heart, Plus, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
-import { addStockToWatchlist } from '@/services/portfolioService';
+import { addToWatchlist } from '@/services/portfolioService';
 import { StockSearchResult } from '@/services/stockService';
 import StockSearch from '@/components/ui/StockSearch';
 
@@ -33,7 +33,7 @@ const AddToWatchlist: React.FC<AddToWatchlistProps> = ({
     
     try {
       setIsSubmitting(true);
-      await addStockToWatchlist(activeWatchlistId, stockSymbol);
+      await addToWatchlist(activeWatchlistId, stockSymbol, `${stockSymbol} Company`);
       toast.success(`Added ${stockSymbol} to watchlist`);
       if (refetchWatchlists) refetchWatchlists();
     } catch (error) {
@@ -52,7 +52,7 @@ const AddToWatchlist: React.FC<AddToWatchlistProps> = ({
     
     try {
       setIsSubmitting(true);
-      await addStockToWatchlist(activeWatchlistId, stock.symbol);
+      await addToWatchlist(activeWatchlistId, stock.symbol, stock.name || `${stock.symbol} Company`);
       toast.success(`Added ${stock.symbol} to watchlist`);
       if (refetchWatchlists) refetchWatchlists();
       if (setIsAddingStock) setIsAddingStock(false);
