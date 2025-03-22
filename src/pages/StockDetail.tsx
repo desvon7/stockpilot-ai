@@ -1,241 +1,411 @@
 
-import React from 'react';
-import { useParams, Link, useNavigate } from 'react-router-dom';
-import { Navbar } from '@/components/layout/Navbar';
-import Footer from '@/components/layout/Footer';
+import React, { useState } from 'react';
+import { useParams } from 'react-router-dom';
+import { Helmet } from 'react-helmet-async';
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Separator } from '@/components/ui/separator';
+import { useToast } from '@/components/ui/use-toast';
+import { ArrowDownIcon, ArrowUpIcon, BookmarkIcon, DollarSign, LineChart, BarChart3, Calendar, Timer, Clock, FileText, ChevronRight } from 'lucide-react';
+import { formatCurrency, formatPercent } from '@/utils/formatters';
 import StockChart from '@/components/ui/StockChart';
-import { stockData, generateChartData } from '@/utils/mockData';
-import { 
-  formatCurrency, 
-  formatPercent, 
-  formatLargeCurrency, 
-  formatNumber,
-  getColorByChange, 
-  getArrowByChange 
-} from '@/utils/formatters';
-import { ChevronLeft, Plus, Minus, Info, TrendingUp, BarChart4, DollarSign, Users } from 'lucide-react';
+import { useQuery } from '@tanstack/react-query';
+import { fetchStockDetails } from '@/services/stockService';
+import AddToWatchlist from '@/components/watchlists/AddToWatchlist';
+import AIRecommendationCard from '@/components/ai/AIRecommendationCard';
 
 const StockDetail: React.FC = () => {
   const { symbol } = useParams<{ symbol: string }>();
-  const navigate = useNavigate();
+  const { toast } = useToast();
+  const [timeframe, setTimeframe] = useState<'1D' | '1W' | '1M' | '3M' | '1Y' | '5Y'>('1M');
   
-  const stock = stockData.find(s => s.symbol === symbol);
+  const { data: stockData, isLoading } = useQuery({
+    queryKey: ['stock-details', symbol],
+    queryFn: () => fetchStockDetails(symbol || ''),
+    enabled: !!symbol
+  });
   
-  if (!stock) {
-    return (
-      <div className="min-h-screen flex flex-col">
-        <Navbar />
-        <main className="flex-grow pt-24 pb-16">
-          <div className="container mx-auto px-4 text-center">
-            <h1 className="text-3xl font-bold mb-4">Stock Not Found</h1>
-            <p className="text-muted-foreground mb-6">
-              We couldn't find any stock with the symbol "{symbol}".
-            </p>
-            <button
-              onClick={() => navigate(-1)}
-              className="bg-primary text-primary-foreground px-4 py-2 rounded-md"
-            >
-              Go Back
-            </button>
-          </div>
-        </main>
-        <Footer />
-      </div>
-    );
-  }
+  // Mock data since the API might not be connected
+  const mockStockData = {
+    symbol: symbol || 'AAPL',
+    name: symbol === 'AAPL' ? 'Apple Inc.' : 
+           symbol === 'MSFT' ? 'Microsoft Corporation' : 
+           symbol === 'GOOGL' ? 'Alphabet Inc.' : 
+           symbol === 'TSLA' ? 'Tesla, Inc.' : 
+           symbol === 'NVDA' ? 'NVIDIA Corporation' : 'Stock Company',
+    price: 187.68,
+    change: 1.84,
+    changePercent: 0.99,
+    open: 186.12,
+    previousClose: 185.84,
+    dayHigh: 188.91,
+    dayLow: 185.83,
+    volume: 54876321,
+    avgVolume: 58452136,
+    marketCap: 2914736000000,
+    peRatio: 32.11,
+    dividend: 0.24,
+    dividendYield: 0.51,
+    eps: 5.84,
+    beta: 1.28,
+    yearHigh: 194.48,
+    yearLow: 124.17,
+    sector: 'Technology',
+    industry: 'Consumer Electronics',
+  };
   
-  const chartData = generateChartData(180, 0.02, stock.change > 0 ? 0.001 : -0.001);
+  const mockChartData = Array.from({ length: 100 }, (_, i) => ({
+    date: new Date(Date.now() - (100 - i) * 86400000).toISOString().split('T')[0],
+    value: mockStockData.price - 10 + Math.random() * 20
+  }));
+  
+  const mockNews = [
+    {
+      id: '1',
+      title: `${mockStockData.name} Reports Strong Q3 Earnings`,
+      summary: `${mockStockData.name} exceeded analyst expectations with impressive revenue growth and strong margins.`,
+      source: 'Market Watch',
+      date: '2023-06-09',
+      url: '#',
+    },
+    {
+      id: '2',
+      title: `New Product Launch Boosts ${mockStockData.symbol} Outlook`,
+      summary: 'Analysts raise price targets following successful product launch event.',
+      source: 'Bloomberg',
+      date: '2023-06-08',
+      url: '#',
+    },
+    {
+      id: '3',
+      title: `${mockStockData.sector} Sector Showing Growth Despite Market Headwinds`,
+      summary: `${mockStockData.name} and peers demonstrate resilience in challenging economic environment.`,
+      source: 'Financial Times',
+      date: '2023-06-07',
+      url: '#',
+    },
+  ];
+  
+  const mockRecommendation = {
+    symbol: mockStockData.symbol,
+    name: mockStockData.name,
+    recommendation: 'buy',
+    confidence: 0.87,
+    priceTarget: mockStockData.price * 1.15,
+    currentPrice: mockStockData.price,
+    reasoning: `${mockStockData.name} shows strong fundamentals with consistent revenue growth and expanding margins. The company's strategic investments in AI and new product lines position it well for future growth.`
+  };
+  
+  const handleAddToWatchlist = () => {
+    toast({
+      title: "Added to Watchlist",
+      description: `${symbol} has been added to your watchlist`,
+    });
+  };
+  
+  const handleBuyStock = () => {
+    toast({
+      title: "Order Placed",
+      description: `Your order to buy ${symbol} has been placed`,
+    });
+  };
   
   return (
-    <div className="min-h-screen flex flex-col">
-      <Navbar />
-      <main className="flex-grow pt-20 pb-16">
-        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="mb-6">
-            <button
-              onClick={() => navigate(-1)}
-              className="flex items-center gap-1 text-muted-foreground hover:text-foreground transition-colors"
-            >
-              <ChevronLeft size={18} />
-              <span>Back</span>
-            </button>
-          </div>
-          
-          <div className="glass-card rounded-lg p-6 mb-8">
-            <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
-              <div className="flex items-center gap-4">
-                {stock.logo && (
-                  <img 
-                    src={stock.logo} 
-                    alt={stock.name} 
-                    className="w-12 h-12 object-contain bg-white p-1 rounded-md"
-                  />
-                )}
-                <div>
-                  <div className="flex items-center gap-2">
-                    <h1 className="text-3xl font-bold">{stock.symbol}</h1>
-                    <span className="text-muted-foreground text-lg">•</span>
-                    <span className="text-lg text-muted-foreground">{stock.name}</span>
-                  </div>
-                  <p className="text-muted-foreground">{stock.sector}</p>
-                </div>
-              </div>
-              
-              <div className="flex flex-col items-end">
-                <div className="text-3xl font-bold">{formatCurrency(stock.price)}</div>
-                <div className={getColorByChange(stock.change)}>
-                  {getArrowByChange(stock.change)} {formatCurrency(stock.change)} ({formatPercent(stock.changePercent)})
-                </div>
-              </div>
-            </div>
-            
-            <div className="mb-8">
-              <StockChart data={chartData} positiveChange={stock.change > 0} />
-            </div>
-            
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
-              <div className="bg-muted/30 p-4 rounded-lg">
-                <div className="flex items-center gap-2 text-muted-foreground mb-1">
-                  <DollarSign size={16} />
-                  <span className="text-sm">Market Cap</span>
-                </div>
-                <div className="font-medium">{formatLargeCurrency(stock.marketCap)}</div>
-              </div>
-              
-              <div className="bg-muted/30 p-4 rounded-lg">
-                <div className="flex items-center gap-2 text-muted-foreground mb-1">
-                  <BarChart4 size={16} />
-                  <span className="text-sm">Volume</span>
-                </div>
-                <div className="font-medium">{formatNumber(stock.volume)}</div>
-              </div>
-              
-              <div className="bg-muted/30 p-4 rounded-lg">
-                <div className="flex items-center gap-2 text-muted-foreground mb-1">
-                  <TrendingUp size={16} />
-                  <span className="text-sm">P/E Ratio</span>
-                </div>
-                <div className="font-medium">{stock.pe.toFixed(2)}</div>
-              </div>
-              
-              <div className="bg-muted/30 p-4 rounded-lg">
-                <div className="flex items-center gap-2 text-muted-foreground mb-1">
-                  <Users size={16} />
-                  <span className="text-sm">Dividend</span>
-                </div>
-                <div className="font-medium">{stock.dividend}%</div>
-              </div>
-            </div>
-            
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+    <>
+      <Helmet>
+        <title>{symbol ? `${symbol} Stock | StockPilot` : 'Stock Details | StockPilot'}</title>
+      </Helmet>
+      
+      <div className="container mx-auto px-4 pt-24 pb-16">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div className="md:col-span-2">
+            <div className="flex items-start justify-between mb-6">
               <div>
-                <h2 className="text-xl font-semibold mb-3">About {stock.name}</h2>
-                <p className="text-muted-foreground mb-4">
-                  {stock.name} is a leading company in the {stock.sector} sector, known for innovative products and strong market presence. The company has consistently shown growth and maintains a competitive edge in its industry.
-                </p>
-                <div className="space-y-2">
-                  <div className="flex justify-between">
-                    <span className="text-muted-foreground">52-Week Range</span>
-                    <span className="font-medium">{formatCurrency(stock.price * 0.8)} - {formatCurrency(stock.price * 1.2)}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-muted-foreground">Avg. Volume</span>
-                    <span className="font-medium">{formatNumber(stock.volume * 0.9)}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-muted-foreground">EPS</span>
-                    <span className="font-medium">{formatCurrency(stock.price / stock.pe)}</span>
-                  </div>
+                <div className="flex items-center gap-2">
+                  <h1 className="text-3xl font-bold">{mockStockData.symbol}</h1>
+                  <Badge variant="outline" className="text-xs">
+                    {mockStockData.sector}
+                  </Badge>
                 </div>
+                <p className="text-lg text-muted-foreground">{mockStockData.name}</p>
               </div>
-              
-              <div className="glass bg-muted/5 rounded-lg p-5">
-                <h2 className="text-xl font-semibold mb-3">AI Analysis</h2>
-                <div className="space-y-4">
-                  <div>
-                    <div className="flex justify-between mb-1">
-                      <span className="text-sm text-muted-foreground">Sentiment</span>
-                      <span className="text-sm font-medium text-success">Bullish</span>
-                    </div>
-                    <div className="h-2 bg-muted rounded-full">
-                      <div className="h-2 bg-success rounded-full" style={{ width: '75%' }}></div>
-                    </div>
-                  </div>
-                  
-                  <div>
-                    <div className="flex justify-between mb-1">
-                      <span className="text-sm text-muted-foreground">Risk Level</span>
-                      <span className="text-sm font-medium text-warning">Moderate</span>
-                    </div>
-                    <div className="h-2 bg-muted rounded-full">
-                      <div className="h-2 bg-warning rounded-full" style={{ width: '50%' }}></div>
-                    </div>
-                  </div>
-                  
-                  <div>
-                    <div className="flex justify-between mb-1">
-                      <span className="text-sm text-muted-foreground">Volatility</span>
-                      <span className="text-sm font-medium text-info">Low</span>
-                    </div>
-                    <div className="h-2 bg-muted rounded-full">
-                      <div className="h-2 bg-info rounded-full" style={{ width: '30%' }}></div>
-                    </div>
-                  </div>
-                  
-                  <div className="pt-4 mt-4 border-t border-border">
-                    <p className="text-sm">
-                      Our AI predicts a potential {stock.change > 0 ? 'uptrend' : 'downtrend'} for {stock.symbol} based on technical indicators, sentiment analysis, and market conditions.
-                    </p>
-                  </div>
+              <div className="text-right">
+                <div className="text-2xl font-bold">{formatCurrency(mockStockData.price)}</div>
+                <div className={`flex items-center justify-end ${mockStockData.change > 0 ? 'text-green-500' : 'text-red-500'}`}>
+                  {mockStockData.change > 0 ? (
+                    <ArrowUpIcon className="h-4 w-4 mr-1" />
+                  ) : (
+                    <ArrowDownIcon className="h-4 w-4 mr-1" />
+                  )}
+                  <span>{formatCurrency(Math.abs(mockStockData.change))}</span>
+                  <span className="ml-1">({formatPercent(Math.abs(mockStockData.changePercent / 100))})</span>
                 </div>
               </div>
             </div>
             
-            <div className="mt-8 pt-6 border-t border-border flex flex-col sm:flex-row gap-4 justify-center">
-              <button className="flex-1 bg-success text-success-foreground hover:bg-success/90 rounded-lg px-4 py-3 font-medium flex items-center justify-center gap-2 transition-all">
-                <Plus size={18} />
-                Buy {stock.symbol}
-              </button>
-              <button className="flex-1 bg-destructive text-destructive-foreground hover:bg-destructive/90 rounded-lg px-4 py-3 font-medium flex items-center justify-center gap-2 transition-all">
-                <Minus size={18} />
-                Sell {stock.symbol}
-              </button>
-            </div>
+            <Card className="mb-6">
+              <CardContent className="p-0">
+                <div className="p-4 flex items-center justify-between">
+                  <div className="flex space-x-2">
+                    <Button
+                      variant={timeframe === '1D' ? 'default' : 'outline'}
+                      size="sm"
+                      onClick={() => setTimeframe('1D')}
+                    >
+                      1D
+                    </Button>
+                    <Button
+                      variant={timeframe === '1W' ? 'default' : 'outline'}
+                      size="sm"
+                      onClick={() => setTimeframe('1W')}
+                    >
+                      1W
+                    </Button>
+                    <Button
+                      variant={timeframe === '1M' ? 'default' : 'outline'}
+                      size="sm"
+                      onClick={() => setTimeframe('1M')}
+                    >
+                      1M
+                    </Button>
+                    <Button
+                      variant={timeframe === '3M' ? 'default' : 'outline'}
+                      size="sm"
+                      onClick={() => setTimeframe('3M')}
+                    >
+                      3M
+                    </Button>
+                    <Button
+                      variant={timeframe === '1Y' ? 'default' : 'outline'}
+                      size="sm"
+                      onClick={() => setTimeframe('1Y')}
+                    >
+                      1Y
+                    </Button>
+                    <Button
+                      variant={timeframe === '5Y' ? 'default' : 'outline'}
+                      size="sm"
+                      onClick={() => setTimeframe('5Y')}
+                    >
+                      5Y
+                    </Button>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <Button variant="outline" size="sm">
+                      <LineChart className="h-4 w-4 mr-2" />
+                      Line
+                    </Button>
+                    <Button variant="outline" size="sm">
+                      <BarChart3 className="h-4 w-4 mr-2" />
+                      Candle
+                    </Button>
+                  </div>
+                </div>
+                <div className="h-64 md:h-80">
+                  <StockChart data={mockChartData} timeframe={timeframe} />
+                </div>
+              </CardContent>
+            </Card>
+            
+            <Tabs defaultValue="overview" className="mb-6">
+              <TabsList className="grid w-full grid-cols-4">
+                <TabsTrigger value="overview">Overview</TabsTrigger>
+                <TabsTrigger value="financials">Financials</TabsTrigger>
+                <TabsTrigger value="news">News</TabsTrigger>
+                <TabsTrigger value="analysis">Analysis</TabsTrigger>
+              </TabsList>
+              
+              <TabsContent value="overview" className="mt-6">
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Company Overview</CardTitle>
+                    <CardDescription>Key metrics and information about {mockStockData.name}</CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                      <div>
+                        <p className="text-sm text-muted-foreground">Market Cap</p>
+                        <p className="font-medium">{formatCurrency(mockStockData.marketCap, true)}</p>
+                      </div>
+                      <div>
+                        <p className="text-sm text-muted-foreground">P/E Ratio</p>
+                        <p className="font-medium">{mockStockData.peRatio}</p>
+                      </div>
+                      <div>
+                        <p className="text-sm text-muted-foreground">EPS</p>
+                        <p className="font-medium">{formatCurrency(mockStockData.eps)}</p>
+                      </div>
+                      <div>
+                        <p className="text-sm text-muted-foreground">Dividend Yield</p>
+                        <p className="font-medium">{formatPercent(mockStockData.dividendYield / 100)}</p>
+                      </div>
+                      <div>
+                        <p className="text-sm text-muted-foreground">Beta</p>
+                        <p className="font-medium">{mockStockData.beta}</p>
+                      </div>
+                      <div>
+                        <p className="text-sm text-muted-foreground">52w High</p>
+                        <p className="font-medium">{formatCurrency(mockStockData.yearHigh)}</p>
+                      </div>
+                      <div>
+                        <p className="text-sm text-muted-foreground">52w Low</p>
+                        <p className="font-medium">{formatCurrency(mockStockData.yearLow)}</p>
+                      </div>
+                      <div>
+                        <p className="text-sm text-muted-foreground">Volume</p>
+                        <p className="font-medium">{mockStockData.volume.toLocaleString()}</p>
+                      </div>
+                    </div>
+                    
+                    <Separator className="my-6" />
+                    
+                    <div>
+                      <h3 className="font-medium mb-2">About {mockStockData.name}</h3>
+                      <p className="text-muted-foreground">
+                        {mockStockData.name} is a leading company in the {mockStockData.industry} industry, 
+                        part of the broader {mockStockData.sector} sector. The company is known for its 
+                        innovative products and services, with a strong focus on research and development.
+                      </p>
+                    </div>
+                  </CardContent>
+                </Card>
+              </TabsContent>
+              
+              <TabsContent value="financials" className="mt-6">
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Financial Overview</CardTitle>
+                    <CardDescription>Key financial metrics and reports</CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="flex flex-col items-center justify-center py-8 text-center">
+                      <p className="text-muted-foreground">
+                        Financial data will be loaded when this tab is selected
+                      </p>
+                    </div>
+                  </CardContent>
+                </Card>
+              </TabsContent>
+              
+              <TabsContent value="news" className="mt-6">
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Latest News</CardTitle>
+                    <CardDescription>Recent news and announcements about {mockStockData.name}</CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-4">
+                      {mockNews.map((news) => (
+                        <div key={news.id} className="border-b pb-4 last:border-0 last:pb-0">
+                          <div className="flex justify-between items-start mb-1">
+                            <h3 className="font-medium">{news.title}</h3>
+                            <Badge variant="outline" className="ml-2 whitespace-nowrap">
+                              {news.source}
+                            </Badge>
+                          </div>
+                          <p className="text-sm text-muted-foreground mb-2">{news.summary}</p>
+                          <div className="flex justify-between items-center text-xs text-muted-foreground">
+                            <div className="flex items-center">
+                              <Calendar className="h-3 w-3 mr-1" />
+                              <span>{news.date}</span>
+                            </div>
+                            <a 
+                              href={news.url} 
+                              className="text-primary hover:underline flex items-center"
+                            >
+                              Read more <ChevronRight className="h-3 w-3 ml-1" />
+                            </a>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </CardContent>
+                </Card>
+              </TabsContent>
+              
+              <TabsContent value="analysis" className="mt-6">
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Analyst Ratings</CardTitle>
+                    <CardDescription>Wall Street analyst ratings and price targets</CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="flex flex-col items-center justify-center py-8 text-center">
+                      <p className="text-muted-foreground">
+                        Analyst data will be loaded when this tab is selected
+                      </p>
+                    </div>
+                  </CardContent>
+                </Card>
+              </TabsContent>
+            </Tabs>
           </div>
           
-          <div className="glass-card rounded-lg p-6">
-            <div className="flex items-center gap-2 mb-4">
-              <Info size={18} className="text-primary" />
-              <h2 className="text-xl font-semibold">Related Information</h2>
-            </div>
-            <p className="text-muted-foreground mb-6">
-              Disclaimer: The information provided is for informational purposes only and does not constitute investment advice. All stock data is simulated for demonstration purposes.
-            </p>
-            <div className="flex flex-wrap gap-4">
-              <Link 
-                to={`/stocks/${stock.symbol}/news`}
-                className="bg-secondary text-secondary-foreground hover:bg-secondary/80 px-4 py-2 rounded-md text-sm font-medium transition-colors"
-              >
-                Latest News
-              </Link>
-              <Link 
-                to={`/stocks/${stock.symbol}/analysis`}
-                className="bg-secondary text-secondary-foreground hover:bg-secondary/80 px-4 py-2 rounded-md text-sm font-medium transition-colors"
-              >
-                Detailed Analysis
-              </Link>
-              <Link 
-                to={`/stocks/${stock.symbol}/financials`}
-                className="bg-secondary text-secondary-foreground hover:bg-secondary/80 px-4 py-2 rounded-md text-sm font-medium transition-colors"
-              >
-                Financial Statements
-              </Link>
-            </div>
+          <div>
+            <Card className="mb-6">
+              <CardHeader>
+                <CardTitle>Trade</CardTitle>
+                <CardDescription>Buy or sell {mockStockData.symbol} shares</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  <Button 
+                    className="w-full"
+                    onClick={handleBuyStock}
+                  >
+                    <DollarSign className="h-4 w-4 mr-2" />
+                    Buy {mockStockData.symbol}
+                  </Button>
+                  <AddToWatchlist stockSymbol={mockStockData.symbol} />
+                </div>
+              </CardContent>
+            </Card>
+            
+            <AIRecommendationCard 
+              recommendation={mockRecommendation}
+              className="mb-6"
+            />
+            
+            <Card>
+              <CardHeader>
+                <CardTitle>Today's Stats</CardTitle>
+                <CardDescription>Key metrics for today's trading</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-3">
+                  <div className="flex justify-between items-center">
+                    <span className="text-sm text-muted-foreground">Open</span>
+                    <span className="font-medium">{formatCurrency(mockStockData.open)}</span>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span className="text-sm text-muted-foreground">Previous Close</span>
+                    <span className="font-medium">{formatCurrency(mockStockData.previousClose)}</span>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span className="text-sm text-muted-foreground">Day High</span>
+                    <span className="font-medium">{formatCurrency(mockStockData.dayHigh)}</span>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span className="text-sm text-muted-foreground">Day Low</span>
+                    <span className="font-medium">{formatCurrency(mockStockData.dayLow)}</span>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span className="text-sm text-muted-foreground">Volume</span>
+                    <span className="font-medium">{mockStockData.volume.toLocaleString()}</span>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span className="text-sm text-muted-foreground">Avg. Volume</span>
+                    <span className="font-medium">{mockStockData.avgVolume.toLocaleString()}</span>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
           </div>
         </div>
-      </main>
-      <Footer />
-    </div>
+      </div>
+    </>
   );
 };
 
