@@ -1,11 +1,10 @@
-
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { 
   User, Briefcase, DollarSign, Bitcoin, ArrowRightLeft, 
   RefreshCw, BookText, FileText, Calculator, History, 
-  Settings, HelpCircle, Keyboard, LogOut 
+  Settings, HelpCircle, Keyboard, LogOut, Building 
 } from 'lucide-react';
 import { 
   Sidebar, 
@@ -23,7 +22,6 @@ const AccountSidebar: React.FC = () => {
   const { user, signOut } = useAuth();
   const location = useLocation();
 
-  // Get the user's initials for the avatar fallback
   const getUserInitials = () => {
     if (!user?.user_metadata?.full_name) return 'U';
     

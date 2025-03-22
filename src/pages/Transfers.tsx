@@ -5,7 +5,7 @@ import AccountLayout from '@/components/layout/AccountLayout';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { formatCurrency } from '@/utils/formatters';
-import { ChevronRight, ArrowRight, Upload, CreditCard, RefreshCw, Bank } from 'lucide-react';
+import { ChevronRight, ArrowRight, Upload, CreditCard, RefreshCw, Building } from 'lucide-react';
 
 const Transfers: React.FC = () => {
   // Mock completed transfers history
@@ -88,7 +88,7 @@ const Transfers: React.FC = () => {
           
           <div className="flex gap-4 border-b border-border p-4 cursor-pointer hover:bg-muted/30 transition-colors rounded">
             <div className="p-3 bg-gray-100 dark:bg-gray-800 rounded-full">
-              <Bank className="w-6 h-6" />
+              <Building className="w-6 h-6" />
             </div>
             <div className="flex-1">
               <div className="font-medium mb-1">Transfer money</div>
@@ -151,7 +151,7 @@ const Transfers: React.FC = () => {
           {linkedAccounts.map((account, index) => (
             <div key={index} className="flex justify-between items-center border-b border-border py-4">
               <div className="flex gap-4">
-                <Bank className="w-8 h-8" />
+                <Building className="w-8 h-8" />
                 <div>
                   <div className="font-medium">{account.name}</div>
                   <div className="text-muted-foreground">{account.type} {account.maskedNumber}</div>
