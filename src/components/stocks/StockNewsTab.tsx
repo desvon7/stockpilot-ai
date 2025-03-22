@@ -1,30 +1,38 @@
 
 import React from 'react';
-import { 
-  Card, 
-  CardHeader, 
-  CardTitle, 
-  CardDescription, 
-  CardContent 
-} from '@/components/ui/card';
+import { useStockNews } from '@/hooks/useStockNews';
+import NewsCard from '@/components/news/NewsCard';
+import { Loader2 } from 'lucide-react';
+import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Calendar, ChevronRight } from 'lucide-react';
 
-interface NewsItem {
-  id: string;
-  title: string;
-  summary: string;
-  source: string;
-  date: string;
-  url: string;
-}
-
 interface StockNewsTabProps {
   stockName: string;
-  news: NewsItem[];
+  symbol: string;
 }
 
-const StockNewsTab: React.FC<StockNewsTabProps> = ({ stockName, news }) => {
+const StockNewsTab: React.FC<StockNewsTabProps> = ({ stockName, symbol }) => {
+  const { news, isLoading, error } = useStockNews([symbol]);
+
+  // If we have the existing mock data, let's use it as a fallback
+  const useMockData = (!news || news.length === 0) && !isLoading && !error;
+  
+  // Convert the existing mock data to our new format if needed
+  const displayedNews = useMockData ? 
+    [
+      {
+        id: "1",
+        title: `Latest news about ${stockName}`,
+        summary: `Recent developments and market movements related to ${stockName} (${symbol}).`,
+        source: "Market News",
+        publishedAt: new Date().toISOString(),
+        url: "#",
+        symbols: [symbol]
+      }
+    ] : 
+    news;
+
   return (
     <Card>
       <CardHeader>
@@ -32,31 +40,26 @@ const StockNewsTab: React.FC<StockNewsTabProps> = ({ stockName, news }) => {
         <CardDescription>Recent news and announcements about {stockName}</CardDescription>
       </CardHeader>
       <CardContent>
-        <div className="space-y-4">
-          {news.map((newsItem) => (
-            <div key={newsItem.id} className="border-b pb-4 last:border-0 last:pb-0">
-              <div className="flex justify-between items-start mb-1">
-                <h3 className="font-medium">{newsItem.title}</h3>
-                <Badge variant="outline" className="ml-2 whitespace-nowrap">
-                  {newsItem.source}
-                </Badge>
-              </div>
-              <p className="text-sm text-muted-foreground mb-2">{newsItem.summary}</p>
-              <div className="flex justify-between items-center text-xs text-muted-foreground">
-                <div className="flex items-center">
-                  <Calendar className="h-3 w-3 mr-1" />
-                  <span>{newsItem.date}</span>
-                </div>
-                <a 
-                  href={newsItem.url} 
-                  className="text-primary hover:underline flex items-center"
-                >
-                  Read more <ChevronRight className="h-3 w-3 ml-1" />
-                </a>
-              </div>
-            </div>
-          ))}
-        </div>
+        {isLoading ? (
+          <div className="flex justify-center items-center py-6">
+            <Loader2 className="h-6 w-6 animate-spin text-primary" />
+            <span className="ml-2">Loading news...</span>
+          </div>
+        ) : error ? (
+          <div className="text-center py-6 text-destructive">
+            <p>Error loading news. Please try again later.</p>
+          </div>
+        ) : displayedNews.length === 0 ? (
+          <div className="text-center py-6 text-muted-foreground">
+            <p>No recent news found for {stockName}.</p>
+          </div>
+        ) : (
+          <div className="space-y-4">
+            {displayedNews.map((newsItem) => (
+              <NewsCard key={newsItem.id} article={newsItem} />
+            ))}
+          </div>
+        )}
       </CardContent>
     </Card>
   );

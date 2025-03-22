@@ -13,6 +13,7 @@ import PortfolioSummary from '@/components/dashboard/PortfolioSummary';
 import RecentActivity from '@/components/dashboard/RecentActivity';
 import MarketOverview from '@/components/dashboard/MarketOverview';
 import LiveWatchlist from '@/components/market/LiveWatchlist';
+import NewsFeed from '@/components/news/NewsFeed';
 import { mockPortfolioData, mockActivities, mockMarketIndices, getFormattedDateTime } from '@/utils/mockMarketData';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
@@ -160,6 +161,13 @@ const Dashboard: React.FC = () => {
                 />
                 <StockOverview stocks={stocksToDisplay} />
                 <RecentActivity activities={mockActivities} />
+                
+                {/* Financial News Feed */}
+                <NewsFeed 
+                  symbols={watchlistSymbols}
+                  title="Latest Financial News"
+                  maxItems={6}
+                />
               </div>
               
               <div className="space-y-6">
