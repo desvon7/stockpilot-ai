@@ -1,161 +1,231 @@
 
-import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.7.1';
+import { serve } from 'https://deno.land/std@0.131.0/http/server.ts';
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.0.0';
 
+// Set up CORS headers
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+  'Access-Control-Allow-Methods': 'POST, OPTIONS',
+  'Content-Type': 'application/json'
 };
 
+// Create a Supabase client
+const supabaseUrl = Deno.env.get('SUPABASE_URL') || '';
+const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') || '';
+
+const supabase = createClient(supabaseUrl, supabaseServiceKey);
+
 serve(async (req) => {
-  // Handle CORS preflight requests
+  // Handle CORS preflight request
   if (req.method === 'OPTIONS') {
-    return new Response(null, { headers: corsHeaders });
+    return new Response(null, {
+      status: 204,
+      headers: corsHeaders
+    });
   }
 
   try {
-    // Create a Supabase client
-    const supabaseClient = createClient(
-      Deno.env.get('SUPABASE_URL') ?? '',
-      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
-    );
-
-    // Get the user ID from the authorization header
+    // Get the authorization header
     const authHeader = req.headers.get('Authorization');
     if (!authHeader) {
       throw new Error('Missing authorization header');
     }
 
-    const token = authHeader.replace('Bearer ', '');
-    const { data: { user }, error: userError } = await supabaseClient.auth.getUser(token);
-
-    if (userError || !user) {
-      throw new Error('Invalid user token');
+    // Validate the request method
+    if (req.method !== 'POST') {
+      throw new Error('Method not allowed. Please use POST');
     }
 
-    const userId = user.id;
-    const { symbol, companyName, transactionType, shares, pricePerShare, totalAmount } = await req.json();
+    // Get the JWT token
+    const token = authHeader.replace('Bearer ', '');
     
-    // First, create a transaction record
-    const { data: transactionData, error: transactionError } = await supabaseClient
+    // Verify the token and get the user
+    const { data: { user }, error: userError } = await supabase.auth.getUser(token);
+    
+    if (userError || !user) {
+      throw new Error('Unauthorized: Invalid token');
+    }
+
+    // Parse the request body
+    const {
+      symbol,
+      companyName,
+      transaction_type,
+      shares,
+      price_per_share,
+      execution_type = 'market',
+      limit_price = null
+    } = await req.json();
+
+    // Validate required fields
+    if (!symbol || !companyName || !transaction_type || !shares || !price_per_share) {
+      throw new Error('Missing required fields');
+    }
+
+    // Validate transaction type
+    if (transaction_type !== 'buy' && transaction_type !== 'sell') {
+      throw new Error('Invalid transaction type. Must be "buy" or "sell"');
+    }
+
+    // Validate limit order data
+    if (execution_type === 'limit' && !limit_price) {
+      throw new Error('Limit price required for limit orders');
+    }
+
+    // Additional validation for positive values
+    if (shares <= 0) {
+      throw new Error('Shares must be greater than zero');
+    }
+
+    if (price_per_share <= 0) {
+      throw new Error('Price per share must be greater than zero');
+    }
+
+    // Calculate total amount
+    const total_amount = shares * price_per_share;
+
+    if (transaction_type === 'sell') {
+      // Check if user owns enough shares
+      const { data: portfolioItem, error: portfolioError } = await supabase
+        .from('portfolios')
+        .select('shares')
+        .eq('user_id', user.id)
+        .eq('symbol', symbol)
+        .single();
+
+      if (portfolioError && portfolioError.code !== 'PGRST116') { // Not found is okay - it just means they don't own any
+        throw new Error(`Error checking existing shares: ${portfolioError.message}`);
+      }
+
+      if (!portfolioItem || portfolioItem.shares < shares) {
+        throw new Error(`Insufficient shares. You have ${portfolioItem?.shares || 0} shares of ${symbol} but attempted to sell ${shares}`);
+      }
+    }
+
+    // Determine transaction status based on execution type
+    const status = execution_type === 'market' ? 'completed' : 'pending';
+
+    // Log the transaction first
+    const { data: transactionData, error: transactionError } = await supabase
       .from('transactions')
       .insert({
-        user_id: userId,
+        user_id: user.id,
         symbol,
         company_name: companyName,
-        transaction_type: transactionType,
+        transaction_type,
         shares,
-        price_per_share: pricePerShare,
-        total_amount: totalAmount,
-        status: 'completed'
+        price_per_share,
+        total_amount,
+        status,
+        execution_type,
+        limit_price
       })
       .select()
       .single();
-    
+
     if (transactionError) {
-      throw transactionError;
+      throw new Error(`Transaction error: ${transactionError.message}`);
     }
-    
-    // Next, update the portfolio
-    // Check if the user already has this stock in their portfolio
-    const { data: portfolioData, error: portfolioError } = await supabaseClient
-      .from('portfolios')
-      .select('*')
-      .eq('user_id', userId)
-      .eq('symbol', symbol)
-      .maybeSingle();
-    
-    if (portfolioError) {
-      throw portfolioError;
-    }
-    
-    if (transactionType === 'buy') {
-      if (portfolioData) {
-        // Update existing portfolio item
-        const newShares = Number(portfolioData.shares) + Number(shares);
-        const newAveragePrice = ((Number(portfolioData.shares) * Number(portfolioData.average_price)) + 
-                                 (Number(shares) * Number(pricePerShare))) / newShares;
-        
-        const { error: updateError } = await supabaseClient
-          .from('portfolios')
-          .update({ 
-            shares: newShares, 
-            average_price: newAveragePrice,
-            updated_at: new Date().toISOString()
-          })
-          .eq('id', portfolioData.id);
-        
-        if (updateError) {
-          throw updateError;
-        }
-      } else {
-        // Create new portfolio item
-        const { error: insertError } = await supabaseClient
-          .from('portfolios')
-          .insert({
-            user_id: userId,
-            symbol,
-            company_name: companyName,
-            shares,
-            average_price: pricePerShare
-          });
-        
-        if (insertError) {
-          throw insertError;
-        }
+
+    // For market orders, update the portfolio immediately
+    if (execution_type === 'market') {
+      // Check if the stock is already in the portfolio
+      const { data: existingStock, error: existingError } = await supabase
+        .from('portfolios')
+        .select('*')
+        .eq('user_id', user.id)
+        .eq('symbol', symbol)
+        .single();
+
+      if (existingError && existingError.code !== 'PGRST116') { // Not found is okay
+        throw new Error(`Error checking existing portfolio: ${existingError.message}`);
       }
-    } else if (transactionType === 'sell') {
-      if (!portfolioData) {
-        throw new Error('Cannot sell a stock that is not in your portfolio');
-      }
-      
-      const newShares = Number(portfolioData.shares) - Number(shares);
-      
-      if (newShares < 0) {
-        throw new Error('Cannot sell more shares than you own');
-      } else if (newShares === 0) {
-        // Remove from portfolio if all shares are sold
-        const { error: deleteError } = await supabaseClient
-          .from('portfolios')
-          .delete()
-          .eq('id', portfolioData.id);
-        
-        if (deleteError) {
-          throw deleteError;
+
+      if (transaction_type === 'buy') {
+        if (existingStock) {
+          // Update existing position
+          const newShares = existingStock.shares + shares;
+          const newAveragePrice = ((existingStock.shares * existingStock.average_price) + total_amount) / newShares;
+          
+          const { error: updateError } = await supabase
+            .from('portfolios')
+            .update({
+              shares: newShares,
+              average_price: newAveragePrice,
+              updated_at: new Date().toISOString()
+            })
+            .eq('id', existingStock.id);
+
+          if (updateError) {
+            throw new Error(`Portfolio update error: ${updateError.message}`);
+          }
+        } else {
+          // Create new position
+          const { error: insertError } = await supabase
+            .from('portfolios')
+            .insert({
+              user_id: user.id,
+              symbol,
+              company_name: companyName,
+              shares,
+              average_price: price_per_share
+            });
+
+          if (insertError) {
+            throw new Error(`Portfolio insert error: ${insertError.message}`);
+          }
         }
-      } else {
-        // Update with remaining shares
-        const { error: updateError } = await supabaseClient
-          .from('portfolios')
-          .update({ 
-            shares: newShares,
-            updated_at: new Date().toISOString()
-          })
-          .eq('id', portfolioData.id);
+      } else if (transaction_type === 'sell') {
+        // We already validated that the user has enough shares above
+        const newShares = existingStock.shares - shares;
         
-        if (updateError) {
-          throw updateError;
+        if (newShares > 0) {
+          // Update with remaining shares
+          const { error: updateError } = await supabase
+            .from('portfolios')
+            .update({
+              shares: newShares,
+              updated_at: new Date().toISOString()
+            })
+            .eq('id', existingStock.id);
+
+          if (updateError) {
+            throw new Error(`Portfolio update error: ${updateError.message}`);
+          }
+        } else {
+          // Remove the position entirely
+          const { error: deleteError } = await supabase
+            .from('portfolios')
+            .delete()
+            .eq('id', existingStock.id);
+
+          if (deleteError) {
+            throw new Error(`Portfolio delete error: ${deleteError.message}`);
+          }
         }
       }
     }
-    
-    return new Response(
-      JSON.stringify({ 
-        success: true, 
-        message: `Successfully ${transactionType === 'buy' ? 'bought' : 'sold'} ${shares} shares of ${symbol}` 
-      }),
-      { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-    );
-    
+
+    // Return the transaction details
+    return new Response(JSON.stringify({
+      success: true,
+      message: `${transaction_type === 'buy' ? 'Purchase' : 'Sale'} of ${shares} shares of ${symbol} ${execution_type === 'market' ? 'completed' : 'submitted as ' + execution_type + ' order'}`,
+      transaction: transactionData
+    }), {
+      status: 200,
+      headers: corsHeaders
+    });
+
   } catch (error) {
-    console.error('Error executing stock transaction:', error);
+    console.error('Transaction error:', error.message);
     
-    return new Response(
-      JSON.stringify({ 
-        success: false, 
-        error: error.message || 'Failed to execute transaction' 
-      }),
-      { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 400 }
-    );
+    return new Response(JSON.stringify({
+      success: false,
+      message: error.message
+    }), {
+      status: 400,
+      headers: corsHeaders
+    });
   }
 });

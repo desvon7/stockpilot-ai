@@ -17,6 +17,7 @@ import StockNewsTab from '@/components/stocks/StockNewsTab';
 import StockTradingCard from '@/components/stocks/StockTradingCard';
 import StockStatsCard from '@/components/stocks/StockStatsCard';
 import StockPlaceholderTab from '@/components/stocks/StockPlaceholderTab';
+import OrderHistory from '@/components/orders/OrderHistory';
 
 interface AIRecommendation {
   symbol: string;
@@ -195,6 +196,8 @@ const StockDetail: React.FC = () => {
                 />
               </TabsContent>
             </Tabs>
+            
+            <OrderHistory />
           </div>
           
           <div>
@@ -205,7 +208,7 @@ const StockDetail: React.FC = () => {
             
             <AIRecommendationCard 
               recommendation={mockRecommendation}
-              className="mb-6"
+              className="my-6"
             />
             
             <StockStatsCard stats={statsData} />
