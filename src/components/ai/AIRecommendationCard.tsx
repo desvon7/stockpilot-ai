@@ -1,10 +1,21 @@
 
 import React from 'react';
-import { AIRecommendation } from '@/services/aiService';
 import { cn } from '@/lib/utils';
 import { formatCurrency, formatPercent } from '@/utils/formatters';
 import { ArrowUpRight, ArrowDownRight, MinusIcon, TrendingUp, ArrowRight, Brain } from 'lucide-react';
 import { Link } from 'react-router-dom';
+
+// Update the AIRecommendation interface to include timestamp
+export interface AIRecommendation {
+  symbol: string;
+  name: string;
+  recommendation: string;
+  confidence: number;
+  priceTarget: number;
+  currentPrice: number;
+  reasoning: string;
+  timestamp: string;
+}
 
 interface AIRecommendationCardProps {
   recommendation: AIRecommendation;

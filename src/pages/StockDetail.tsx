@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
@@ -16,6 +15,17 @@ import { fetchStockDetails } from '@/services/stockService';
 import AddToWatchlist from '@/components/watchlists/AddToWatchlist';
 import AIRecommendationCard from '@/components/ai/AIRecommendationCard';
 
+interface AIRecommendation {
+  symbol: string;
+  name: string;
+  recommendation: string;
+  confidence: number;
+  priceTarget: number;
+  currentPrice: number;
+  reasoning: string;
+  timestamp: string;
+}
+
 const StockDetail: React.FC = () => {
   const { symbol } = useParams<{ symbol: string }>();
   const { toast } = useToast();
@@ -27,7 +37,6 @@ const StockDetail: React.FC = () => {
     enabled: !!symbol
   });
   
-  // Mock data since the API might not be connected
   const mockStockData = {
     symbol: symbol || 'AAPL',
     name: symbol === 'AAPL' ? 'Apple Inc.' : 
@@ -58,7 +67,7 @@ const StockDetail: React.FC = () => {
   
   const mockChartData = Array.from({ length: 100 }, (_, i) => ({
     date: new Date(Date.now() - (100 - i) * 86400000).toISOString().split('T')[0],
-    value: mockStockData.price - 10 + Math.random() * 20
+    price: mockStockData.price - 10 + Math.random() * 20
   }));
   
   const mockNews = [
@@ -88,14 +97,15 @@ const StockDetail: React.FC = () => {
     },
   ];
   
-  const mockRecommendation = {
+  const mockRecommendation: AIRecommendation = {
     symbol: mockStockData.symbol,
     name: mockStockData.name,
     recommendation: 'buy',
     confidence: 0.87,
     priceTarget: mockStockData.price * 1.15,
     currentPrice: mockStockData.price,
-    reasoning: `${mockStockData.name} shows strong fundamentals with consistent revenue growth and expanding margins. The company's strategic investments in AI and new product lines position it well for future growth.`
+    reasoning: `${mockStockData.name} shows strong fundamentals with consistent revenue growth and expanding margins. The company's strategic investments in AI and new product lines position it well for future growth.`,
+    timestamp: new Date().toISOString()
   };
   
   const handleAddToWatchlist = () => {

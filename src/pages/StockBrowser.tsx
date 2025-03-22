@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Helmet } from 'react-helmet-async';
 import DashboardLayout from '@/components/layout/DashboardLayout';
@@ -21,7 +20,6 @@ const StockBrowser: React.FC = () => {
     queryFn: fetchTrendingStocks
   });
 
-  // Placeholder data since the API might not be working
   const mockTrendingStocks = [
     { symbol: 'AAPL', name: 'Apple Inc.', price: 187.68, change: 1.84, changePercent: 0.99 },
     { symbol: 'MSFT', name: 'Microsoft Corp.', price: 412.66, change: 2.41, changePercent: 0.59 },

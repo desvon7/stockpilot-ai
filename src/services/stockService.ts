@@ -26,6 +26,21 @@ export interface StockSearchResult {
   matchScore: string;
 }
 
+export interface StockDetails extends StockQuote {
+  name: string;
+  sector: string;
+  industry: string;
+  marketCap: number;
+  peRatio: number;
+  dividend: number;
+  dividendYield: number;
+  eps: number;
+  beta: number;
+  yearHigh: number;
+  yearLow: number;
+  avgVolume: number;
+}
+
 export const fetchStockQuote = async (symbol: string): Promise<StockQuote> => {
   try {
     const { data, error } = await supabase.functions.invoke('fetch-stock-data', {
@@ -108,6 +123,60 @@ export const getAIRecommendations = async (symbol: string) => {
     return data.recommendations;
   } catch (error) {
     console.error('Error getting AI recommendations:', error);
+    throw error;
+  }
+};
+
+// Add the missing functions that are causing errors
+export const fetchTrendingStocks = async () => {
+  try {
+    const { data, error } = await supabase.functions.invoke('fetch-market-data', {
+      body: { function: 'MOST_ACTIVE' },
+    });
+
+    if (error) throw error;
+    return data.most_actively_traded || [];
+  } catch (error) {
+    console.error('Error fetching trending stocks:', error);
+    throw error;
+  }
+};
+
+export const fetchStockDetails = async (symbol: string): Promise<StockDetails> => {
+  try {
+    const { data, error } = await supabase.functions.invoke('fetch-stock-data', {
+      body: { symbol, function: 'OVERVIEW' },
+    });
+
+    if (error) throw error;
+    
+    // Process and return the stock details
+    return {
+      symbol: data.Symbol || symbol,
+      name: data.Name || '',
+      price: 0, // This will be populated from quote data
+      open: 0,
+      high: 0,
+      low: 0,
+      volume: parseInt(data.Volume || '0'),
+      avgVolume: parseInt(data.AverageVolume || '0'),
+      latestTradingDay: '',
+      previousClose: 0,
+      change: 0,
+      changePercent: '',
+      marketCap: parseFloat(data.MarketCapitalization || '0'),
+      peRatio: parseFloat(data.PERatio || '0'),
+      dividend: parseFloat(data.DividendPerShare || '0'),
+      dividendYield: parseFloat(data.DividendYield || '0') * 100,
+      eps: parseFloat(data.EPS || '0'),
+      beta: parseFloat(data.Beta || '0'),
+      yearHigh: parseFloat(data['52WeekHigh'] || '0'),
+      yearLow: parseFloat(data['52WeekLow'] || '0'),
+      sector: data.Sector || '',
+      industry: data.Industry || '',
+    };
+  } catch (error) {
+    console.error('Error fetching stock details:', error);
     throw error;
   }
 };
