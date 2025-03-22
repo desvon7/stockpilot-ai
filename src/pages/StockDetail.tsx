@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
@@ -166,7 +165,7 @@ const StockDetail: React.FC = () => {
               <TabsContent value="news" className="mt-6">
                 <StockNewsTab 
                   stockName={mockStockData.name} 
-                  news={mockNews} 
+                  symbol={mockStockData.symbol}
                 />
               </TabsContent>
               
