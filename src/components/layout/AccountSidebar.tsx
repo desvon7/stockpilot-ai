@@ -1,11 +1,11 @@
 
 import React, { useState } from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { 
   User, Briefcase, DollarSign, Bitcoin, ArrowRightLeft, 
   RefreshCw, BookText, FileText, Calculator, History, 
-  Settings, HelpCircle, Keyboard, LogOut, Building 
+  Settings, HelpCircle, Keyboard, LogOut, Building, Home
 } from 'lucide-react';
 import { 
   Sidebar, 
@@ -25,10 +25,12 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { Button } from '@/components/ui/button';
 
 const AccountSidebar: React.FC = () => {
   const { user, signOut } = useAuth();
   const location = useLocation();
+  const navigate = useNavigate();
   const [isOpen, setIsOpen] = useState(true);
 
   const getUserInitials = () => {
@@ -42,6 +44,7 @@ const AccountSidebar: React.FC = () => {
   };
 
   const menuItems = [
+    { icon: Home, title: 'Home', path: '/home' },
     { icon: User, title: 'Profile', path: '/profile' },
     { icon: Briefcase, title: 'Investing', path: '/investing' },
     { icon: DollarSign, title: 'Spending', path: '/spending' },
@@ -61,12 +64,15 @@ const AccountSidebar: React.FC = () => {
     <SidebarProvider defaultOpen={isOpen}>
       <Sidebar variant="sidebar" collapsible="offcanvas">
         <SidebarHeader className="flex flex-col items-start py-4">
-          <div className="flex items-center px-4 py-2 w-full">
+          <Link 
+            to="/home" 
+            className="flex items-center px-4 py-2 w-full hover:bg-muted/50 rounded-md"
+          >
             <div className="w-8 h-8 mr-3 rounded-full bg-amber-500 flex items-center justify-center">
               <span className="text-amber-100 font-bold">SP</span>
             </div>
             <h2 className="text-lg font-semibold">StockPilot Gold</h2>
-          </div>
+          </Link>
         </SidebarHeader>
 
         <SidebarContent>
@@ -111,6 +117,12 @@ const AccountSidebar: React.FC = () => {
                     <Link to="/settings" className="cursor-pointer">
                       <Settings className="mr-2 h-4 w-4" />
                       <span>Settings</span>
+                    </Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem asChild>
+                    <Link to="/home" className="cursor-pointer">
+                      <Home className="mr-2 h-4 w-4" />
+                      <span>Home</span>
                     </Link>
                   </DropdownMenuItem>
                   <DropdownMenuSeparator />

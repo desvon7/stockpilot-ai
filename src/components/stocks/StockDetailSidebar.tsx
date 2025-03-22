@@ -6,6 +6,9 @@ import OptionsOrderForm from '@/components/orders/OptionsOrderForm';
 import { AIRecommendation } from '@/hooks/useStockDetail';
 import AIRecommendationCard from '@/components/ai/AIRecommendationCard';
 import StockStatsCard from '@/components/stocks/StockStatsCard';
+import { Link } from 'react-router-dom';
+import { Home, ArrowLeft } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 
 interface StockDetailSidebarProps {
   symbol: string;
@@ -31,6 +34,21 @@ const StockDetailSidebar: React.FC<StockDetailSidebarProps> = ({
 
   return (
     <div className="space-y-6">
+      <div className="flex space-x-2 mb-2">
+        <Button variant="outline" size="sm" asChild>
+          <Link to="/stocks">
+            <ArrowLeft className="h-4 w-4 mr-1" />
+            Back to Stocks
+          </Link>
+        </Button>
+        <Button variant="outline" size="sm" asChild>
+          <Link to="/home">
+            <Home className="h-4 w-4 mr-1" />
+            Home
+          </Link>
+        </Button>
+      </div>
+      
       <Tabs defaultValue="stock">
         <TabsList className="grid w-full grid-cols-2">
           <TabsTrigger value="stock">Stocks</TabsTrigger>

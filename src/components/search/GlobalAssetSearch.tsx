@@ -1,12 +1,13 @@
 
 import React, { useState, useRef, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { 
   Search, 
   Loader2, 
   XCircle, 
   TrendingUp,
-  ChevronRight
+  ChevronRight,
+  Home
 } from 'lucide-react';
 import { useStockSearch } from '@/hooks/useStockSearch';
 import { cn } from '@/lib/utils';
@@ -20,6 +21,7 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 
 interface GlobalAssetSearchProps {
   darkMode?: boolean;
@@ -51,6 +53,13 @@ const GlobalAssetSearch: React.FC<GlobalAssetSearchProps> = ({
     { symbol: 'AMZN', name: 'Amazon.com Inc.' },
     { symbol: 'TSLA', name: 'Tesla, Inc.' },
     { symbol: 'NVDA', name: 'NVIDIA Corporation' }
+  ];
+
+  const popularEtfs = [
+    { symbol: 'SPY', name: 'SPDR S&P 500 ETF Trust' },
+    { symbol: 'QQQ', name: 'Invesco QQQ Trust' },
+    { symbol: 'VTI', name: 'Vanguard Total Stock Market ETF' },
+    { symbol: 'VOO', name: 'Vanguard S&P 500 ETF' }
   ];
 
   useEffect(() => {
@@ -86,6 +95,11 @@ const GlobalAssetSearch: React.FC<GlobalAssetSearchProps> = ({
     }
   };
 
+  const navigateHome = () => {
+    navigate('/home');
+    setOpen(false);
+  };
+
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       {trigger ? (
@@ -107,9 +121,9 @@ const GlobalAssetSearch: React.FC<GlobalAssetSearchProps> = ({
         </DialogTrigger>
       )}
       
-      <DialogContent className="sm:max-w-[550px] p-0">
-        <div className="p-4 border-b">
-          <div className="relative">
+      <DialogContent className="sm:max-w-[600px] p-0">
+        <div className="p-4 border-b flex justify-between items-center">
+          <div className="relative flex-1">
             <StockSearchInput
               ref={inputRef}
               value={query}
@@ -129,26 +143,69 @@ const GlobalAssetSearch: React.FC<GlobalAssetSearchProps> = ({
               </button>
             )}
           </div>
+          <Button
+            variant="ghost"
+            size="icon"
+            className="ml-2 flex-shrink-0"
+            onClick={navigateHome}
+            title="Go to Home"
+          >
+            <Home className="h-5 w-5" />
+          </Button>
         </div>
         
         <div className="max-h-[400px] overflow-y-auto">
           {query.length < 2 ? (
             <div className="p-4">
-              <h3 className="text-sm font-medium mb-2 flex items-center">
-                <TrendingUp className="h-4 w-4 mr-2" />
-                Trending Assets
-              </h3>
-              <div className="grid grid-cols-2 gap-2">
-                {trendingStocks.map((stock) => (
-                  <div
-                    key={stock.symbol}
-                    className="p-2 hover:bg-muted rounded-md cursor-pointer"
-                    onClick={() => handleStockSelect(stock.symbol)}
-                  >
-                    <div className="font-medium">{stock.symbol}</div>
-                    <div className="text-sm text-muted-foreground">{stock.name}</div>
-                  </div>
-                ))}
+              <div className="mb-6">
+                <h3 className="text-sm font-medium mb-2 flex items-center">
+                  <TrendingUp className="h-4 w-4 mr-2" />
+                  Trending Stocks
+                </h3>
+                <div className="grid grid-cols-2 gap-2">
+                  {trendingStocks.map((stock) => (
+                    <div
+                      key={stock.symbol}
+                      className="p-2 hover:bg-muted rounded-md cursor-pointer"
+                      onClick={() => handleStockSelect(stock.symbol)}
+                    >
+                      <div className="font-medium">{stock.symbol}</div>
+                      <div className="text-sm text-muted-foreground">{stock.name}</div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+              
+              <div>
+                <h3 className="text-sm font-medium mb-2 flex items-center">
+                  <TrendingUp className="h-4 w-4 mr-2" />
+                  Popular ETFs
+                </h3>
+                <div className="grid grid-cols-2 gap-2">
+                  {popularEtfs.map((etf) => (
+                    <div
+                      key={etf.symbol}
+                      className="p-2 hover:bg-muted rounded-md cursor-pointer"
+                      onClick={() => handleStockSelect(etf.symbol)}
+                    >
+                      <div className="font-medium flex items-center gap-1">
+                        {etf.symbol}
+                        <Badge variant="outline" className="text-xs bg-primary/10 text-primary border-primary/20">ETF</Badge>
+                      </div>
+                      <div className="text-sm text-muted-foreground">{etf.name}</div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+              
+              <div className="mt-6 flex justify-center">
+                <Button 
+                  variant="outline" 
+                  onClick={() => navigate('/stocks')}
+                  className="w-full"
+                >
+                  Browse All Assets
+                </Button>
               </div>
             </div>
           ) : searchLoading ? (
@@ -167,7 +224,12 @@ const GlobalAssetSearch: React.FC<GlobalAssetSearchProps> = ({
                   onClick={() => handleStockSelect(result.symbol)}
                 >
                   <div>
-                    <div className="font-medium">{result.symbol}</div>
+                    <div className="font-medium flex items-center gap-1">
+                      {result.symbol}
+                      {result.type === 'ETF' && (
+                        <Badge variant="outline" className="text-xs bg-primary/10 text-primary border-primary/20">ETF</Badge>
+                      )}
+                    </div>
                     <div className="text-sm text-muted-foreground">{result.name}</div>
                   </div>
                   <ChevronRight className="h-4 w-4 text-muted-foreground" />
@@ -177,10 +239,48 @@ const GlobalAssetSearch: React.FC<GlobalAssetSearchProps> = ({
           ) : (
             query.length >= 2 && (
               <div className="p-8 text-center text-muted-foreground">
-                No results found for "{query}"
+                <p className="mb-2">No results found for "{query}"</p>
+                <Button 
+                  variant="outline" 
+                  onClick={() => navigate('/stocks')}
+                  className="mt-2"
+                >
+                  Browse All Assets
+                </Button>
               </div>
             )
           )}
+        </div>
+        
+        <div className="p-2 border-t flex justify-between items-center">
+          <div className="flex space-x-2">
+            <Button 
+              variant="outline" 
+              size="sm" 
+              onClick={navigateHome}
+            >
+              <Home className="h-4 w-4 mr-1" />
+              Home
+            </Button>
+            <Button 
+              variant="outline" 
+              size="sm" 
+              onClick={() => {
+                navigate('/stocks');
+                setOpen(false);
+              }}
+            >
+              <TrendingUp className="h-4 w-4 mr-1" />
+              All Stocks
+            </Button>
+          </div>
+          <Button 
+            variant="ghost" 
+            size="sm" 
+            onClick={() => setOpen(false)}
+          >
+            Close
+          </Button>
         </div>
       </DialogContent>
     </Dialog>
