@@ -45,31 +45,31 @@ const AccountSidebar: React.FC = () => {
 
   // Update paths to work with our routing structure
   const menuItems = [
-    { icon: Home, title: 'Home', path: '/home' },
-    { icon: User, title: 'Profile', path: '/profile' },
-    { icon: Briefcase, title: 'Investing', path: '/investing' },
-    { icon: DollarSign, title: 'Spending', path: '/spending' },
-    { icon: Bitcoin, title: 'Crypto', path: '/crypto' },
-    { icon: ArrowRightLeft, title: 'Transfers', path: '/transfers' },
-    { icon: RefreshCw, title: 'Recurring', path: '/recurring' },
-    { icon: BookText, title: 'Stock Lending', path: '/stock-lending' },
-    { icon: FileText, title: 'Reports and statements', path: '/reports-and-statements' },
-    { icon: Calculator, title: 'Tax center', path: '/tax-center' },
-    { icon: History, title: 'History', path: '/history' },
-    { icon: Settings, title: 'Settings', path: '/settings' },
-    { icon: HelpCircle, title: 'Help', path: '/help' },
-    { icon: Keyboard, title: 'Keyboard Shortcuts', path: '/keyboard-shortcuts' }
+    { icon: Home, title: 'Home', path: '/account/home' },
+    { icon: User, title: 'Profile', path: '/account/profile' },
+    { icon: Briefcase, title: 'Investing', path: '/account/investing' },
+    { icon: DollarSign, title: 'Spending', path: '/account/spending' },
+    { icon: Bitcoin, title: 'Crypto', path: '/account/crypto' },
+    { icon: ArrowRightLeft, title: 'Transfers', path: '/account/transfers' },
+    { icon: RefreshCw, title: 'Recurring', path: '/account/recurring' },
+    { icon: BookText, title: 'Stock Lending', path: '/account/stock-lending' },
+    { icon: FileText, title: 'Reports and statements', path: '/account/reports-and-statements' },
+    { icon: Calculator, title: 'Tax center', path: '/account/tax-center' },
+    { icon: History, title: 'History', path: '/account/history' },
+    { icon: Settings, title: 'Settings', path: '/account/settings' },
+    { icon: HelpCircle, title: 'Help', path: '/account/help' },
+    { icon: Keyboard, title: 'Keyboard Shortcuts', path: '/account/keyboard-shortcuts' }
   ];
 
-  // Get the current path without leading slash
-  const currentPath = location.pathname.substring(1);
+  // Get the current path for active state
+  const currentPath = location.pathname;
 
   return (
     <SidebarProvider defaultOpen={isOpen}>
       <Sidebar variant="sidebar" collapsible="offcanvas">
         <SidebarHeader className="flex flex-col items-start py-4">
           <Link 
-            to="/home" 
+            to="/account/home" 
             className="flex items-center px-4 py-2 w-full hover:bg-muted/50 rounded-md"
           >
             <div className="w-8 h-8 mr-3 rounded-full bg-amber-500 flex items-center justify-center">
@@ -85,10 +85,8 @@ const AccountSidebar: React.FC = () => {
               <SidebarMenuItem key={item.title}>
                 <SidebarMenuButton 
                   asChild 
-                  isActive={
-                    currentPath === item.path.substring(1) || 
-                    (item.path !== '/home' && currentPath.startsWith(item.path.substring(1)))
-                  }
+                  isActive={currentPath === item.path || 
+                    (item.path !== '/account/home' && currentPath.startsWith(item.path))}
                 >
                   <Link to={item.path} className="flex items-center">
                     <item.icon className="mr-3" />
@@ -118,19 +116,19 @@ const AccountSidebar: React.FC = () => {
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="start" className="w-56">
                   <DropdownMenuItem asChild>
-                    <Link to="/profile" className="cursor-pointer">
+                    <Link to="/account/profile" className="cursor-pointer">
                       <User className="mr-2 h-4 w-4" />
                       <span>Profile</span>
                     </Link>
                   </DropdownMenuItem>
                   <DropdownMenuItem asChild>
-                    <Link to="/settings" className="cursor-pointer">
+                    <Link to="/account/settings" className="cursor-pointer">
                       <Settings className="mr-2 h-4 w-4" />
                       <span>Settings</span>
                     </Link>
                   </DropdownMenuItem>
                   <DropdownMenuItem asChild>
-                    <Link to="/home" className="cursor-pointer">
+                    <Link to="/account/home" className="cursor-pointer">
                       <Home className="mr-2 h-4 w-4" />
                       <span>Home</span>
                     </Link>

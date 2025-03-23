@@ -1,6 +1,6 @@
 
 import React, { Suspense, lazy, memo } from 'react';
-import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { ThemeProvider } from './components/theme-provider';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { Toaster } from './components/ui/sonner';
@@ -45,9 +45,12 @@ function App() {
                 <Suspense fallback={<LoadingFallback />}>
                   <Routes>
                     {/* Public routes */}
-                    <Route path="/*" element={<PublicRoutes />} />
+                    <Route path="/" element={<PublicRoutes />} />
+                    <Route path="/auth/*" element={<PublicRoutes />} />
+                    <Route path="/reset-password" element={<PublicRoutes />} />
+                    <Route path="/update-password" element={<PublicRoutes />} />
                     
-                    {/* Protected routes - using /* to handle nested routes */}
+                    {/* Protected account routes */}
                     <Route 
                       path="/account/*" 
                       element={
@@ -57,15 +60,138 @@ function App() {
                       } 
                     />
                     
-                    {/* Direct routes to account pages for convenience */}
+                    {/* Direct access to account pages */}
                     <Route 
-                      path="/:path/*" 
+                      path="/home" 
                       element={
                         <ProtectedRoute>
-                          <AccountRoutes />
+                          <Navigate to="/account/home" replace />
                         </ProtectedRoute>
                       } 
                     />
+                    <Route 
+                      path="/profile" 
+                      element={
+                        <ProtectedRoute>
+                          <Navigate to="/account/profile" replace />
+                        </ProtectedRoute>
+                      } 
+                    />
+                    <Route 
+                      path="/dashboard" 
+                      element={
+                        <ProtectedRoute>
+                          <Navigate to="/account/dashboard" replace />
+                        </ProtectedRoute>
+                      } 
+                    />
+                    <Route 
+                      path="/portfolio" 
+                      element={
+                        <ProtectedRoute>
+                          <Navigate to="/account/portfolio" replace />
+                        </ProtectedRoute>
+                      } 
+                    />
+                    <Route 
+                      path="/investing/*" 
+                      element={
+                        <ProtectedRoute>
+                          <Navigate to="/account/investing/*" replace />
+                        </ProtectedRoute>
+                      } 
+                    />
+                    <Route 
+                      path="/spending" 
+                      element={
+                        <ProtectedRoute>
+                          <Navigate to="/account/spending" replace />
+                        </ProtectedRoute>
+                      } 
+                    />
+                    <Route 
+                      path="/crypto" 
+                      element={
+                        <ProtectedRoute>
+                          <Navigate to="/account/crypto" replace />
+                        </ProtectedRoute>
+                      } 
+                    />
+                    <Route 
+                      path="/transfers" 
+                      element={
+                        <ProtectedRoute>
+                          <Navigate to="/account/transfers" replace />
+                        </ProtectedRoute>
+                      } 
+                    />
+                    <Route 
+                      path="/recurring" 
+                      element={
+                        <ProtectedRoute>
+                          <Navigate to="/account/recurring" replace />
+                        </ProtectedRoute>
+                      } 
+                    />
+                    <Route 
+                      path="/stock-lending" 
+                      element={
+                        <ProtectedRoute>
+                          <Navigate to="/account/stock-lending" replace />
+                        </ProtectedRoute>
+                      } 
+                    />
+                    <Route 
+                      path="/reports-and-statements" 
+                      element={
+                        <ProtectedRoute>
+                          <Navigate to="/account/reports-and-statements" replace />
+                        </ProtectedRoute>
+                      } 
+                    />
+                    <Route 
+                      path="/tax-center" 
+                      element={
+                        <ProtectedRoute>
+                          <Navigate to="/account/tax-center" replace />
+                        </ProtectedRoute>
+                      } 
+                    />
+                    <Route 
+                      path="/history" 
+                      element={
+                        <ProtectedRoute>
+                          <Navigate to="/account/history" replace />
+                        </ProtectedRoute>
+                      } 
+                    />
+                    <Route 
+                      path="/settings" 
+                      element={
+                        <ProtectedRoute>
+                          <Navigate to="/account/settings" replace />
+                        </ProtectedRoute>
+                      } 
+                    />
+                    <Route 
+                      path="/help" 
+                      element={
+                        <ProtectedRoute>
+                          <Navigate to="/account/help" replace />
+                        </ProtectedRoute>
+                      } 
+                    />
+                    <Route 
+                      path="/keyboard-shortcuts" 
+                      element={
+                        <ProtectedRoute>
+                          <Navigate to="/account/keyboard-shortcuts" replace />
+                        </ProtectedRoute>
+                      } 
+                    />
+                    
+                    {/* Catch-all route */}
+                    <Route path="*" element={<Navigate to="/" replace />} />
                   </Routes>
                 </Suspense>
                 <Toaster position="top-right" />

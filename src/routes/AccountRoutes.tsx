@@ -1,7 +1,8 @@
 
 import React, { Suspense, lazy } from "react";
-import { Routes, Route } from "react-router-dom";
+import { Routes, Route, Navigate } from "react-router-dom";
 import { Skeleton } from "@/components/ui/skeleton";
+import AccountLayout from "@/components/layout/AccountLayout";
 
 // Eagerly load the most frequently used pages
 import Profile from "@/pages/Profile";
@@ -46,35 +47,37 @@ const LoadingFallback = () => (
 // This routes component handles all authenticated routes
 const AccountRoutes: React.FC = () => {
   return (
-    <Suspense fallback={<LoadingFallback />}>
-      <Routes>
-        <Route path="/" element={<Dashboard />} />
-        <Route path="home" element={<Home />} />
-        <Route path="profile" element={<Profile />} />
-        <Route path="portfolio" element={<Portfolio />} />
-        <Route path="dashboard" element={<Dashboard />} />
-        <Route path="stocks/:symbol" element={<StockDetail />} />
-        <Route path="stocks" element={<StockBrowser />} />
-        <Route path="watchlists" element={<Watchlists />} />
-        <Route path="transactions" element={<Transactions />} />
-        <Route path="settings" element={<Settings />} />
-        <Route path="transfers" element={<Transfers />} />
-        <Route path="news" element={<FinancialNews />} />
-        <Route path="news-feed" element={<NewsFeed />} />
-        <Route path="recurring" element={<Recurring />} />
-        <Route path="stock-lending" element={<StockLending />} />
-        <Route path="tax-center" element={<TaxCenter />} />
-        <Route path="reports-and-statements" element={<ReportsAndStatements />} />
-        <Route path="trending-assets" element={<TrendingAssets />} />
-        <Route path="crypto" element={<Crypto />} />
-        <Route path="investing/*" element={<Investing />} />
-        <Route path="spending" element={<Spending />} />
-        <Route path="history" element={<History />} />
-        <Route path="keyboard-shortcuts" element={<KeyboardShortcuts />} />
-        <Route path="help" element={<Help />} />
-        <Route path="*" element={<NotFound />} />
-      </Routes>
-    </Suspense>
+    <AccountLayout>
+      <Suspense fallback={<LoadingFallback />}>
+        <Routes>
+          <Route path="/" element={<Navigate to="/account/dashboard" replace />} />
+          <Route path="home" element={<Home />} />
+          <Route path="profile" element={<Profile />} />
+          <Route path="portfolio" element={<Portfolio />} />
+          <Route path="dashboard" element={<Dashboard />} />
+          <Route path="stocks/:symbol" element={<StockDetail />} />
+          <Route path="stocks" element={<StockBrowser />} />
+          <Route path="watchlists" element={<Watchlists />} />
+          <Route path="transactions" element={<Transactions />} />
+          <Route path="settings" element={<Settings />} />
+          <Route path="transfers" element={<Transfers />} />
+          <Route path="news" element={<FinancialNews />} />
+          <Route path="news-feed" element={<NewsFeed />} />
+          <Route path="recurring" element={<Recurring />} />
+          <Route path="stock-lending" element={<StockLending />} />
+          <Route path="tax-center" element={<TaxCenter />} />
+          <Route path="reports-and-statements" element={<ReportsAndStatements />} />
+          <Route path="trending-assets" element={<TrendingAssets />} />
+          <Route path="crypto" element={<Crypto />} />
+          <Route path="investing/*" element={<Investing />} />
+          <Route path="spending" element={<Spending />} />
+          <Route path="history" element={<History />} />
+          <Route path="keyboard-shortcuts" element={<KeyboardShortcuts />} />
+          <Route path="help" element={<Help />} />
+          <Route path="*" element={<NotFound />} />
+        </Routes>
+      </Suspense>
+    </AccountLayout>
   );
 };
 

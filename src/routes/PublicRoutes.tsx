@@ -25,10 +25,10 @@ const PublicRoutes: React.FC = () => {
   return (
     <Suspense fallback={<LoadingFallback />}>
       <Routes>
-        <Route path="/" element={<Index />} />
-        <Route path="auth" element={<Auth />} />
-        <Route path="reset-password" element={<ResetPassword />} />
-        <Route path="update-password" element={<UpdatePassword />} />
+        <Route index element={<Index />} />
+        <Route path="/auth" element={<Auth />} />
+        <Route path="/reset-password" element={<ResetPassword />} />
+        <Route path="/update-password" element={<UpdatePassword />} />
         <Route path="*" element={<NotFound />} />
       </Routes>
     </Suspense>

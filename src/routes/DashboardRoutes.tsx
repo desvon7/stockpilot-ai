@@ -3,6 +3,7 @@ import React, { Suspense, lazy } from "react";
 import { Routes, Route } from "react-router-dom";
 import { Skeleton } from "@/components/ui/skeleton";
 import ProtectedRoute from "@/components/auth/ProtectedRoute";
+import DashboardLayout from "@/components/layout/DashboardLayout";
 
 // Eagerly load most used components
 import Dashboard from "@/pages/Dashboard";
@@ -32,20 +33,22 @@ const LoadingFallback = () => (
 
 const DashboardRoutes: React.FC = () => {
   return (
-    <Suspense fallback={<LoadingFallback />}>
-      <Routes>
-        <Route path="/" element={<Dashboard />} />
-        <Route path="profile" element={<Profile />} />
-        <Route path="watchlists" element={<Watchlists />} />
-        <Route path="stocks" element={<StockBrowser />} />
-        <Route path="stocks/:symbol" element={<StockDetail />} />
-        <Route path="news" element={<NewsFeed />} />
-        <Route path="transactions" element={<Transactions />} />
-        <Route path="trending" element={<TrendingAssets />} />
-        <Route path="portfolio" element={<Portfolio />} />
-        <Route path="*" element={<NotFound />} />
-      </Routes>
-    </Suspense>
+    <DashboardLayout title="Dashboard">
+      <Suspense fallback={<LoadingFallback />}>
+        <Routes>
+          <Route path="/" element={<Dashboard />} />
+          <Route path="profile" element={<Profile />} />
+          <Route path="watchlists" element={<Watchlists />} />
+          <Route path="stocks" element={<StockBrowser />} />
+          <Route path="stocks/:symbol" element={<StockDetail />} />
+          <Route path="news" element={<NewsFeed />} />
+          <Route path="transactions" element={<Transactions />} />
+          <Route path="trending" element={<TrendingAssets />} />
+          <Route path="portfolio" element={<Portfolio />} />
+          <Route path="*" element={<NotFound />} />
+        </Routes>
+      </Suspense>
+    </DashboardLayout>
   );
 };
 

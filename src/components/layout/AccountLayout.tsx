@@ -45,7 +45,6 @@ const AccountLayout: React.FC<AccountLayoutProps> = ({
           "flex-grow p-4 md:p-6 overflow-x-hidden",
           isMobile ? "pb-20" : "" // Add padding at bottom for mobile to avoid content being hidden by nav
         )}>
-          {title && <h1 className="text-xl md:text-2xl font-bold mb-4 md:mb-6">{title}</h1>}
           {children}
         </main>
       </div>
