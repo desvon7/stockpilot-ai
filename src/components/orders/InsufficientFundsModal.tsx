@@ -76,10 +76,10 @@ const InsufficientFundsModal: React.FC<InsufficientFundsModalProps> = ({
       </Dialog>
 
       <DepositModal
-        onOpenChange={setShowDepositModal}
         open={showDepositModal}
-        onDepositSuccess={handleDepositSuccess}
+        setShowDepositModal={setShowDepositModal}
         defaultAmount={requiredAmount || 0}
+        onDepositSuccess={handleDepositSuccess}
       />
     </>
   );
