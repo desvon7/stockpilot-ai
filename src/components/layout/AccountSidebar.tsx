@@ -91,7 +91,7 @@ const AccountSidebar: React.FC = () => {
     <SidebarProvider defaultOpen={isOpen}>
       <Sidebar 
         variant="sidebar" 
-        collapsible={isMobile ? "offcanvas" : true}
+        collapsible={isMobile ? "offcanvas" : "icon"}
         className={cn(
           "border-r border-border",
           isOpen ? "w-64" : "w-[70px]"
