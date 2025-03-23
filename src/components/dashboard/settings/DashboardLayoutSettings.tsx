@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { Switch } from '@/components/ui/switch';
-import { 
+import {
   Card,
   CardHeader,
   CardContent,
