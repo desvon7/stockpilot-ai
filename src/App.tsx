@@ -1,72 +1,85 @@
 
-import { BrowserRouter, Routes, Route } from "react-router-dom";
-import { ThemeProvider } from "@/components/theme-provider";
-import MobileMenu from "@/components/layout/MobileMenu";
-import { AuthProvider } from "@/contexts/AuthContext";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { Toaster } from "@/components/ui/toaster";
-import { HelmetProvider } from "react-helmet-async";
+import React, { Suspense, lazy } from 'react';
+import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import { ThemeProvider } from './components/theme-provider';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { Toaster } from './components/ui/sonner';
+import { HelmetProvider } from 'react-helmet-async';
+import { AuthProvider } from './contexts/AuthContext';
+import { PreferencesProvider } from './contexts/PreferencesContext';
+import ProtectedRoute from './components/auth/ProtectedRoute';
+import './App.css';
 
-// Route components
-import PublicRoutes from "@/routes/PublicRoutes";
-import DashboardRoutes from "@/routes/DashboardRoutes";
-import InvestingRoutes from "@/routes/InvestingRoutes";
-import AccountRoutes from "@/routes/AccountRoutes";
-import NotFound from "@/pages/NotFound";
+// Create a client for React Query
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      staleTime: 60 * 1000, // 1 minute
+      refetchOnWindowFocus: false
+    },
+  },
+});
 
-const queryClient = new QueryClient();
+// Lazy-load route components
+const PublicRoutes = lazy(() => import('./routes/PublicRoutes'));
+const AccountRoutes = lazy(() => import('./routes/AccountRoutes'));
+const DashboardRoutes = lazy(() => import('./routes/DashboardRoutes'));
+const InvestingRoutes = lazy(() => import('./routes/InvestingRoutes'));
+
+// Loading component
+const LoadingFallback = () => (
+  <div className="min-h-screen flex items-center justify-center">
+    <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
+  </div>
+);
 
 function App() {
   return (
-    <QueryClientProvider client={queryClient}>
-      <ThemeProvider defaultTheme="system" storageKey="stock-pilot-theme">
-        <HelmetProvider>
-          <BrowserRouter>
+    <HelmetProvider>
+      <QueryClientProvider client={queryClient}>
+        <BrowserRouter>
+          <ThemeProvider defaultTheme="system" storageKey="theme">
             <AuthProvider>
-              <MobileMenu />
-              <Routes>
-                {/* Public Routes */}
-                <Route path="/" element={<PublicRoutes />} />
-                <Route path="/auth" element={<PublicRoutes />} />
-                <Route path="/reset-password" element={<PublicRoutes />} />
-                <Route path="/update-password" element={<PublicRoutes />} />
-                <Route path="/home" element={<PublicRoutes />} />
-                
-                {/* Dashboard Routes */}
-                <Route path="/dashboard/*" element={<DashboardRoutes />} />
-                <Route path="/profile/*" element={<DashboardRoutes />} />
-                <Route path="/watchlists/*" element={<DashboardRoutes />} />
-                <Route path="/stocks/*" element={<DashboardRoutes />} />
-                <Route path="/portfolio/*" element={<DashboardRoutes />} />
-                <Route path="/news/*" element={<DashboardRoutes />} />
-                <Route path="/transactions/*" element={<DashboardRoutes />} />
-                <Route path="/trending/*" element={<DashboardRoutes />} />
-                
-                {/* Investing Routes */}
-                <Route path="/investing/*" element={<InvestingRoutes />} />
-                <Route path="/spending/*" element={<InvestingRoutes />} />
-                <Route path="/crypto/*" element={<InvestingRoutes />} />
-                <Route path="/transfers/*" element={<InvestingRoutes />} />
-                <Route path="/recurring/*" element={<InvestingRoutes />} />
-                <Route path="/stock-lending/*" element={<InvestingRoutes />} />
-                
-                {/* Account Routes */}
-                <Route path="/reports-and-statements/*" element={<AccountRoutes />} />
-                <Route path="/tax-center/*" element={<AccountRoutes />} />
-                <Route path="/history/*" element={<AccountRoutes />} />
-                <Route path="/settings/*" element={<AccountRoutes />} />
-                <Route path="/help/*" element={<AccountRoutes />} />
-                <Route path="/keyboard-shortcuts/*" element={<AccountRoutes />} />
-                
-                {/* Catch all route */}
-                <Route path="*" element={<NotFound />} />
-              </Routes>
-              <Toaster />
+              <PreferencesProvider>
+                <Suspense fallback={<LoadingFallback />}>
+                  <Routes>
+                    {/* Public routes */}
+                    <Route path="/*" element={<PublicRoutes />} />
+                    
+                    {/* Protected routes */}
+                    <Route 
+                      path="/account/*" 
+                      element={
+                        <ProtectedRoute>
+                          <AccountRoutes />
+                        </ProtectedRoute>
+                      } 
+                    />
+                    <Route 
+                      path="/dashboard/*" 
+                      element={
+                        <ProtectedRoute>
+                          <DashboardRoutes />
+                        </ProtectedRoute>
+                      } 
+                    />
+                    <Route 
+                      path="/investing/*" 
+                      element={
+                        <ProtectedRoute>
+                          <InvestingRoutes />
+                        </ProtectedRoute>
+                      } 
+                    />
+                  </Routes>
+                </Suspense>
+                <Toaster />
+              </PreferencesProvider>
             </AuthProvider>
-          </BrowserRouter>
-        </HelmetProvider>
-      </ThemeProvider>
-    </QueryClientProvider>
+          </ThemeProvider>
+        </BrowserRouter>
+      </QueryClientProvider>
+    </HelmetProvider>
   );
 }
 
