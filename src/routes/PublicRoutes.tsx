@@ -1,6 +1,6 @@
 
 import React from "react";
-import { Route, Routes } from "react-router-dom";
+import { Routes, Route, useLocation } from "react-router-dom";
 import Index from "@/pages/Index";
 import Auth from "@/pages/Auth";
 import ResetPassword from "@/pages/ResetPassword";
@@ -9,16 +9,24 @@ import Home from "@/pages/Home";
 import NotFound from "@/pages/NotFound";
 
 const PublicRoutes: React.FC = () => {
-  return (
-    <Routes>
-      <Route path="/" element={<Index />} />
-      <Route path="/auth" element={<Auth />} />
-      <Route path="/reset-password" element={<ResetPassword />} />
-      <Route path="/update-password" element={<UpdatePassword />} />
-      <Route path="/home" element={<Home />} />
-      <Route path="*" element={<NotFound />} />
-    </Routes>
-  );
+  const location = useLocation();
+  const path = location.pathname;
+
+  // Render appropriate component based on the current path
+  if (path === "/") {
+    return <Index />;
+  } else if (path === "/auth") {
+    return <Auth />;
+  } else if (path === "/reset-password") {
+    return <ResetPassword />;
+  } else if (path === "/update-password") {
+    return <UpdatePassword />;
+  } else if (path === "/home") {
+    return <Home />;
+  }
+  
+  // Fallback for public routes
+  return <NotFound />;
 };
 
 export default PublicRoutes;

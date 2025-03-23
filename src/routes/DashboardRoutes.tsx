@@ -1,6 +1,6 @@
 
 import React from "react";
-import { Route, Routes } from "react-router-dom";
+import { Route, Routes, useLocation } from "react-router-dom";
 import ProtectedRoute from "@/components/auth/ProtectedRoute";
 import Dashboard from "@/pages/Dashboard";
 import Profile from "@/pages/Profile";
@@ -10,76 +10,41 @@ import StockDetail from "@/pages/StockDetail";
 import NewsFeed from "@/pages/NewsFeed";
 import Transactions from "@/pages/Transactions";
 import TrendingAssets from "@/pages/TrendingAssets";
+import Portfolio from "@/pages/Portfolio";
+import NotFound from "@/pages/NotFound";
 
 const DashboardRoutes: React.FC = () => {
-  return (
-    <Routes>
-      <Route
-        path="/dashboard"
-        element={
-          <ProtectedRoute>
-            <Dashboard />
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/profile"
-        element={
-          <ProtectedRoute>
-            <Profile />
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/watchlists"
-        element={
-          <ProtectedRoute>
-            <Watchlists />
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/stocks"
-        element={
-          <ProtectedRoute>
-            <StockBrowser />
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/stocks/:symbol"
-        element={
-          <ProtectedRoute>
-            <StockDetail />
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/news"
-        element={
-          <ProtectedRoute>
-            <NewsFeed />
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/transactions"
-        element={
-          <ProtectedRoute>
-            <Transactions />
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/trending"
-        element={
-          <ProtectedRoute>
-            <TrendingAssets />
-          </ProtectedRoute>
-        }
-      />
-    </Routes>
+  const location = useLocation();
+  const path = location.pathname;
+
+  // Wrap content with ProtectedRoute
+  const renderProtected = (component: React.ReactNode) => (
+    <ProtectedRoute>{component}</ProtectedRoute>
   );
+
+  // Handle specific paths
+  if (path === "/dashboard") {
+    return renderProtected(<Dashboard />);
+  } else if (path === "/profile") {
+    return renderProtected(<Profile />);
+  } else if (path === "/watchlists") {
+    return renderProtected(<Watchlists />);
+  } else if (path === "/stocks") {
+    return renderProtected(<StockBrowser />);
+  } else if (path.startsWith("/stocks/")) {
+    return renderProtected(<StockDetail />);
+  } else if (path === "/news") {
+    return renderProtected(<NewsFeed />);
+  } else if (path === "/transactions") {
+    return renderProtected(<Transactions />);
+  } else if (path === "/trending") {
+    return renderProtected(<TrendingAssets />);
+  } else if (path === "/portfolio") {
+    return renderProtected(<Portfolio />);
+  }
+
+  // Fallback for dashboard routes
+  return renderProtected(<NotFound />);
 };
 
 export default DashboardRoutes;
