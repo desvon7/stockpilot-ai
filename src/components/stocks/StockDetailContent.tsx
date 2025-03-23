@@ -10,6 +10,8 @@ import StockPlaceholderTab from '@/components/stocks/StockPlaceholderTab';
 import StockChart, { TimeRange } from '@/components/ui/StockChart';
 import StockHeader from '@/components/stocks/StockHeader';
 import { useStockDetail, MockStockData } from '@/hooks/useStockDetail';
+import { Quote } from '@/types/marketData';
+import { WebSocketStatus } from '@/types/marketData';
 
 interface StockDetailContentProps {
   symbol: string;
@@ -18,6 +20,8 @@ interface StockDetailContentProps {
   mockChartData: any[];
   stockData: any;
   mockStockData: MockStockData;
+  realTimeQuote?: Quote; // Added realTimeQuote prop
+  wsStatus?: WebSocketStatus; // Added wsStatus prop
 }
 
 const StockDetailContent: React.FC<StockDetailContentProps> = ({
@@ -26,17 +30,33 @@ const StockDetailContent: React.FC<StockDetailContentProps> = ({
   setTimeframe,
   mockChartData,
   stockData,
-  mockStockData
+  mockStockData,
+  realTimeQuote, // Add to parameter list
+  wsStatus // Add to parameter list
 }) => {
+  // Use real-time price if available
+  const displayPrice = realTimeQuote?.price || stockData?.price || mockStockData.price;
+  
+  // Calculate change if we have real-time data and previous close
+  let displayChange = stockData?.change || mockStockData.change;
+  let displayChangePercent = parseFloat(stockData?.changePercent || mockStockData.changePercent.toString());
+  
+  if (realTimeQuote?.price && realTimeQuote?.previousClose) {
+    displayChange = realTimeQuote.price - realTimeQuote.previousClose;
+    displayChangePercent = (displayChange / realTimeQuote.previousClose) * 100;
+  }
+
   return (
     <>
       <StockHeader 
         symbol={stockData?.symbol || mockStockData.symbol}
         name={stockData?.name || mockStockData.name}
         sector={stockData?.sector || mockStockData.sector}
-        price={stockData?.price || mockStockData.price}
-        change={stockData?.change || mockStockData.change}
-        changePercent={parseFloat(stockData?.changePercent || mockStockData.changePercent.toString())}
+        price={displayPrice}
+        change={displayChange}
+        changePercent={displayChangePercent}
+        realTime={!!realTimeQuote}
+        wsStatus={wsStatus}
       />
       
       <Card className="mb-6">

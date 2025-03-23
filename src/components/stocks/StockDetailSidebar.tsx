@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import StockTradingCard from '@/components/stocks/StockTradingCard';
 import OptionsOrderForm from '@/components/orders/OptionsOrderForm';
@@ -9,6 +9,7 @@ import StockStatsCard from '@/components/stocks/StockStatsCard';
 import { Link } from 'react-router-dom';
 import { Home, ArrowLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { Quote } from '@/types/marketData';
 
 interface StockDetailSidebarProps {
   symbol: string;
@@ -22,15 +23,25 @@ interface StockDetailSidebarProps {
     volume: number;
     avgVolume: number;
   };
+  realTimeQuote?: Quote; // Added realTimeQuote prop
 }
 
 const StockDetailSidebar: React.FC<StockDetailSidebarProps> = ({
   symbol,
   companyName,
   recommendation,
-  statsData
+  statsData,
+  realTimeQuote // Add to parameter list
 }) => {
+  // Use real-time price if available, otherwise use recommendation price
   const [currentPrice, setCurrentPrice] = useState(recommendation.currentPrice);
+  
+  // Update price when real-time quote changes
+  useEffect(() => {
+    if (realTimeQuote?.price) {
+      setCurrentPrice(realTimeQuote.price);
+    }
+  }, [realTimeQuote]);
 
   return (
     <div className="space-y-6">
@@ -57,7 +68,8 @@ const StockDetailSidebar: React.FC<StockDetailSidebarProps> = ({
         <TabsContent value="stock" className="mt-4">
           <StockTradingCard 
             symbol={symbol} 
-            companyName={companyName} 
+            companyName={companyName}
+            currentPrice={currentPrice} 
           />
         </TabsContent>
         <TabsContent value="options" className="mt-4">

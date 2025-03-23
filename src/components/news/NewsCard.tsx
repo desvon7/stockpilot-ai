@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { format, formatDistanceToNow } from 'date-fns';
 import { ExternalLink } from 'lucide-react';
@@ -13,17 +12,18 @@ interface NewsCardProps {
   className?: string;
   showDate?: boolean;
   highlightSymbols?: string[];
+  compact?: boolean;
 }
 
 const NewsCard: React.FC<NewsCardProps> = ({ 
   article, 
   className,
   showDate = false,
-  highlightSymbols = []
+  highlightSymbols = [],
+  compact = false
 }) => {
   const isRecent = new Date(article.publishedAt).getTime() > Date.now() - 24 * 60 * 60 * 1000;
   
-  // Determine news categories based on content
   const getCategories = () => {
     const categories: string[] = [];
     const text = (article.title + ' ' + article.summary).toLowerCase();
@@ -42,7 +42,6 @@ const NewsCard: React.FC<NewsCardProps> = ({
       }
     });
     
-    // Add sentiment badge if available
     if (typeof article.sentiment === 'number') {
       if (article.sentiment > 0.3) categories.push('Positive');
       else if (article.sentiment < -0.3) categories.push('Negative');
@@ -51,7 +50,6 @@ const NewsCard: React.FC<NewsCardProps> = ({
     return categories.length > 0 ? categories : ['General'];
   };
 
-  // Highlight mentioned symbols in title and summary
   const highlightText = (text: string) => {
     if (!highlightSymbols.length) return text;
     
@@ -64,6 +62,40 @@ const NewsCard: React.FC<NewsCardProps> = ({
   };
   
   const categories = getCategories();
+
+  if (compact) {
+    return (
+      <Card className={cn("overflow-hidden hover:shadow-md transition-shadow", className)}>
+        <CardContent className="p-3">
+          <div className="flex justify-between items-start mb-1">
+            <div className="text-xs text-muted-foreground mb-1">
+              <span className="font-medium">{article.source}</span>
+            </div>
+            {isRecent && <Badge variant="outline" className="bg-primary/10 text-primary text-xs">New</Badge>}
+          </div>
+          
+          <h3 className="font-semibold text-sm mb-1" 
+              dangerouslySetInnerHTML={{ __html: highlightText(article.title) }}></h3>
+          
+          <div className="flex flex-wrap gap-1 mt-1">
+            {categories.slice(0, 1).map((category, index) => (
+              <Badge 
+                key={index} 
+                variant="secondary" 
+                className={cn(
+                  "text-xs",
+                  category === 'Positive' && "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400",
+                  category === 'Negative' && "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400"
+                )}
+              >
+                {category}
+              </Badge>
+            ))}
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
 
   return (
     <Card className={cn("overflow-hidden hover:shadow-md transition-shadow", className)}>
