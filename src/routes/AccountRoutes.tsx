@@ -61,7 +61,7 @@ const AccountRoutes: React.FC = () => {
         <Route path="/recurring" element={<Recurring />} />
         <Route path="/stock-lending" element={<StockLending />} />
         <Route path="/tax-center" element={<TaxCenter />} />
-        <Route path="/reports" element={<ReportsAndStatements />} />
+        <Route path="/reports-and-statements" element={<ReportsAndStatements />} />
         <Route path="/trending-assets" element={<TrendingAssets />} />
         <Route path="/stocks" element={<StockBrowser />} />
         <Route path="/crypto" element={<Crypto />} />
