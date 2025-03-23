@@ -25,8 +25,6 @@ const queryClient = new QueryClient({
 // Lazy-load route components
 const PublicRoutes = lazy(() => import('./routes/PublicRoutes'));
 const AccountRoutes = lazy(() => import('./routes/AccountRoutes'));
-const DashboardRoutes = lazy(() => import('./routes/DashboardRoutes'));
-const InvestingRoutes = lazy(() => import('./routes/InvestingRoutes'));
 
 // Loading component (memoized for performance)
 const LoadingFallback = memo(() => (
@@ -49,7 +47,7 @@ function App() {
                     {/* Public routes */}
                     <Route path="/*" element={<PublicRoutes />} />
                     
-                    {/* Protected routes */}
+                    {/* Protected routes - using /* to handle nested routes */}
                     <Route 
                       path="/account/*" 
                       element={
@@ -58,19 +56,13 @@ function App() {
                         </ProtectedRoute>
                       } 
                     />
+                    
+                    {/* Direct routes to account pages for convenience */}
                     <Route 
-                      path="/dashboard/*" 
+                      path="/:path/*" 
                       element={
                         <ProtectedRoute>
-                          <DashboardRoutes />
-                        </ProtectedRoute>
-                      } 
-                    />
-                    <Route 
-                      path="/investing/*" 
-                      element={
-                        <ProtectedRoute>
-                          <InvestingRoutes />
+                          <AccountRoutes />
                         </ProtectedRoute>
                       } 
                     />

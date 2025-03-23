@@ -43,6 +43,7 @@ const AccountSidebar: React.FC = () => {
     return nameParts[0][0] || 'U';
   };
 
+  // Update paths to work with our routing structure
   const menuItems = [
     { icon: Home, title: 'Home', path: '/home' },
     { icon: User, title: 'Profile', path: '/profile' },
@@ -59,6 +60,9 @@ const AccountSidebar: React.FC = () => {
     { icon: HelpCircle, title: 'Help', path: '/help' },
     { icon: Keyboard, title: 'Keyboard Shortcuts', path: '/keyboard-shortcuts' }
   ];
+
+  // Get the current path without leading slash
+  const currentPath = location.pathname.substring(1);
 
   return (
     <SidebarProvider defaultOpen={isOpen}>
@@ -79,7 +83,13 @@ const AccountSidebar: React.FC = () => {
           <SidebarMenu>
             {menuItems.map((item) => (
               <SidebarMenuItem key={item.title}>
-                <SidebarMenuButton asChild isActive={location.pathname === item.path}>
+                <SidebarMenuButton 
+                  asChild 
+                  isActive={
+                    currentPath === item.path.substring(1) || 
+                    (item.path !== '/home' && currentPath.startsWith(item.path.substring(1)))
+                  }
+                >
                   <Link to={item.path} className="flex items-center">
                     <item.icon className="mr-3" />
                     <span>{item.title}</span>

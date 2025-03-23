@@ -6,7 +6,6 @@ import { Skeleton } from "@/components/ui/skeleton";
 // Eagerly load the most frequently accessed pages
 import Index from "@/pages/Index";
 import Auth from "@/pages/Auth";
-import Home from "@/pages/Home";
 
 // Lazily load less frequently accessed pages
 const ResetPassword = lazy(() => import("@/pages/ResetPassword"));
@@ -27,10 +26,9 @@ const PublicRoutes: React.FC = () => {
     <Suspense fallback={<LoadingFallback />}>
       <Routes>
         <Route path="/" element={<Index />} />
-        <Route path="/auth" element={<Auth />} />
-        <Route path="/reset-password" element={<ResetPassword />} />
-        <Route path="/update-password" element={<UpdatePassword />} />
-        <Route path="/home" element={<Home />} />
+        <Route path="auth" element={<Auth />} />
+        <Route path="reset-password" element={<ResetPassword />} />
+        <Route path="update-password" element={<UpdatePassword />} />
         <Route path="*" element={<NotFound />} />
       </Routes>
     </Suspense>
