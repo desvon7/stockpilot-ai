@@ -73,9 +73,9 @@ const StockDetailSidebar: React.FC<StockDetailSidebarProps> = ({
             </Link>
           </Button>
           <Button variant="outline" size="sm" asChild className="flex-1 sm:flex-none">
-            <Link to="/dashboard">
+            <Link to="/portfolio">
               <Home className="h-4 w-4 mr-1" />
-              <span className="truncate">Dashboard</span>
+              <span className="truncate">Portfolio</span>
             </Link>
           </Button>
         </div>

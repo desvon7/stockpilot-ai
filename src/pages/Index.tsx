@@ -9,14 +9,14 @@ import { useAuth } from '@/contexts/AuthContext';
 
 const Index: React.FC = () => {
   const navigate = useNavigate();
-  const { user } = useAuth();
+  const { user, loading } = useAuth();
   
-  // Redirect logged-in users to dashboard/portfolio
+  // Redirect logged-in users to portfolio dashboard
   useEffect(() => {
-    if (user) {
-      navigate('/dashboard');
+    if (!loading && user) {
+      navigate('/portfolio');
     }
-  }, [user, navigate]);
+  }, [user, navigate, loading]);
   
   return (
     <div className="min-h-screen flex flex-col">
