@@ -1,12 +1,14 @@
-import React, { useState } from 'react';
-import OrderForm from '@/components/orders/OrderForm';
-import AddToWatchlist from '@/components/watchlists/AddToWatchlist';
-import useStockTrading from '@/hooks/useStockTrading';
+
+import React, { useState, useMemo } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
 import { TrendingUp, Clock } from 'lucide-react';
+import OrderForm from '@/components/orders/OrderForm';
+import AddToWatchlist from '@/components/watchlists/AddToWatchlist';
+import useStockTrading from '@/hooks/useStockTrading';
 import InsufficientFundsModal from '@/components/orders/InsufficientFundsModal';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 interface StockTradingCardProps {
   symbol: string;
@@ -20,6 +22,10 @@ const StockTradingCard: React.FC<StockTradingCardProps> = ({
   const { currentPrice, ownedStock, handleOrderSuccess, isLoadingStock } = useStockTrading({ symbol });
   const [showInsufficientFundsModal, setShowInsufficientFundsModal] = useState(false);
   const [requiredAmount, setRequiredAmount] = useState(0);
+  const isMobile = useIsMobile();
+  
+  // Memoize the available shares to reduce unnecessary re-renders
+  const availableShares = useMemo(() => ownedStock?.shares || 0, [ownedStock]);
 
   const handleInsufficientFunds = (amount: number) => {
     setRequiredAmount(amount);
@@ -27,9 +33,9 @@ const StockTradingCard: React.FC<StockTradingCardProps> = ({
   };
 
   return (
-    <Card>
-      <CardHeader className="pb-2">
-        <CardTitle className="text-lg font-medium flex items-center justify-between">
+    <Card className="shadow-md transition-all">
+      <CardHeader className={`pb-2 ${isMobile ? 'px-4 py-3' : ''}`}>
+        <CardTitle className={`${isMobile ? 'text-base' : 'text-lg'} font-medium flex items-center justify-between`}>
           <span>Trade {symbol}</span>
           {ownedStock && (
             <Badge variant="outline" className="ml-2">
@@ -39,7 +45,7 @@ const StockTradingCard: React.FC<StockTradingCardProps> = ({
         </CardTitle>
       </CardHeader>
       
-      <CardContent>
+      <CardContent className={isMobile ? 'p-3' : ''}>
         <Tabs defaultValue="market" className="mb-4">
           <TabsList className="grid w-full grid-cols-2">
             <TabsTrigger value="market" className="flex items-center">
@@ -56,7 +62,7 @@ const StockTradingCard: React.FC<StockTradingCardProps> = ({
               symbol={symbol}
               companyName={companyName}
               currentPrice={currentPrice}
-              availableShares={ownedStock?.shares}
+              availableShares={availableShares}
               onOrderSuccess={handleOrderSuccess}
             />
           </TabsContent>
@@ -65,7 +71,7 @@ const StockTradingCard: React.FC<StockTradingCardProps> = ({
               symbol={symbol}
               companyName={companyName}
               currentPrice={currentPrice}
-              availableShares={ownedStock?.shares}
+              availableShares={availableShares}
               onOrderSuccess={handleOrderSuccess}
             />
           </TabsContent>
@@ -85,4 +91,4 @@ const StockTradingCard: React.FC<StockTradingCardProps> = ({
   );
 };
 
-export default StockTradingCard;
+export default React.memo(StockTradingCard);

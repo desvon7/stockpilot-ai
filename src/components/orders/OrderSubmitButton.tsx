@@ -1,7 +1,8 @@
 
 import React from 'react';
 import { Button } from '@/components/ui/button';
-import { Loader2, DollarSign, ArrowDownUp } from 'lucide-react';
+import { Loader2, DollarSign, ArrowDownUp, ShoppingCart, TrendingDown } from 'lucide-react';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 interface OrderSubmitButtonProps {
   isSubmitting: boolean;
@@ -14,11 +15,21 @@ const OrderSubmitButton: React.FC<OrderSubmitButtonProps> = ({
   orderType, 
   shares 
 }) => {
+  const isMobile = useIsMobile();
+  const displayShares = shares ? shares : '0';
+  
+  const getButtonColor = () => {
+    return orderType === 'buy' 
+      ? 'bg-success hover:bg-success/90 text-white' 
+      : 'bg-destructive hover:bg-destructive/90 text-white';
+  };
+  
   return (
     <Button 
       type="submit"
-      className="w-full"
+      className={`w-full ${getButtonColor()} transition-colors shadow-sm`}
       disabled={isSubmitting}
+      size={isMobile ? "sm" : "default"}
     >
       {isSubmitting ? (
         <>
@@ -27,17 +38,17 @@ const OrderSubmitButton: React.FC<OrderSubmitButtonProps> = ({
         </>
       ) : orderType === 'buy' ? (
         <>
-          <DollarSign className="h-4 w-4 mr-2" />
-          Buy {shares} Shares
+          <ShoppingCart className="h-4 w-4 mr-2" />
+          Buy {displayShares} Shares
         </>
       ) : (
         <>
-          <ArrowDownUp className="h-4 w-4 mr-2" />
-          Sell {shares} Shares
+          <TrendingDown className="h-4 w-4 mr-2" />
+          Sell {displayShares} Shares
         </>
       )}
     </Button>
   );
 };
 
-export default OrderSubmitButton;
+export default React.memo(OrderSubmitButton);
