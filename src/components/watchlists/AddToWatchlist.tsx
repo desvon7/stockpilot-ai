@@ -1,9 +1,8 @@
-
 import React, { useState } from 'react';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Plus, Search, Loader2 } from 'lucide-react';
-import { StockSearchInput } from '@/components/search/StockSearchInput';
+import StockSearchInput from '@/components/search/StockSearchInput';
 import { StockSearchResult } from '@/services/stockService';
 import { addToWatchlist } from '@/services/portfolioService';
 import { toast } from 'sonner';
@@ -28,7 +27,6 @@ const AddToWatchlist: React.FC<AddToWatchlistProps> = ({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [selectedStock, setSelectedStock] = useState<StockSearchResult | null>(null);
 
-  // This handles single-stock direct add (e.g. from a stock detail page)
   const handleAddToWatchlist = async () => {
     if (!activeWatchlistId || !stockSymbol) {
       toast.error('Please select a watchlist first');
@@ -52,7 +50,6 @@ const AddToWatchlist: React.FC<AddToWatchlistProps> = ({
     }
   };
 
-  // This handles the search & add flow (used in the Watchlists page)
   const handleAddStockToWatchlist = async (stock: StockSearchResult) => {
     if (!activeWatchlistId) {
       toast.error('Please select a watchlist first');
@@ -78,7 +75,6 @@ const AddToWatchlist: React.FC<AddToWatchlistProps> = ({
     }
   };
 
-  // If we're on a stock detail page, show the simple "Add to Watchlist" button
   if (stockSymbol) {
     return (
       <Button 
@@ -97,7 +93,6 @@ const AddToWatchlist: React.FC<AddToWatchlistProps> = ({
     );
   }
 
-  // On the Watchlists page, show the search interface
   return (
     <Card>
       <CardHeader>
