@@ -1,7 +1,5 @@
-
 import React from "react";
-import Index from "@/pages/Index";
-import Home from "@/pages/Home";
+import ModernHome from "@/pages/ModernHome";
 import Auth from "@/pages/Auth";
 import ResetPassword from "@/pages/ResetPassword";
 import UpdatePassword from "@/pages/UpdatePassword";
@@ -46,30 +44,23 @@ export interface RouteConfig {
 export const publicRoutes: RouteConfig[] = [
   {
     path: "/",
-    element: <Index />,
+    element: <ModernHome />,
     title: "Home",
-    children: [
-      {
-        path: "",
-        element: <Home />,
-        title: "StockPilot - Smart Stock Trading",
-      },
-      {
-        path: "auth",
-        element: <Auth />,
-        title: "Authentication",
-      },
-      {
-        path: "reset-password",
-        element: <ResetPassword />,
-        title: "Reset Password",
-      },
-      {
-        path: "update-password",
-        element: <UpdatePassword />,
-        title: "Update Password",
-      },
-    ],
+  },
+  {
+    path: "/auth",
+    element: <Auth />,
+    title: "Authentication",
+  },
+  {
+    path: "/reset-password",
+    element: <ResetPassword />,
+    title: "Reset Password",
+  },
+  {
+    path: "/update-password",
+    element: <UpdatePassword />,
+    title: "Update Password",
   },
 ];
 
