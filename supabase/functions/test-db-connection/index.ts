@@ -1,7 +1,6 @@
 
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2.38.4";
 import { neon } from 'npm:@neondatabase/serverless';
 import { drizzle } from 'npm:drizzle-orm/neon-http';
 
@@ -16,6 +15,8 @@ serve(async (req) => {
   }
 
   try {
+    console.log('Testing database connection...');
+    
     // Get database URL from environment variables
     const databaseUrl = Deno.env.get('DATABASE_URL');
     
@@ -23,25 +24,39 @@ serve(async (req) => {
       throw new Error('DATABASE_URL environment variable is not set');
     }
     
-    // Create a Neon client
-    const sql = neon(databaseUrl);
+    // Create a Neon client with connection parameters
+    const sql = neon(databaseUrl, {
+      fullResults: true
+    });
+    
     const db = drizzle(sql);
     
-    // Test the connection
-    const result = await sql`SELECT NOW() as current_time`;
+    // Test the connection with timeout
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 5000); // 5 second timeout
     
-    return new Response(
-      JSON.stringify({ 
-        success: true, 
-        message: 'Database connection successful', 
-        timestamp: result[0].current_time 
-      }),
-      { 
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
-      }
-    );
+    try {
+      const result = await sql`SELECT NOW() as current_time, current_database() as database_name`,
+                              { signal: controller.signal };
+      clearTimeout(timeoutId);
+      
+      return new Response(
+        JSON.stringify({ 
+          success: true, 
+          message: 'Database connection successful', 
+          timestamp: result[0].current_time,
+          database: result[0].database_name
+        }),
+        { 
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+        }
+      );
+    } catch (timeoutError) {
+      clearTimeout(timeoutId);
+      throw new Error(`Database query timed out: ${timeoutError.message}`);
+    }
   } catch (error) {
-    console.error('Error:', error.message);
+    console.error('Database connection error:', error.message);
     
     return new Response(
       JSON.stringify({ 

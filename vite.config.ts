@@ -24,5 +24,6 @@ export default defineConfig(({ mode }) => ({
   define: {
     // Make environment variables available in the client
     'process.env.DATABASE_URL': JSON.stringify(process.env.DATABASE_URL),
+    'process.env.NODE_ENV': JSON.stringify(mode),
   },
 }));

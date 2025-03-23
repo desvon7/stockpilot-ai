@@ -9,6 +9,15 @@ export const createNeonClient = () => {
     throw new Error('DATABASE_URL environment variable is not set');
   }
   
-  const sql = neon(process.env.DATABASE_URL);
-  return drizzle(sql, { schema });
+  // Create SQL executor with connection pooling for better performance
+  const sql = neon(process.env.DATABASE_URL, { 
+    poolSize: 5, // Adjust based on your workload
+    fullResults: true // Return full result objects
+  });
+  
+  // Create and return Drizzle ORM instance
+  return drizzle(sql, { 
+    schema,
+    logger: process.env.NODE_ENV === 'development'
+  });
 };
