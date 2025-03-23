@@ -4,10 +4,13 @@ import { Search } from 'lucide-react';
 import {
   Dialog,
   DialogContent,
+  DialogTitle,
+  DialogDescription,
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import SearchDialogContent from '@/components/search/SearchDialogContent';
+import { VisuallyHidden } from '@/components/ui/visually-hidden';
 
 interface GlobalAssetSearchProps {
   darkMode?: boolean;
@@ -42,6 +45,12 @@ const GlobalAssetSearch: React.FC<GlobalAssetSearchProps> = ({
       )}
       
       <DialogContent className="sm:max-w-[600px] p-0">
+        <DialogTitle className="sr-only">
+          <VisuallyHidden>Search Assets</VisuallyHidden>
+        </DialogTitle>
+        <DialogDescription className="sr-only">
+          <VisuallyHidden>Search for stocks, ETFs, and other assets</VisuallyHidden>
+        </DialogDescription>
         <SearchDialogContent 
           darkMode={darkMode} 
           onClose={() => setOpen(false)} 

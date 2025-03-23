@@ -3,6 +3,7 @@ import React, { Suspense, lazy } from "react";
 import { Routes, Route, Navigate } from "react-router-dom";
 import { Skeleton } from "@/components/ui/skeleton";
 import AccountLayout from "@/components/layout/AccountLayout";
+import ProtectedRoute from "@/components/auth/ProtectedRoute";
 
 // Eagerly load the most frequently used pages
 import Profile from "@/pages/Profile";
@@ -47,37 +48,129 @@ const LoadingFallback = () => (
 // This routes component handles all authenticated routes
 const AccountRoutes: React.FC = () => {
   return (
-    <AccountLayout>
-      <Suspense fallback={<LoadingFallback />}>
-        <Routes>
-          <Route path="/" element={<Navigate to="/account/dashboard" replace />} />
-          <Route path="home" element={<Home />} />
-          <Route path="profile" element={<Profile />} />
-          <Route path="portfolio" element={<Portfolio />} />
-          <Route path="dashboard" element={<Dashboard />} />
-          <Route path="stocks/:symbol" element={<StockDetail />} />
-          <Route path="stocks" element={<StockBrowser />} />
-          <Route path="watchlists" element={<Watchlists />} />
-          <Route path="transactions" element={<Transactions />} />
-          <Route path="settings" element={<Settings />} />
-          <Route path="transfers" element={<Transfers />} />
-          <Route path="news" element={<FinancialNews />} />
-          <Route path="news-feed" element={<NewsFeed />} />
-          <Route path="recurring" element={<Recurring />} />
-          <Route path="stock-lending" element={<StockLending />} />
-          <Route path="tax-center" element={<TaxCenter />} />
-          <Route path="reports-and-statements" element={<ReportsAndStatements />} />
-          <Route path="trending-assets" element={<TrendingAssets />} />
-          <Route path="crypto" element={<Crypto />} />
-          <Route path="investing/*" element={<Investing />} />
-          <Route path="spending" element={<Spending />} />
-          <Route path="history" element={<History />} />
-          <Route path="keyboard-shortcuts" element={<KeyboardShortcuts />} />
-          <Route path="help" element={<Help />} />
+    <Routes>
+      <Route element={<ProtectedRoute />}>
+        <Route element={<AccountLayout />}>
+          <Route index element={<Navigate to="/account/home" replace />} />
+          <Route path="home" element={
+            <Suspense fallback={<LoadingFallback />}>
+              <Home />
+            </Suspense>
+          } />
+          <Route path="profile" element={
+            <Suspense fallback={<LoadingFallback />}>
+              <Profile />
+            </Suspense>
+          } />
+          <Route path="portfolio" element={
+            <Suspense fallback={<LoadingFallback />}>
+              <Portfolio />
+            </Suspense>
+          } />
+          <Route path="dashboard" element={
+            <Suspense fallback={<LoadingFallback />}>
+              <Dashboard />
+            </Suspense>
+          } />
+          <Route path="stocks/:symbol" element={
+            <Suspense fallback={<LoadingFallback />}>
+              <StockDetail />
+            </Suspense>
+          } />
+          <Route path="stocks" element={
+            <Suspense fallback={<LoadingFallback />}>
+              <StockBrowser />
+            </Suspense>
+          } />
+          <Route path="watchlists" element={
+            <Suspense fallback={<LoadingFallback />}>
+              <Watchlists />
+            </Suspense>
+          } />
+          <Route path="transactions" element={
+            <Suspense fallback={<LoadingFallback />}>
+              <Transactions />
+            </Suspense>
+          } />
+          <Route path="settings" element={
+            <Suspense fallback={<LoadingFallback />}>
+              <Settings />
+            </Suspense>
+          } />
+          <Route path="transfers" element={
+            <Suspense fallback={<LoadingFallback />}>
+              <Transfers />
+            </Suspense>
+          } />
+          <Route path="news" element={
+            <Suspense fallback={<LoadingFallback />}>
+              <FinancialNews />
+            </Suspense>
+          } />
+          <Route path="news-feed" element={
+            <Suspense fallback={<LoadingFallback />}>
+              <NewsFeed />
+            </Suspense>
+          } />
+          <Route path="recurring" element={
+            <Suspense fallback={<LoadingFallback />}>
+              <Recurring />
+            </Suspense>
+          } />
+          <Route path="stock-lending" element={
+            <Suspense fallback={<LoadingFallback />}>
+              <StockLending />
+            </Suspense>
+          } />
+          <Route path="tax-center" element={
+            <Suspense fallback={<LoadingFallback />}>
+              <TaxCenter />
+            </Suspense>
+          } />
+          <Route path="reports-and-statements" element={
+            <Suspense fallback={<LoadingFallback />}>
+              <ReportsAndStatements />
+            </Suspense>
+          } />
+          <Route path="trending-assets" element={
+            <Suspense fallback={<LoadingFallback />}>
+              <TrendingAssets />
+            </Suspense>
+          } />
+          <Route path="crypto" element={
+            <Suspense fallback={<LoadingFallback />}>
+              <Crypto />
+            </Suspense>
+          } />
+          <Route path="investing/*" element={
+            <Suspense fallback={<LoadingFallback />}>
+              <Investing />
+            </Suspense>
+          } />
+          <Route path="spending" element={
+            <Suspense fallback={<LoadingFallback />}>
+              <Spending />
+            </Suspense>
+          } />
+          <Route path="history" element={
+            <Suspense fallback={<LoadingFallback />}>
+              <History />
+            </Suspense>
+          } />
+          <Route path="keyboard-shortcuts" element={
+            <Suspense fallback={<LoadingFallback />}>
+              <KeyboardShortcuts />
+            </Suspense>
+          } />
+          <Route path="help" element={
+            <Suspense fallback={<LoadingFallback />}>
+              <Help />
+            </Suspense>
+          } />
           <Route path="*" element={<NotFound />} />
-        </Routes>
-      </Suspense>
-    </AccountLayout>
+        </Route>
+      </Route>
+    </Routes>
   );
 };
 

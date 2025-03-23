@@ -29,6 +29,10 @@ export const useRealTimeMarketData = ({
   const reconnectAttempts = useRef<number>(0);
   const maxReconnectAttempts = 5;
   
+  // Store the API keys from environment variables or secrets
+  const apiKey = import.meta.env.VITE_ALPACA_API_KEY;
+  const apiSecret = import.meta.env.VITE_ALPACA_API_SECRET;
+  
   useEffect(() => {
     symbolsRef.current = symbols;
     
@@ -54,10 +58,10 @@ export const useRealTimeMarketData = ({
     // Authenticate with Alpaca API
     wsRef.current.send(JSON.stringify({
       action: "auth",
-      key: import.meta.env.VITE_ALPACA_API_KEY,
-      secret: import.meta.env.VITE_ALPACA_API_SECRET
+      key: apiKey,
+      secret: apiSecret
     }));
-  }, []);
+  }, [apiKey, apiSecret]);
 
   const fetchInitialData = useCallback(async () => {
     if (!symbols.length || !enabled) return;

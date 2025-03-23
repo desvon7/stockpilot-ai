@@ -1,10 +1,11 @@
 
-import React, { useCallback } from 'react';
+import React, { useCallback, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { StockSearchResult } from '@/services/stockService';
 import { useStockSearch } from '@/hooks/useStockSearch';
 import StockSearchInput from '@/components/search/StockSearchInput';
 import StockSearchResults from '@/components/search/StockSearchResults';
+import { toast } from 'sonner';
 
 interface StockSearchProps {
   className?: string;
@@ -36,6 +37,7 @@ const StockSearch: React.FC<StockSearchProps> = ({
     setSelectedIndex,
     searchResults,
     searchLoading,
+    error,
     searchRef,
     inputRef,
     handleInputChange,
@@ -43,15 +45,18 @@ const StockSearch: React.FC<StockSearchProps> = ({
     resetSearch
   } = useStockSearch();
 
+  const [hasSearched, setHasSearched] = useState(false);
+
   const isLoading = externalLoading || searchLoading;
 
   const handleSelectStock = useCallback((stock: StockSearchResult) => {
     if (onSelectStock) {
       onSelectStock(stock);
     } else {
-      navigate(`/stocks/${stock.symbol}`);
+      navigate(`/account/stocks/${stock.symbol}`);
     }
     resetSearch();
+    toast.success(`Selected ${stock.symbol} - ${stock.name}`);
   }, [onSelectStock, navigate, resetSearch]);
 
   const handleSearchKeyDown = (e: React.KeyboardEvent) => {
@@ -66,12 +71,25 @@ const StockSearch: React.FC<StockSearchProps> = ({
     ? searchResults
     : searchResults?.filter(result => result.type === 'Equity' || result.type === 'ETF');
 
+  // Handle search error
+  React.useEffect(() => {
+    if (error && hasSearched) {
+      toast.error('Failed to search stocks. Please try again.');
+      console.error('Stock search error:', error);
+    }
+  }, [error, hasSearched]);
+
+  const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
+    handleInputChange(e);
+    setHasSearched(true);
+  };
+
   return (
     <div ref={searchRef} className={className}>
       <StockSearchInput
         ref={inputRef}
         value={query}
-        onChange={handleInputChange}
+        onChange={handleSearch}
         onKeyDown={handleSearchKeyDown}
         isLoading={isLoading}
         darkMode={darkMode}

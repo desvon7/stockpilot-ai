@@ -1,7 +1,6 @@
 
-import { Quote, Trade, WebSocketStatus } from '@/types/marketData';
+import { Quote, Trade } from '@/types/marketData';
 
-// Create a WebSocket connection to get real-time market data
 export const createMarketDataWebSocket = (
   symbols: string[],
   onOpen: () => void,
@@ -9,14 +8,11 @@ export const createMarketDataWebSocket = (
   onError: (event: Event) => void,
   onClose: (event: CloseEvent) => void
 ): WebSocket => {
-  // Using Alpaca's websocket API
-  const ws = new WebSocket('wss://stream.data.alpaca.markets/v2/iex');
+  const baseURL = import.meta.env.VITE_ALPACA_WS_URL || 'wss://stream.data.alpaca.markets/v2/iex';
   
-  ws.onopen = () => {
-    console.log('WebSocket connected');
-    onOpen();
-  };
+  const ws = new WebSocket(baseURL);
   
+  ws.onopen = onOpen;
   ws.onmessage = onMessage;
   ws.onerror = onError;
   ws.onclose = onClose;
@@ -24,7 +20,6 @@ export const createMarketDataWebSocket = (
   return ws;
 };
 
-// Parse messages from the WebSocket
 export const parseWebSocketMessage = (
   event: MessageEvent,
   onQuoteUpdate?: (symbol: string, quote: Quote) => void,
@@ -35,76 +30,92 @@ export const parseWebSocketMessage = (
   try {
     const data = JSON.parse(event.data);
     
-    // Handle authentication response
-    if (data.type === 'authorization') {
-      if (data.status === 'authorized') {
-        console.log('WebSocket authenticated successfully');
-      } else {
-        console.error('WebSocket authentication failed', data);
-      }
+    // Handle different message types
+    if (data.T === 'success' && data.msg === 'authenticated') {
+      console.log('WebSocket authenticated successfully');
       return;
     }
     
-    // Handle subscription response
-    if (data.type === 'subscription') {
-      console.log('Subscription update:', data);
+    if (data.T === 'subscription') {
+      console.log('Subscription successful:', data.trades, data.quotes);
       return;
     }
     
     // Handle quotes
-    if (data.type === 'q' && data.quotes) {
-      Object.entries(data.quotes).forEach(([symbol, quoteData]: [string, any]) => {
-        const quote: Quote = {
-          symbol,
-          price: quoteData.ap || quoteData.bp || 0,
-          bid: quoteData.bp || 0,
-          ask: quoteData.ap || 0,
-          bidSize: quoteData.bs || 0,
-          askSize: quoteData.as || 0,
-          timestamp: quoteData.t || Date.now(),
-          previousClose: quoteData.c || 0,
-          change: quoteData.ap ? quoteData.ap - quoteData.c : 0,
-          changePercent: quoteData.ap && quoteData.c ? ((quoteData.ap - quoteData.c) / quoteData.c) * 100 : 0
-        };
-        
-        // Update quotes state
-        if (setQuotes) {
-          setQuotes(prev => ({
-            ...prev,
-            [symbol]: quote
-          }));
-        }
-        
-        // Callback for quote update
-        if (onQuoteUpdate) {
-          onQuoteUpdate(symbol, quote);
-        }
-      });
+    if (data.T === 'q') {
+      const quote: Quote = {
+        symbol: data.S,
+        price: (data.ap || data.bp || 0),
+        bid: data.bp || 0,
+        ask: data.ap || 0,
+        bidSize: data.bs || 0,
+        askSize: data.as || 0,
+        timestamp: data.t,
+      };
+      
+      // If previous day close is available, calculate change values
+      if (data.c) {
+        const previousClose = data.c;
+        quote.previousClose = previousClose;
+        quote.change = quote.price - previousClose;
+        quote.changePercent = (quote.change / previousClose) * 100;
+      }
+      
+      if (onQuoteUpdate) {
+        onQuoteUpdate(quote.symbol, quote);
+      }
+      
+      if (setQuotes) {
+        setQuotes(prev => ({
+          ...prev,
+          [quote.symbol]: quote
+        }));
+      }
     }
     
     // Handle trades
-    if (data.type === 't' && data.trades) {
-      Object.entries(data.trades).forEach(([symbol, tradeData]: [string, any]) => {
-        const trade: Trade = {
-          symbol,
-          price: tradeData.p || 0,
-          size: tradeData.s || 0,
-          timestamp: tradeData.t || Date.now(),
-          exchange: tradeData.x || ''
-        };
+    if (data.T === 't') {
+      const trade: Trade = {
+        symbol: data.S,
+        price: data.p,
+        size: data.s,
+        timestamp: data.t,
+        exchange: data.x
+      };
+      
+      if (onTradeUpdate) {
+        onTradeUpdate(trade.symbol, trade);
+      }
+      
+      if (setTrades) {
+        setTrades(prev => ({
+          ...prev,
+          [trade.symbol]: trade
+        }));
+      }
+    }
+    
+    // Handle error messages
+    if (data.T === 'error') {
+      console.error('WebSocket error:', data.msg);
+    }
+    
+    // Handle arrays of messages (batch updates)
+    if (Array.isArray(data)) {
+      data.forEach(msg => {
+        // Create a new MessageEvent-like object
+        const msgEvent = {
+          data: JSON.stringify(msg)
+        } as MessageEvent;
         
-        // Update trades state
-        if (setTrades) {
-          setTrades(prev => ({
-            ...prev,
-            [symbol]: trade
-          }));
-        }
-        
-        // Callback for trade update
-        if (onTradeUpdate) {
-          onTradeUpdate(symbol, trade);
-        }
+        // Recursively process each message
+        parseWebSocketMessage(
+          msgEvent,
+          onQuoteUpdate,
+          onTradeUpdate,
+          setQuotes,
+          setTrades
+        );
       });
     }
   } catch (error) {
