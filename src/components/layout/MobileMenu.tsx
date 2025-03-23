@@ -2,7 +2,7 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
-import { useTheme } from '@/hooks/useTheme';
+import { useTheme } from '@/contexts/ThemeContext';
 import { Moon, Sun, Menu, X, User, Settings, LogOut, Home } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {

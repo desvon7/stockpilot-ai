@@ -4,69 +4,77 @@ import { Helmet } from 'react-helmet-async';
 import AccountLayout from '@/components/layout/AccountLayout';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { formatCurrency } from '@/utils/formatters';
-import { ChevronRight, ArrowRight, Upload, CreditCard, RefreshCw, DollarSign } from 'lucide-react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 const Recurring: React.FC = () => {
   return (
     <>
       <Helmet>
-        <title>Recurring Investments | StockPilot</title>
+        <title>Recurring | StockPilot</title>
       </Helmet>
       
       <AccountLayout>
         <div className="border-b border-border pb-4 mb-6">
           <div className="flex justify-between items-center mb-4">
-            <nav className="flex space-x-4 text-sm font-medium">
+            <nav className="flex space-x-4 text-sm font-medium overflow-x-auto">
               {['Investing', 'Spending', 'Crypto', 'Transfers', 'Recurring', 'Stock Lending', 'Reports and statements', 'Tax center', 'History', 'Settings', 'Help'].map((item) => (
                 <a 
                   key={item} 
                   href={`/${item.toLowerCase().replace(/\s+/g, '-')}`} 
-                  className={`${item === 'Recurring' ? 'text-primary border-b-2 border-primary' : 'text-muted-foreground'} px-2 py-1`}
+                  className={`${item === 'Recurring' ? 'text-primary border-b-2 border-primary' : 'text-muted-foreground'} px-2 py-1 whitespace-nowrap`}
                 >
                   {item}
                 </a>
               ))}
             </nav>
           </div>
-          
-          <div className="flex mb-6">
-            <Select defaultValue="all-accounts">
-              <SelectTrigger className="w-[200px] mr-4">
-                <SelectValue placeholder="All accounts" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all-accounts">All accounts</SelectItem>
-                <SelectItem value="individual">Individual</SelectItem>
-                <SelectItem value="roth-ira">Roth IRA</SelectItem>
-              </SelectContent>
-            </Select>
-            
-            <Select defaultValue="all-assets">
-              <SelectTrigger className="w-[200px]">
-                <SelectValue placeholder="All assets" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all-assets">All assets</SelectItem>
-                <SelectItem value="stocks">Stocks</SelectItem>
-                <SelectItem value="etfs">ETFs</SelectItem>
-                <SelectItem value="crypto">Crypto</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
         </div>
         
-        <div className="mb-6">
-          <h1 className="text-2xl font-bold mb-6">Recurring Investments</h1>
+        <div className="flex flex-wrap gap-4 mb-8">
+          <Select defaultValue="all-accounts">
+            <SelectTrigger className="w-[180px]">
+              <SelectValue placeholder="All accounts" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all-accounts">All accounts</SelectItem>
+              <SelectItem value="individual">Individual</SelectItem>
+              <SelectItem value="retirement">Retirement</SelectItem>
+            </SelectContent>
+          </Select>
           
-          <div className="flex flex-col items-center justify-center min-h-[300px]">
-            <div className="bg-gray-100 dark:bg-gray-800 rounded-full p-4 mb-4">
-              <DollarSign className="w-12 h-12 text-gray-400" />
-            </div>
-            <p className="text-lg mb-4 text-center">Create a recurring investment in a stock and it'll appear here!</p>
-            <Button variant="default" className="bg-green-500 hover:bg-green-600">Create recurring investment</Button>
-          </div>
+          <Select defaultValue="all-assets">
+            <SelectTrigger className="w-[180px]">
+              <SelectValue placeholder="All assets" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all-assets">All assets</SelectItem>
+              <SelectItem value="stocks">Stocks</SelectItem>
+              <SelectItem value="crypto">Crypto</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+        
+        <div>
+          <h2 className="text-2xl font-bold mb-6">Recurring Investments</h2>
+          
+          <Card className="bg-card text-card-foreground">
+            <CardContent className="p-16 flex flex-col items-center justify-center text-center">
+              <div className="w-16 h-16 mb-4 bg-muted rounded-full flex items-center justify-center">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="w-8 h-8" xmlns="http://www.w3.org/2000/svg">
+                  <circle cx="12" cy="12" r="10" />
+                  <path d="M12 6v6l4 2" />
+                </svg>
+              </div>
+              
+              <p className="text-center text-muted-foreground mb-6">
+                Create a recurring investment in a stock and it'll appear here!
+              </p>
+              
+              <Button className="px-6 py-5 bg-green-500 hover:bg-green-600 text-white rounded-full">
+                Create recurring investment
+              </Button>
+            </CardContent>
+          </Card>
         </div>
       </AccountLayout>
     </>

@@ -1,108 +1,87 @@
 
 /**
- * Format a date string to a readable format
+ * Format a number as a currency string
+ * @param amount The number to format
+ * @param minimumFractionDigits Minimum number of decimal places (default: 2)
+ * @param maximumFractionDigits Maximum number of decimal places (default: 2)
+ * @returns Formatted currency string without the currency symbol
  */
-export const formatDate = (dateString: string): string => {
-  const date = new Date(dateString);
-  return new Intl.DateTimeFormat('en-US', {
-    year: 'numeric',
-    month: 'short',
-    day: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit'
-  }).format(date);
-};
-
-/**
- * Format a number as currency (USD)
- */
-export const formatCurrency = (value: number): string => {
+export const formatCurrency = (
+  amount: number,
+  minimumFractionDigits = 2,
+  maximumFractionDigits = 2
+): string => {
   return new Intl.NumberFormat('en-US', {
-    style: 'currency',
-    currency: 'USD',
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2
-  }).format(value);
+    minimumFractionDigits,
+    maximumFractionDigits,
+  }).format(amount);
 };
 
 /**
- * Format a large number as currency with abbreviations (K, M, B)
+ * Format a number as a percentage string
+ * @param value The number to format (0.1 for 10%)
+ * @param minimumFractionDigits Minimum number of decimal places (default: 2)
+ * @param maximumFractionDigits Maximum number of decimal places (default: 2)
+ * @returns Formatted percentage string without the % symbol
  */
-export const formatLargeCurrency = (value: number): string => {
-  if (value >= 1000000000) {
-    return `$${(value / 1000000000).toFixed(1)}B`;
-  }
-  if (value >= 1000000) {
-    return `$${(value / 1000000).toFixed(1)}M`;
-  }
-  if (value >= 1000) {
-    return `$${(value / 1000).toFixed(1)}K`;
-  }
-  return formatCurrency(value);
-};
-
-/**
- * Format a number as percentage
- */
-export const formatPercentage = (value: number): string => {
+export const formatPercentage = (
+  value: number,
+  minimumFractionDigits = 2,
+  maximumFractionDigits = 2
+): string => {
   return new Intl.NumberFormat('en-US', {
     style: 'percent',
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2
-  }).format(value / 100);
+    minimumFractionDigits,
+    maximumFractionDigits,
+  }).format(value).replace('%', '');
 };
 
 /**
- * Alias for formatPercentage to maintain backward compatibility
+ * Alias for formatPercentage for compatibility
  */
 export const formatPercent = formatPercentage;
 
 /**
- * Format a large number with abbreviations (K, M, B)
+ * Format a number as large currency (K, M, B)
+ * @param amount The number to format
+ * @returns Formatted currency with K, M, B suffix
  */
-export const formatLargeNumber = (value: number): string => {
-  if (value >= 1000000000) {
-    return `${(value / 1000000000).toFixed(1)}B`;
+export const formatLargeCurrency = (amount: number): string => {
+  if (amount >= 1_000_000_000) {
+    return `${(amount / 1_000_000_000).toFixed(2)}B`;
   }
-  if (value >= 1000000) {
-    return `${(value / 1000000).toFixed(1)}M`;
+  if (amount >= 1_000_000) {
+    return `${(amount / 1_000_000).toFixed(2)}M`;
   }
-  if (value >= 1000) {
-    return `${(value / 1000).toFixed(1)}K`;
+  if (amount >= 1_000) {
+    return `${(amount / 1_000).toFixed(2)}K`;
   }
-  return value.toString();
+  return formatCurrency(amount);
 };
 
 /**
- * Format a number with commas as thousands separators
- */
-export const formatNumberWithCommas = (value: number): string => {
-  return new Intl.NumberFormat('en-US').format(value);
-};
-
-/**
- * Get text color class based on numeric change
+ * Get color class based on value change (positive/negative)
+ * @param change The change value
+ * @returns Tailwind text color class
  */
 export const getColorByChange = (change: number): string => {
-  if (change > 0) return "text-green-600 dark:text-green-500";
-  if (change < 0) return "text-red-600 dark:text-red-500";
-  return "text-gray-600 dark:text-gray-400";
+  return change > 0 ? 'text-green-500' : change < 0 ? 'text-red-500' : 'text-gray-500';
 };
 
 /**
- * Get background color class based on numeric change
+ * Get background color class based on value change (positive/negative)
+ * @param change The change value
+ * @returns Tailwind background color class
  */
 export const getBgColorByChange = (change: number): string => {
-  if (change > 0) return "bg-green-100 dark:bg-green-900/30";
-  if (change < 0) return "bg-red-100 dark:bg-red-900/30";
-  return "bg-gray-100 dark:bg-gray-800";
+  return change > 0 ? 'bg-green-500' : change < 0 ? 'bg-red-500' : 'bg-gray-500';
 };
 
 /**
- * Get arrow icon based on numeric change
+ * Get arrow symbol based on value change
+ * @param change The change value
+ * @returns Arrow symbol (▲, ▼, or -)
  */
 export const getArrowByChange = (change: number): string => {
-  if (change > 0) return "↑";
-  if (change < 0) return "↓";
-  return "—";
+  return change > 0 ? '▲' : change < 0 ? '▼' : '-';
 };

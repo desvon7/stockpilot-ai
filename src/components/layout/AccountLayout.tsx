@@ -3,7 +3,7 @@ import React from 'react';
 import { Navbar } from '@/components/layout/Navbar';
 import Footer from '@/components/layout/Footer';
 import AccountSidebar from '@/components/layout/AccountSidebar';
-import { useTheme } from '@/hooks/useTheme';
+import { useTheme } from '@/contexts/ThemeContext';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { cn } from '@/lib/utils';
 import { Helmet } from 'react-helmet-async';
