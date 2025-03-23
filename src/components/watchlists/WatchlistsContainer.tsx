@@ -1,40 +1,55 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { getUserWatchlists, getWatchlistStockPrices } from '@/services/portfolioService';
 import { useAuth } from '@/contexts/AuthContext';
 import WatchlistSidebar from './WatchlistSidebar';
 import WatchlistContent from './WatchlistContent';
 import AddToWatchlist from './AddToWatchlist';
+import { toast } from 'sonner';
 
 const WatchlistsContainer: React.FC = () => {
   const { user } = useAuth();
   const [activeWatchlistId, setActiveWatchlistId] = useState<string | null>(null);
   const [isAddingStock, setIsAddingStock] = useState(false);
   const [priceData, setPriceData] = useState<Record<string, any>>({});
+  const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
 
   // Fetch watchlists
   const { 
-    data: watchlists, 
+    data: watchlists = [],
     isLoading, 
     refetch,
     error 
   } = useQuery({
     queryKey: ['watchlists'], 
     queryFn: getUserWatchlists,
-    enabled: !!user
+    enabled: !!user,
+    onError: (err) => {
+      console.error('Error fetching watchlists:', err);
+      toast.error('Failed to load watchlists. Please try again later.');
+    }
   });
+
+  // Set the first watchlist as active if none is selected and data is loaded
+  useEffect(() => {
+    if (!activeWatchlistId && watchlists.length > 0) {
+      setActiveWatchlistId(watchlists[0].id);
+    }
+  }, [watchlists, activeWatchlistId]);
 
   const activeWatchlist = watchlists?.find(w => w.id === activeWatchlistId);
 
   // Get all unique symbols across watchlists
-  const allSymbols = React.useMemo(() => {
-    if (!watchlists) return [];
+  const allSymbols = useMemo(() => {
+    if (!watchlists.length) return [];
     
     const symbolsSet = new Set<string>();
     watchlists.forEach(watchlist => {
       watchlist.watchlist_items?.forEach(item => {
-        symbolsSet.add(item.symbol);
+        if (item.symbol) {
+          symbolsSet.add(item.symbol);
+        }
       });
     });
     
@@ -49,8 +64,10 @@ const WatchlistsContainer: React.FC = () => {
       try {
         const data = await getWatchlistStockPrices(allSymbols);
         setPriceData(data);
+        setLastUpdated(new Date());
       } catch (error) {
         console.error('Error fetching stock prices:', error);
+        toast.error('Error updating prices. Retrying...');
       }
     };
 
@@ -63,12 +80,12 @@ const WatchlistsContainer: React.FC = () => {
   }, [allSymbols]);
 
   // Enhance watchlists with price data
-  const watchlistsWithPrices = React.useMemo(() => {
-    if (!watchlists) return [];
+  const watchlistsWithPrices = useMemo(() => {
+    if (!watchlists.length) return [];
     
     return watchlists.map(watchlist => ({
       ...watchlist,
-      watchlist_items: watchlist.watchlist_items.map(item => ({
+      watchlist_items: (watchlist.watchlist_items || []).map(item => ({
         ...item,
         current_price: priceData[item.symbol]?.price,
         price_change: priceData[item.symbol]?.change,
@@ -91,6 +108,12 @@ const WatchlistsContainer: React.FC = () => {
           setActiveWatchlistId={setActiveWatchlistId}
           refetchWatchlists={refetch}
         />
+        
+        {lastUpdated && (
+          <div className="text-xs text-muted-foreground mt-2 text-center">
+            Last updated: {lastUpdated.toLocaleTimeString()}
+          </div>
+        )}
       </div>
       
       {/* Watchlist Content and Stock Search */}

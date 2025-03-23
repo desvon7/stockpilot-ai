@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
-import { Search, Command, X } from 'lucide-react';
+import { Search, X } from 'lucide-react';
 import {
   Dialog,
   DialogContent,
@@ -28,11 +28,23 @@ const GlobalAssetSearch: React.FC<GlobalAssetSearchProps> = ({
   useHotkeys({
     key: 'k',
     modifier: 'meta',
-    handler: (e) => {
-      e.preventDefault();
+    handler: () => {
       setOpen(prev => !prev);
-    }
+    },
+    preventDefault: true
   });
+
+  // Close search on escape key
+  useEffect(() => {
+    const handleEsc = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        setOpen(false);
+      }
+    };
+    
+    window.addEventListener('keydown', handleEsc);
+    return () => window.removeEventListener('keydown', handleEsc);
+  }, []);
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>

@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Navbar } from '@/components/layout/Navbar';
 import Footer from '@/components/layout/Footer';
 import AccountSidebar from '@/components/layout/AccountSidebar';
@@ -25,17 +25,22 @@ const AccountLayout: React.FC<AccountLayoutProps> = ({
   const { theme } = useTheme();
   const isMobile = useIsMobile();
   
-  // Display reconnection toast when WebSocket disconnects
-  const showReconnectionToast = () => {
-    toast.info('Reconnecting to market data...', {
-      id: 'market-data-reconnection',
-      duration: 5000,
-    });
-  };
+  // Show reconnection toast when network connectivity is restored
+  useEffect(() => {
+    const handleOnline = () => {
+      toast.info('Network connection restored. Reconnecting...', {
+        id: 'network-reconnection',
+        duration: 3000,
+      });
+    };
+    
+    window.addEventListener('online', handleOnline);
+    return () => window.removeEventListener('online', handleOnline);
+  }, []);
   
   return (
     <div className={cn(
-      "flex min-h-screen flex-col",
+      "flex flex-col min-h-screen w-full",
       theme === 'dark' ? 'bg-gray-950 text-white' : 'bg-white text-gray-900'
     )}>
       {title && (
@@ -47,7 +52,7 @@ const AccountLayout: React.FC<AccountLayoutProps> = ({
       
       <Navbar />
       
-      <div className="flex flex-1 mt-16">
+      <div className="flex flex-1 w-full mt-16">
         <AccountSidebar />
         
         <main className={cn(

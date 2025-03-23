@@ -57,10 +57,10 @@ const WatchlistContent: React.FC<WatchlistContentProps> = ({
 
   // Sort the watchlist items
   const sortedWatchlistItems = useMemo(() => {
-    if (!activeWatchlist?.watchlist_items) return [];
+    if (!activeWatchlist?.watchlist_items?.length) return [];
     
     return [...activeWatchlist.watchlist_items].sort((a, b) => {
-      // Default cases for null/undefined values
+      // Handle null/undefined values
       if (sortField === 'price') {
         const priceA = a.current_price ?? 0;
         const priceB = b.current_price ?? 0;
@@ -74,8 +74,8 @@ const WatchlistContent: React.FC<WatchlistContentProps> = ({
       }
       
       if (sortField === 'added') {
-        const dateA = new Date(a.created_at).getTime();
-        const dateB = new Date(b.created_at).getTime();
+        const dateA = new Date(a.created_at || 0).getTime();
+        const dateB = new Date(b.created_at || 0).getTime();
         return sortDirection === 'asc' ? dateA - dateB : dateB - dateA;
       }
 
@@ -88,13 +88,17 @@ const WatchlistContent: React.FC<WatchlistContentProps> = ({
       }
       
       // Default: sort by symbol
-      const symbolA = a.symbol.toLowerCase();
-      const symbolB = b.symbol.toLowerCase();
+      const symbolA = (a.symbol || '').toLowerCase();
+      const symbolB = (b.symbol || '').toLowerCase();
       return sortDirection === 'asc' 
         ? symbolA.localeCompare(symbolB) 
         : symbolB.localeCompare(symbolA);
     });
   }, [activeWatchlist, sortField, sortDirection]);
+
+  const watchlistCreationDate = activeWatchlist?.created_at 
+    ? formatDate(activeWatchlist.created_at) 
+    : 'Unknown date';
 
   return (
     <Card className="mb-6">
@@ -106,14 +110,14 @@ const WatchlistContent: React.FC<WatchlistContentProps> = ({
         </CardTitle>
         <CardDescription>
           {activeWatchlist 
-            ? `Created on ${formatDate(activeWatchlist.created_at)}` 
+            ? `Created on ${watchlistCreationDate}` 
             : 'Select a watchlist from the left to view its contents'}
         </CardDescription>
       </CardHeader>
       <CardContent>
         {!activeWatchlist ? (
           <EmptyWatchlistState isWatchlistSelected={false} />
-        ) : activeWatchlist.watchlist_items?.length === 0 ? (
+        ) : !activeWatchlist.watchlist_items?.length ? (
           <EmptyWatchlistState isWatchlistSelected={true} />
         ) : (
           <WatchlistTable 

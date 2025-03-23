@@ -27,6 +27,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
+import GlobalAssetSearch from '@/components/search/GlobalAssetSearch';
 
 const AccountSidebar: React.FC = () => {
   const { user, signOut } = useAuth();
@@ -37,14 +38,18 @@ const AccountSidebar: React.FC = () => {
 
   useEffect(() => {
     const handleResize = () => {
-      setIsMobile(window.innerWidth < 768);
-      if (window.innerWidth < 768) {
+      const mobile = window.innerWidth < 768;
+      setIsMobile(mobile);
+      if (mobile) {
         setIsOpen(false);
       } else {
         setIsOpen(true);
       }
     };
 
+    // Initialize state based on current width
+    handleResize();
+    
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
   }, []);
@@ -106,6 +111,22 @@ const AccountSidebar: React.FC = () => {
               <span className="text-primary-foreground font-bold">SP</span>
             </div>
             <h2 className="text-lg font-semibold">StockPilot</h2>
+          </div>
+
+          <div className="px-4 w-full mt-4">
+            <GlobalAssetSearch 
+              trigger={
+                <Button 
+                  variant="outline" 
+                  className="relative w-full rounded-full pr-12 justify-start text-muted-foreground hover:bg-muted/50"
+                >
+                  <span>Search assets...</span>
+                  <kbd className="pointer-events-none absolute right-2 top-1/2 transform -translate-y-1/2 inline-flex h-5 select-none items-center gap-1 rounded border bg-muted px-1.5 font-mono text-xs font-medium opacity-100">
+                    <span className="text-xs">⌘</span>K
+                  </kbd>
+                </Button>
+              }
+            />
           </div>
         </SidebarHeader>
 

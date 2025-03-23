@@ -46,13 +46,11 @@ const LoadingFallback = () => (
 );
 
 // Layout wrapper component that properly uses Outlet to pass children to AccountLayout
-const AccountLayoutWrapper = () => {
-  return (
-    <AccountLayout>
-      <Outlet />
-    </AccountLayout>
-  );
-};
+const AccountLayoutWrapper = () => (
+  <AccountLayout>
+    <Outlet />
+  </AccountLayout>
+);
 
 // This routes component handles all authenticated routes
 const AccountRoutes: React.FC = () => {
