@@ -102,7 +102,7 @@ const AccountSidebar: React.FC = () => {
                       <AvatarFallback>{getUserInitials()}</AvatarFallback>
                     </Avatar>
                     <div>
-                      <p className="text-sm font-medium">{user.user_metadata?.full_name || "Its us"}</p>
+                      <p className="text-sm font-medium">{user.user_metadata?.full_name || user.email}</p>
                       <p className="text-xs text-muted-foreground">{user.email}</p>
                     </div>
                   </div>
