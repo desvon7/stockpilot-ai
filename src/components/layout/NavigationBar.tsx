@@ -1,53 +1,83 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { useTheme } from '@/hooks/useTheme';
 import { 
+  Award,
   TrendingUp, 
-  CreditCard,
   Bitcoin,
+  CreditCard,
+  Building,
+  Bell,
+  User,
   ArrowLeftRight,
   RefreshCw,
-  HandCoins,
+  BookText,
   FileText,
-  FileBarChart,
+  Calculator,
   History,
   Settings,
   HelpCircle,
-  Sun,
-  Moon,
-  User,
+  Keyboard,
   LogOut,
-  Menu
+  ChevronDown
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 
 const NavigationBar = () => {
   const { user, signOut } = useAuth();
   const { theme, setTheme } = useTheme();
   const location = useLocation();
+  const [isAccountMenuOpen, setIsAccountMenuOpen] = useState(false);
 
   const isActive = (path: string) => {
     return location.pathname === path;
   };
 
-  const toggleTheme = () => {
-    setTheme(theme === 'dark' ? 'light' : 'dark');
-  };
-
-  const NavItem = ({ to, label, icon }: { to: string; label: string; icon: React.ReactNode }) => (
+  const NavItem = ({ to, label, className }: { to: string; label: string; className?: string }) => (
     <Link to={to} className={cn(
-      "text-sm font-medium transition-colors hover:text-primary",
-      isActive(to) ? "text-green-400 underline-offset-4 underline" : "text-gray-200"
+      "text-sm font-medium transition-colors hover:text-primary whitespace-nowrap",
+      isActive(to) ? "text-primary" : "text-white",
+      className
     )}>
       {label}
     </Link>
   );
 
+  const getUserInitials = () => {
+    if (!user?.email) return 'U';
+    return user.email.charAt(0).toUpperCase();
+  };
+
+  const accountMenuItems = [
+    { icon: User, label: 'Profile', path: '/profile' },
+    { icon: TrendingUp, label: 'Investing', path: '/investing' },
+    { icon: CreditCard, label: 'Spending', path: '/spending' },
+    { icon: Bitcoin, label: 'Crypto', path: '/crypto' },
+    { icon: ArrowLeftRight, label: 'Transfers', path: '/transfers' },
+    { icon: RefreshCw, label: 'Recurring', path: '/recurring' },
+    { icon: BookText, label: 'Stock Lending', path: '/stock-lending' },
+    { icon: FileText, label: 'Reports and statements', path: '/reports-and-statements' },
+    { icon: Calculator, label: 'Tax center', path: '/tax-center' },
+    { icon: History, label: 'History', path: '/history' },
+    { icon: Settings, label: 'Settings', path: '/settings' },
+    { icon: HelpCircle, label: 'Help', path: '/help' },
+    { icon: Keyboard, label: 'Keyboard Shortcuts', path: '/keyboard-shortcuts' }
+  ];
+
   return (
-    <nav className="bg-black border-b border-gray-800 py-3">
+    <nav className="bg-black border-b border-gray-800 py-4">
       <div className="container mx-auto px-4 flex items-center justify-between">
         <div className="flex items-center space-x-8">
           <Link to="/" className="flex items-center space-x-2">
@@ -56,58 +86,78 @@ const NavigationBar = () => {
           </Link>
           
           <div className="hidden md:flex space-x-6">
-            <NavItem to="/investing" label="Investing" icon={<TrendingUp size={16} />} />
-            <NavItem to="/spending" label="Spending" icon={<CreditCard size={16} />} />
-            <NavItem to="/crypto" label="Crypto" icon={<Bitcoin size={16} />} />
-            <NavItem to="/transfers" label="Transfers" icon={<ArrowLeftRight size={16} />} />
-            <NavItem to="/recurring" label="Recurring" icon={<RefreshCw size={16} />} />
-            <NavItem to="/stock-lending" label="Stock Lending" icon={<HandCoins size={16} />} />
-            <NavItem to="/reports-and-statements" label="Reports and statements" icon={<FileText size={16} />} />
-            <NavItem to="/tax-center" label="Tax center" icon={<FileBarChart size={16} />} />
-            <NavItem to="/history" label="History" icon={<History size={16} />} />
-            <NavItem to="/settings" label="Settings" icon={<Settings size={16} />} />
-            <NavItem to="/help" label="Help" icon={<HelpCircle size={16} />} />
+            <NavItem to="/rewards" label="Rewards" />
+            <NavItem to="/investing" label="Investing" />
+            <NavItem to="/crypto" label="Crypto" />
+            <NavItem to="/spending" label="Spending" />
+            <NavItem to="/retirement" label="Retirement" />
+            <NavItem to="/notifications" label="Notifications" />
           </div>
         </div>
         
-        <div className="flex items-center space-x-4">
-          <Button variant="ghost" size="icon" onClick={toggleTheme} className="text-white">
-            {theme === 'dark' ? (
-              <Sun className="h-5 w-5" />
-            ) : (
-              <Moon className="h-5 w-5" />
-            )}
-          </Button>
-          
-          {user ? (
-            <div className="flex items-center space-x-4">
-              <Link to="/profile" className="hidden md:flex items-center space-x-2 text-white">
-                <div className="h-8 w-8 rounded-full bg-gray-700 flex items-center justify-center">
-                  <User className="h-4 w-4 text-white" />
-                </div>
-                <span className="text-sm font-medium">{user.email?.split('@')[0] || 'User'}</span>
-              </Link>
-              
-              <Button variant="outline" size="sm" onClick={signOut} className="hidden md:flex text-white border-gray-700 hover:bg-gray-800">
-                <LogOut className="h-4 w-4 mr-2" />
-                <span>Sign Out</span>
-              </Button>
-              
-              {/* Mobile menu trigger */}
-              <Button variant="ghost" size="icon" className="md:hidden text-white">
-                <Menu className="h-6 w-6" />
-              </Button>
-            </div>
-          ) : (
-            <div className="flex items-center space-x-2">
-              <Link to="/auth">
-                <Button variant="outline" size="sm" className="text-white border-gray-700 hover:bg-gray-800">Sign In</Button>
-              </Link>
-              <Link to="/auth">
-                <Button size="sm" className="bg-green-500 hover:bg-green-600 text-white">Sign Up</Button>
-              </Link>
-            </div>
-          )}
+        <div>
+          <DropdownMenu open={isAccountMenuOpen} onOpenChange={setIsAccountMenuOpen}>
+            <DropdownMenuTrigger asChild>
+              <button 
+                className={cn(
+                  "flex items-center text-sm font-medium transition-colors",
+                  isAccountMenuOpen ? "text-primary" : "text-white hover:text-primary"
+                )}
+              >
+                <span className="mr-1">Account</span>
+                <ChevronDown className="h-4 w-4" />
+              </button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent 
+              className="w-64 bg-gray-900 border border-gray-800 text-white" 
+              align="end"
+            >
+              {user ? (
+                <>
+                  <DropdownMenuLabel className="border-b border-gray-800 py-4">
+                    <div className="font-bold text-lg">{user.email?.split('@')[0] || 'User'}</div>
+                  </DropdownMenuLabel>
+                  
+                  <div className="flex items-center px-3 py-3 border-b border-gray-800">
+                    <Award className="h-5 w-5 text-amber-500 mr-3" />
+                    <span>StockPilot Gold</span>
+                  </div>
+                  
+                  {accountMenuItems.map(item => (
+                    <DropdownMenuItem key={item.path} asChild className="py-3 px-3 cursor-pointer">
+                      <Link to={item.path} className="flex items-center">
+                        <item.icon className="h-5 w-5 mr-3" />
+                        <span>{item.label}</span>
+                      </Link>
+                    </DropdownMenuItem>
+                  ))}
+                  
+                  <DropdownMenuSeparator className="bg-gray-800" />
+                  
+                  <DropdownMenuItem onClick={signOut} className="py-3 px-3 cursor-pointer">
+                    <LogOut className="h-5 w-5 mr-3" />
+                    <span>Log Out</span>
+                  </DropdownMenuItem>
+                </>
+              ) : (
+                <>
+                  <DropdownMenuLabel className="font-bold">Account</DropdownMenuLabel>
+                  <DropdownMenuItem asChild className="cursor-pointer">
+                    <Link to="/auth" className="flex items-center">
+                      <User className="h-5 w-5 mr-3" />
+                      <span>Sign In</span>
+                    </Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem asChild className="cursor-pointer">
+                    <Link to="/auth" className="flex items-center">
+                      <User className="h-5 w-5 mr-3" />
+                      <span>Sign Up</span>
+                    </Link>
+                  </DropdownMenuItem>
+                </>
+              )}
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
       </div>
     </nav>

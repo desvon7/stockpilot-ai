@@ -23,6 +23,9 @@ import Watchlists from "@/pages/Watchlists";
 import TrendingAssets from "@/pages/TrendingAssets";
 import Settings from "@/pages/Settings";
 import Help from "@/pages/Help";
+import Rewards from "@/pages/Rewards";
+import Retirement from "@/pages/Retirement";
+import Notifications from "@/pages/Notifications";
 import KeyboardShortcuts from "@/pages/KeyboardShortcuts";
 import NewsFeed from "@/pages/NewsFeed";
 import NotFound from "@/pages/NotFound";
@@ -89,6 +92,12 @@ export const dashboardRoutes: RouteConfig[] = [
 // Finance routes
 export const financeRoutes: RouteConfig[] = [
   {
+    path: "/rewards",
+    element: <ProtectedRoute><Rewards /></ProtectedRoute>,
+    title: "Rewards",
+    requiresAuth: true,
+  },
+  {
     path: "/investing",
     element: <ProtectedRoute><Investing /></ProtectedRoute>,
     title: "Investing",
@@ -104,6 +113,12 @@ export const financeRoutes: RouteConfig[] = [
     path: "/crypto",
     element: <ProtectedRoute><Crypto /></ProtectedRoute>,
     title: "Cryptocurrency",
+    requiresAuth: true,
+  },
+  {
+    path: "/retirement",
+    element: <ProtectedRoute><Retirement /></ProtectedRoute>,
+    title: "Retirement",
     requiresAuth: true,
   },
   {
@@ -184,6 +199,12 @@ export const stockRoutes: RouteConfig[] = [
 
 // Support routes
 export const supportRoutes: RouteConfig[] = [
+  {
+    path: "/notifications",
+    element: <ProtectedRoute><Notifications /></ProtectedRoute>,
+    title: "Notifications",
+    requiresAuth: true,
+  },
   {
     path: "/settings",
     element: <ProtectedRoute><Settings /></ProtectedRoute>,
