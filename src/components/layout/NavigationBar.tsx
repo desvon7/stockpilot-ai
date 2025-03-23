@@ -4,28 +4,24 @@ import { Link, useLocation } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { useTheme } from '@/hooks/useTheme';
 import { 
-  LayoutDashboard, 
   TrendingUp, 
-  PieChart, 
-  ArrowDownUp, 
-  FileText, 
-  Bell, 
-  Settings, 
-  LogOut, 
-  User,
+  CreditCard,
+  Bitcoin,
+  ArrowLeftRight,
+  RefreshCw,
+  HandCoins,
+  FileText,
+  FileBarChart,
+  History,
+  Settings,
+  HelpCircle,
   Sun,
   Moon,
+  User,
+  LogOut,
   Menu
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import {
-  NavigationMenu,
-  NavigationMenuList,
-  NavigationMenuItem,
-  NavigationMenuTrigger,
-  NavigationMenuContent,
-  NavigationMenuLink,
-} from "@/components/ui/navigation-menu";
 import { cn } from '@/lib/utils';
 
 const NavigationBar = () => {
@@ -41,52 +37,41 @@ const NavigationBar = () => {
     setTheme(theme === 'dark' ? 'light' : 'dark');
   };
 
+  const NavItem = ({ to, label, icon }: { to: string; label: string; icon: React.ReactNode }) => (
+    <Link to={to} className={cn(
+      "text-sm font-medium transition-colors hover:text-primary",
+      isActive(to) ? "text-green-400 underline-offset-4 underline" : "text-gray-200"
+    )}>
+      {label}
+    </Link>
+  );
+
   return (
-    <nav className="bg-background border-b border-border py-4">
+    <nav className="bg-black border-b border-gray-800 py-3">
       <div className="container mx-auto px-4 flex items-center justify-between">
         <div className="flex items-center space-x-8">
           <Link to="/" className="flex items-center space-x-2">
-            <TrendingUp className="h-6 w-6 text-primary" />
-            <span className="font-bold text-xl">StockPilot</span>
+            <TrendingUp className="h-6 w-6 text-white" />
+            <span className="font-bold text-xl text-white">StockPilot</span>
           </Link>
           
-          {user && (
-            <div className="hidden md:flex space-x-6">
-              <Link to="/dashboard" className={cn("flex items-center space-x-1 text-sm hover:text-primary transition-colors", 
-                isActive('/dashboard') && "text-primary font-semibold")}>
-                <LayoutDashboard className="h-4 w-4" />
-                <span>Dashboard</span>
-              </Link>
-              
-              <Link to="/stocks" className={cn("flex items-center space-x-1 text-sm hover:text-primary transition-colors", 
-                isActive('/stocks') && "text-primary font-semibold")}>
-                <TrendingUp className="h-4 w-4" />
-                <span>Stocks</span>
-              </Link>
-              
-              <Link to="/watchlists" className={cn("flex items-center space-x-1 text-sm hover:text-primary transition-colors", 
-                isActive('/watchlists') && "text-primary font-semibold")}>
-                <Bell className="h-4 w-4" />
-                <span>Watchlists</span>
-              </Link>
-              
-              <Link to="/transactions" className={cn("flex items-center space-x-1 text-sm hover:text-primary transition-colors", 
-                isActive('/transactions') && "text-primary font-semibold")}>
-                <ArrowDownUp className="h-4 w-4" />
-                <span>Transactions</span>
-              </Link>
-              
-              <Link to="/news" className={cn("flex items-center space-x-1 text-sm hover:text-primary transition-colors", 
-                isActive('/news') && "text-primary font-semibold")}>
-                <FileText className="h-4 w-4" />
-                <span>News</span>
-              </Link>
-            </div>
-          )}
+          <div className="hidden md:flex space-x-6">
+            <NavItem to="/investing" label="Investing" icon={<TrendingUp size={16} />} />
+            <NavItem to="/spending" label="Spending" icon={<CreditCard size={16} />} />
+            <NavItem to="/crypto" label="Crypto" icon={<Bitcoin size={16} />} />
+            <NavItem to="/transfers" label="Transfers" icon={<ArrowLeftRight size={16} />} />
+            <NavItem to="/recurring" label="Recurring" icon={<RefreshCw size={16} />} />
+            <NavItem to="/stock-lending" label="Stock Lending" icon={<HandCoins size={16} />} />
+            <NavItem to="/reports-and-statements" label="Reports and statements" icon={<FileText size={16} />} />
+            <NavItem to="/tax-center" label="Tax center" icon={<FileBarChart size={16} />} />
+            <NavItem to="/history" label="History" icon={<History size={16} />} />
+            <NavItem to="/settings" label="Settings" icon={<Settings size={16} />} />
+            <NavItem to="/help" label="Help" icon={<HelpCircle size={16} />} />
+          </div>
         </div>
         
         <div className="flex items-center space-x-4">
-          <Button variant="ghost" size="icon" onClick={toggleTheme} className="text-foreground">
+          <Button variant="ghost" size="icon" onClick={toggleTheme} className="text-white">
             {theme === 'dark' ? (
               <Sun className="h-5 w-5" />
             ) : (
@@ -96,30 +81,30 @@ const NavigationBar = () => {
           
           {user ? (
             <div className="flex items-center space-x-4">
-              <Link to="/profile" className="hidden md:flex items-center space-x-2">
-                <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center">
-                  <User className="h-4 w-4 text-primary" />
+              <Link to="/profile" className="hidden md:flex items-center space-x-2 text-white">
+                <div className="h-8 w-8 rounded-full bg-gray-700 flex items-center justify-center">
+                  <User className="h-4 w-4 text-white" />
                 </div>
                 <span className="text-sm font-medium">{user.email?.split('@')[0] || 'User'}</span>
               </Link>
               
-              <Button variant="outline" size="sm" onClick={signOut} className="hidden md:flex">
+              <Button variant="outline" size="sm" onClick={signOut} className="hidden md:flex text-white border-gray-700 hover:bg-gray-800">
                 <LogOut className="h-4 w-4 mr-2" />
                 <span>Sign Out</span>
               </Button>
               
               {/* Mobile menu trigger */}
-              <Button variant="ghost" size="icon" className="md:hidden">
+              <Button variant="ghost" size="icon" className="md:hidden text-white">
                 <Menu className="h-6 w-6" />
               </Button>
             </div>
           ) : (
             <div className="flex items-center space-x-2">
               <Link to="/auth">
-                <Button variant="outline" size="sm">Sign In</Button>
+                <Button variant="outline" size="sm" className="text-white border-gray-700 hover:bg-gray-800">Sign In</Button>
               </Link>
               <Link to="/auth">
-                <Button size="sm">Sign Up</Button>
+                <Button size="sm" className="bg-green-500 hover:bg-green-600 text-white">Sign Up</Button>
               </Link>
             </div>
           )}

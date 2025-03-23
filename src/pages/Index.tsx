@@ -5,7 +5,7 @@ import NavigationBar from '@/components/layout/NavigationBar';
 
 const Index = () => {
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-black text-white">
       <NavigationBar />
       <main className="container mx-auto px-4 py-8">
         <Outlet />

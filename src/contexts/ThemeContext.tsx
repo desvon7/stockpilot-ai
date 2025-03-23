@@ -7,12 +7,12 @@ type ThemeContextType = {
 };
 
 export const ThemeContext = createContext<ThemeContextType>({
-  theme: 'system',
+  theme: 'dark', // Set default to dark
   setTheme: () => {},
 });
 
 export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [theme, setTheme] = useState<string>('system');
+  const [theme, setTheme] = useState<string>('dark'); // Default to dark theme
 
   useEffect(() => {
     // Check if there's a saved theme preference in localStorage
@@ -21,10 +21,10 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       setTheme(savedTheme);
       document.documentElement.classList.toggle('dark', savedTheme === 'dark');
     } else {
-      // Default to system preference
-      const systemPrefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-      document.documentElement.classList.toggle('dark', systemPrefersDark);
-      setTheme(systemPrefersDark ? 'dark' : 'light');
+      // Default to dark mode for this app
+      document.documentElement.classList.add('dark');
+      setTheme('dark');
+      localStorage.setItem('theme', 'dark');
     }
   }, []);
 
