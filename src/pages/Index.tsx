@@ -11,10 +11,10 @@ const Index: React.FC = () => {
   const navigate = useNavigate();
   const { user, loading } = useAuth();
   
-  // Redirect logged-in users to portfolio dashboard
+  // Redirect logged-in users to home dashboard
   useEffect(() => {
     if (!loading && user) {
-      navigate('/portfolio');
+      navigate('/home');
     }
   }, [user, navigate, loading]);
   
