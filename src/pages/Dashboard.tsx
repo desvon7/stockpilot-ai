@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Navbar } from '@/components/layout/Navbar';
 import Footer from '@/components/layout/Footer';
@@ -121,13 +122,17 @@ const Dashboard: React.FC = () => {
     ? mockStocks.filter(stock => stock.symbol === selectedStock)
     : mockStocks;
 
+  // Create portfolio items with the required structure for the Portfolio component
   const portfolioItems = portfolio?.holdings?.map(holding => ({
+    id: holding.id || `${holding.symbol}-${Date.now()}`,
     symbol: holding.symbol,
     company_name: holding.name,
     shares: holding.shares,
     average_price: holding.averagePrice,
     current_price: holding.currentPrice,
-    total_value: holding.value
+    total_value: holding.value,
+    created_at: new Date().toISOString(),
+    updated_at: new Date().toISOString()
   })) || [];
 
   return (

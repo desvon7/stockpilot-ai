@@ -28,7 +28,7 @@ const Index: React.FC = () => {
     <div className="min-h-screen flex flex-col bg-background">
       <Navbar />
       
-      {/* Mobile Menu Overlay - similar to the image */}
+      {/* Mobile Menu Overlay */}
       {showMobileMenu && (
         <div className="fixed inset-0 z-50 bg-white dark:bg-gray-900 p-6 flex flex-col">
           <div className="flex justify-between items-center mb-6">
