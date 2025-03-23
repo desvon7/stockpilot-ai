@@ -1,11 +1,13 @@
 
-import React, { useState, useEffect, useRef } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { CommandDialog, CommandInput } from "@/components/ui/command";
-import AssetSearchResults from './AssetSearchResults';
-import AssetSearchTrigger from './AssetSearchTrigger';
-import { useAssetSearch } from '@/hooks/useAssetSearch';
-import { AssetSearchResult } from '@/types/search';
+import React, { useState } from 'react';
+import { Search } from 'lucide-react';
+import {
+  Dialog,
+  DialogContent,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import SearchDialogContent from '@/components/search/SearchDialogContent';
 
 interface GlobalAssetSearchProps {
   darkMode?: boolean;
@@ -17,52 +19,35 @@ const GlobalAssetSearch: React.FC<GlobalAssetSearchProps> = ({
   trigger
 }) => {
   const [open, setOpen] = useState(false);
-  const navigate = useNavigate();
-  const searchRef = useRef<HTMLDivElement>(null);
-  const { query, setQuery, loading, results } = useAssetSearch();
-
-  useEffect(() => {
-    const down = (e: KeyboardEvent) => {
-      if (e.key === "k" && (e.metaKey || e.ctrlKey)) {
-        e.preventDefault();
-        setOpen((open) => !open);
-      }
-    };
-
-    document.addEventListener("keydown", down);
-    return () => document.removeEventListener("keydown", down);
-  }, []);
-
-  const handleSelectAsset = (asset: AssetSearchResult) => {
-    setOpen(false);
-    
-    if (asset.type === 'stock' || asset.type === 'etf') {
-      navigate(`/stocks/${asset.symbol}`);
-    } else if (asset.type === 'crypto') {
-      navigate(`/crypto/${asset.symbol}`);
-    }
-  };
 
   return (
-    <div ref={searchRef}>
-      <AssetSearchTrigger 
-        onClick={() => setOpen(true)}
-        customTrigger={trigger}
-      />
+    <Dialog open={open} onOpenChange={setOpen}>
+      {trigger ? (
+        <DialogTrigger asChild>
+          {trigger}
+        </DialogTrigger>
+      ) : (
+        <DialogTrigger asChild>
+          <Button 
+            variant="outline" 
+            className="relative w-full rounded-full pr-12 justify-start text-muted-foreground"
+          >
+            <Search className="mr-2 h-4 w-4" />
+            <span>Search assets...</span>
+            <kbd className="pointer-events-none absolute right-2 top-1/2 transform -translate-y-1/2 inline-flex h-5 select-none items-center gap-1 rounded border bg-muted px-1.5 font-mono text-xs font-medium opacity-100">
+              <span className="text-xs">⌘</span>K
+            </kbd>
+          </Button>
+        </DialogTrigger>
+      )}
       
-      <CommandDialog open={open} onOpenChange={setOpen}>
-        <CommandInput
-          placeholder="Search for stocks, crypto, ETFs..."
-          value={query}
-          onValueChange={setQuery}
+      <DialogContent className="sm:max-w-[600px] p-0">
+        <SearchDialogContent 
+          darkMode={darkMode} 
+          onClose={() => setOpen(false)} 
         />
-        <AssetSearchResults 
-          results={results}
-          loading={loading}
-          onSelectAsset={handleSelectAsset}
-        />
-      </CommandDialog>
-    </div>
+      </DialogContent>
+    </Dialog>
   );
 };
 

@@ -1,15 +1,12 @@
 
 import { useContext } from 'react';
-import { ThemeContext } from '@/contexts/ThemeContext';
+import { useTheme as useNextTheme } from 'next-themes';
 
 export function useTheme() {
-  const context = useContext(ThemeContext);
+  const { theme, setTheme } = useNextTheme();
   
-  if (context === undefined) {
-    throw new Error('useTheme must be used within a ThemeProvider');
-  }
-  
-  return context;
+  return {
+    theme,
+    setTheme,
+  };
 }
-
-export default useTheme;
