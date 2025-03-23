@@ -94,8 +94,8 @@ const Home: React.FC = () => {
         {/* Buying Power */}
         <BuyingPowerCard buyingPower={portfolioSummary.buyingPower} />
         
-        {/* Announcement */}
-        <AnnouncementCard announcement={announcement} />
+        {/* Announcement - hidden by default now */}
+        <AnnouncementCard announcement={announcement} showByDefault={false} />
         
         {/* Main Content */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">

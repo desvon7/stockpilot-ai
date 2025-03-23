@@ -20,11 +20,8 @@ const PortfolioSummary: React.FC<PortfolioSummaryProps> = ({
 }) => {
   return (
     <div className="mb-8">
-      <div className="flex justify-between items-start mb-2">
+      <div className="mb-2">
         <h1 className="text-3xl font-bold">Investing</h1>
-        <button className="bg-amber-300 hover:bg-amber-400 text-black px-4 py-1.5 rounded-full text-sm font-medium flex items-center">
-          <span className="mr-1">🎁</span> Gold Month
-        </button>
       </div>
       <div className="flex items-baseline mb-1">
         <h2 className="text-4xl font-bold mr-3">{formatCurrency(portfolioSummary.value)}</h2>
