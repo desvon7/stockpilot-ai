@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { usePortfolio } from '@/hooks/usePortfolio';
+import { useQuery } from '@tanstack/react-query';
 import AccountLayout from '@/components/layout/AccountLayout';
 import PortfolioSummary from '@/components/home/PortfolioSummary';
 import BuyingPowerCard from '@/components/home/BuyingPowerCard';
@@ -8,6 +8,11 @@ import AnnouncementCard from '@/components/home/AnnouncementCard';
 import CryptoCurrenciesSection from '@/components/home/CryptoCurrenciesSection';
 import StocksSection from '@/components/home/StocksSection';
 import WatchlistsSection from '@/components/home/WatchlistsSection';
+import { usePortfolio } from '@/hooks/usePortfolio';
+import { usePortfolioHistory } from '@/hooks/usePortfolioHistory';
+import { useAuth } from '@/contexts/AuthContext';
+import { getUserWatchlists, getWatchlistStockPrices } from '@/services/portfolioService';
+import { toast } from 'sonner';
 
 // Define a proper interface for watchlist items
 interface WatchlistItem {
@@ -25,55 +30,65 @@ interface Watchlist {
 }
 
 const Home: React.FC = () => {
-  const { portfolio, isLoading } = usePortfolio();
+  const { user } = useAuth();
+  const { portfolio, isLoading: isPortfolioLoading } = usePortfolio();
+  const { history: portfolioHistory, isLoading: isHistoryLoading } = usePortfolioHistory();
   
-  // Mock data for demonstration
-  const portfolioSummary = {
-    value: 557.55,
-    change: 18.57,
-    changePercent: 3.44,
-    buyingPower: 4.75
-  };
-
-  // Mock chart data
-  const chartData = Array.from({ length: 30 }, (_, i) => {
-    const date = new Date();
-    date.setDate(date.getDate() - 30 + i);
-    return {
-      date: date.toISOString().split('T')[0],
-      price: 500 + Math.random() * 100
-    };
+  // Fetch real watchlists
+  const { data: watchlistsData, isLoading: isWatchlistsLoading } = useQuery({
+    queryKey: ['watchlists'],
+    queryFn: getUserWatchlists,
+    enabled: !!user
   });
+  
+  // Generate a portfolio summary from the real data
+  const calculatePortfolioSummary = () => {
+    if (isPortfolioLoading || !portfolio) {
+      return {
+        value: 0,
+        change: 0,
+        changePercent: 0,
+        buyingPower: 0
+      };
+    }
+    
+    const totalValue = portfolio.reduce((sum, item) => {
+      return sum + (item.shares * (item.current_price || item.average_price));
+    }, 0);
+    
+    // Calculate daily change (mocked for now but could be improved with real daily data)
+    const previousDayValue = totalValue * 0.97; // Assume ~3% change for demo
+    const change = totalValue - previousDayValue;
+    const changePercent = (change / previousDayValue) * 100;
+    
+    return {
+      value: totalValue,
+      change,
+      changePercent,
+      buyingPower: 4.75 // This would come from user profile in a real app
+    };
+  };
+  
+  const portfolioSummary = calculatePortfolioSummary();
 
-  // Mock stocks data
-  const stocks = [
-    { symbol: 'EXOD', name: 'Exodus', shares: 10, price: 50.60, change: 4.31 },
-    { symbol: 'HOOD', name: 'Robinhood', price: 33.93, change: 0.00, type: 'call', date: '1/16/2026' },
-    { symbol: 'VTI', name: 'Vanguard Total Stock', price: 277.00, change: -0.62 },
-    { symbol: 'VPU', name: 'Vanguard Utilities', price: 171.72, change: 0.05 },
-    { symbol: 'VOO', name: 'Vanguard S&P 500', price: 516.68, change: -0.66 },
-    { symbol: 'VYM', name: 'Vanguard High Dividend', price: 128.50, change: -0.34 },
-    { symbol: 'VGT', name: 'Vanguard Information Tech', price: 561.00, change: -0.30 }
-  ];
-
-  // Mock crypto data
-  const cryptos = [
-    { symbol: 'PEPE', name: 'Pepe', price: 0.00000723, change: -4.55, holdings: 6473553.00 }
-  ];
-
-  // Mock lists with properly typed items
-  const watchlists: Watchlist[] = [
-    { id: '1', name: 'Options Watchlist', items: [
-      { symbol: 'HOOD', price: 33.93, change: 0.00, type: 'call', date: '1/16/2026' }
-    ]},
-    { id: '2', name: 'My First List', items: [
-      { symbol: 'VTI', price: 277.00, change: -0.62 },
-      { symbol: 'VPU', price: 171.72, change: 0.05 },
-      { symbol: 'VOO', price: 516.68, change: -0.66 },
-      { symbol: 'VYM', price: 128.50, change: -0.34 },
-      { symbol: 'VGT', price: 561.00, change: -0.30 }
-    ]}
-  ];
+  // Use real portfolio history data for the chart
+  const chartData = portfolioHistory ? portfolioHistory.map(item => ({
+    date: item.date,
+    price: item.totalValue
+  })) : [];
+  
+  // Process watchlists to the format needed by the component
+  const watchlists: Watchlist[] = watchlistsData ? watchlistsData.map(watchlist => ({
+    id: watchlist.id,
+    name: watchlist.name,
+    items: watchlist.watchlist_items.map(item => ({
+      symbol: item.symbol,
+      price: item.current_price || 0,
+      change: item.price_change || 0,
+      type: undefined,
+      date: undefined
+    }))
+  })) : [];
 
   // Announcement data
   const announcement = {
@@ -100,11 +115,27 @@ const Home: React.FC = () => {
         {/* Main Content */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
           <div className="md:col-span-2">
-            {/* Cryptocurrency Section */}
-            <CryptoCurrenciesSection cryptos={cryptos} />
+            {/* Cryptocurrency Section - Use real portfolio data for cryptos */}
+            <CryptoCurrenciesSection cryptos={
+              portfolio?.filter(item => item.symbol === 'PEPE').map(item => ({
+                symbol: item.symbol,
+                name: 'Pepe',
+                price: item.current_price || item.average_price,
+                change: (item.profit_loss_percent || -4.55), // Fallback value
+                holdings: item.shares
+              })) || []
+            } />
             
-            {/* Stocks Section */}
-            <StocksSection stocks={stocks} limit={2} />
+            {/* Stocks Section - Use real portfolio data for stocks */}
+            <StocksSection stocks={
+              portfolio?.filter(item => item.symbol !== 'PEPE').map(item => ({
+                symbol: item.symbol, 
+                name: item.company_name,
+                shares: item.shares,
+                price: item.current_price || item.average_price,
+                change: item.profit_loss_percent || 0
+              })) || []
+            } limit={5} />
           </div>
           
           {/* Watchlists */}

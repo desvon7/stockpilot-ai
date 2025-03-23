@@ -3,6 +3,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { getUserPortfolio, executeTransaction } from '@/services/portfolioService';
 import { toast } from 'sonner';
 import { useAuth } from '@/contexts/AuthContext';
+import { enrichPortfolioWithMarketData } from '@/utils/marketDataUtils';
 
 export const usePortfolio = () => {
   const queryClient = useQueryClient();
@@ -15,9 +16,16 @@ export const usePortfolio = () => {
     refetch
   } = useQuery({
     queryKey: ['portfolio'],
-    queryFn: getUserPortfolio,
+    queryFn: async () => {
+      // First get the basic portfolio data
+      const portfolioData = await getUserPortfolio();
+      
+      // Then enrich it with current market prices and calculated fields
+      return await enrichPortfolioWithMarketData(portfolioData);
+    },
     enabled: !!user,
     staleTime: 60000, // 1 minute
+    refetchInterval: 5 * 60000, // Refresh every 5 minutes
     meta: {
       onError: (error: Error) => {
         toast.error(`Failed to fetch portfolio: ${error.message}`);
