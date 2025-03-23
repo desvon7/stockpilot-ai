@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { memo } from 'react';
 import { Form } from '@/components/ui/form';
 import OrderTypeField from './form/OrderTypeField';
 import SharesField from './form/SharesField';
@@ -9,6 +9,8 @@ import SubmitButton from './form/SubmitButton';
 import OrderSummary from './form/OrderSummary';
 import OrderStockInfo from './form/OrderStockInfo';
 import { useOrderFormLogic } from './form/useOrderFormLogic';
+import { useIsMobile } from '@/hooks/use-mobile';
+import { Card } from '@/components/ui/card';
 
 interface OrderFormProps {
   symbol: string;
@@ -20,7 +22,8 @@ interface OrderFormProps {
   orderType?: 'market' | 'limit';
 }
 
-const OrderForm: React.FC<OrderFormProps> = ({
+// Memoize the component for better performance
+const OrderForm: React.FC<OrderFormProps> = memo(({
   symbol,
   companyName,
   currentPrice,
@@ -48,38 +51,46 @@ const OrderForm: React.FC<OrderFormProps> = ({
     orderType: defaultExecutionType
   });
 
-  return (
-    <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-        <OrderStockInfo 
-          currentPrice={currentPrice} 
-          availableShares={availableShares}
-          orderTypeValue={orderTypeValue}
-        />
-        
-        <OrderTypeField control={form.control} />
-        <SharesField control={form.control} />
-        <ExecutionTypeField control={form.control} />
-        <LimitPriceField 
-          control={form.control} 
-          show={executionTypeValue === 'limit'} 
-        />
-        
-        <OrderSummary 
-          estimatedTotal={estimatedTotal} 
-          buyingPower={buyingPower}
-          orderTypeValue={orderTypeValue}
-          symbol={symbol}
-        />
-        
-        <SubmitButton 
-          isSubmitting={isSubmitting} 
-          orderTypeValue={orderTypeValue} 
-          sharesValue={sharesValue} 
-        />
-      </form>
-    </Form>
-  );
-};
+  const isMobile = useIsMobile();
 
+  return (
+    <Card className={`p-4 ${isMobile ? 'rounded-xl shadow-lg' : ''}`}>
+      <Form {...form}>
+        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+          <OrderStockInfo 
+            currentPrice={currentPrice} 
+            availableShares={availableShares}
+            orderTypeValue={orderTypeValue}
+          />
+          
+          <OrderTypeField control={form.control} />
+          <SharesField control={form.control} />
+          <ExecutionTypeField control={form.control} />
+          
+          {executionTypeValue === 'limit' && (
+            <LimitPriceField 
+              control={form.control} 
+              show={true}
+            />
+          )}
+          
+          <OrderSummary 
+            estimatedTotal={estimatedTotal} 
+            buyingPower={buyingPower}
+            orderTypeValue={orderTypeValue}
+            symbol={symbol}
+          />
+          
+          <SubmitButton 
+            isSubmitting={isSubmitting} 
+            orderTypeValue={orderTypeValue} 
+            sharesValue={sharesValue} 
+          />
+        </form>
+      </Form>
+    </Card>
+  );
+});
+
+OrderForm.displayName = 'OrderForm';
 export default OrderForm;

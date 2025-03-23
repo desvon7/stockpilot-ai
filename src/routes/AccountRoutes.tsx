@@ -1,59 +1,78 @@
 
-import React from "react";
+import React, { Suspense, lazy } from "react";
 import { Routes, Route } from "react-router-dom";
+import { Skeleton } from "@/components/ui/skeleton";
+
+// Eagerly load the most frequently used pages
 import Profile from "@/pages/Profile";
 import Dashboard from "@/pages/Dashboard";
 import Portfolio from "@/pages/Portfolio";
-import StockDetail from "@/pages/StockDetail";
-import Watchlists from "@/pages/Watchlists";
-import Transactions from "@/pages/Transactions";
-import FinancialNews from "@/pages/FinancialNews";
-import Settings from "@/pages/Settings";
-import Transfers from "@/pages/Transfers";
-import NewsFeed from "@/pages/NewsFeed";
-import Recurring from "@/pages/Recurring";
-import StockLending from "@/pages/StockLending";
-import TaxCenter from "@/pages/TaxCenter";
-import ReportsAndStatements from "@/pages/ReportsAndStatements";
-import TrendingAssets from "@/pages/TrendingAssets";
-import StockBrowser from "@/pages/StockBrowser";
 import NotFound from "@/pages/NotFound";
-import Crypto from "@/pages/Crypto";
-import Investing from "@/pages/Investing";
-import Spending from "@/pages/Spending";
-import History from "@/pages/History";
-import KeyboardShortcuts from "@/pages/KeyboardShortcuts";
-import Help from "@/pages/Help";
+
+// Lazy load less-frequently used pages
+const StockDetail = lazy(() => import("@/pages/StockDetail"));
+const Watchlists = lazy(() => import("@/pages/Watchlists"));
+const Transactions = lazy(() => import("@/pages/Transactions"));
+const FinancialNews = lazy(() => import("@/pages/FinancialNews"));
+const Settings = lazy(() => import("@/pages/Settings"));
+const Transfers = lazy(() => import("@/pages/Transfers"));
+const NewsFeed = lazy(() => import("@/pages/NewsFeed"));
+const Recurring = lazy(() => import("@/pages/Recurring"));
+const StockLending = lazy(() => import("@/pages/StockLending"));
+const TaxCenter = lazy(() => import("@/pages/TaxCenter"));
+const ReportsAndStatements = lazy(() => import("@/pages/ReportsAndStatements"));
+const TrendingAssets = lazy(() => import("@/pages/TrendingAssets"));
+const StockBrowser = lazy(() => import("@/pages/StockBrowser"));
+const Crypto = lazy(() => import("@/pages/Crypto"));
+const Investing = lazy(() => import("@/pages/Investing"));
+const Spending = lazy(() => import("@/pages/Spending"));
+const History = lazy(() => import("@/pages/History"));
+const KeyboardShortcuts = lazy(() => import("@/pages/KeyboardShortcuts"));
+const Help = lazy(() => import("@/pages/Help"));
+
+// Loading placeholder
+const LoadingFallback = () => (
+  <div className="p-6 space-y-4">
+    <Skeleton className="h-12 w-3/4" />
+    <Skeleton className="h-48 w-full" />
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <Skeleton className="h-32 w-full" />
+      <Skeleton className="h-32 w-full" />
+    </div>
+  </div>
+);
 
 // This routes component handles all authenticated routes
 const AccountRoutes: React.FC = () => {
   return (
-    <Routes>
-      <Route path="/" element={<Dashboard />} />
-      <Route path="/profile" element={<Profile />} />
-      <Route path="/portfolio" element={<Portfolio />} />
-      <Route path="/dashboard" element={<Dashboard />} />
-      <Route path="/stocks/:symbol" element={<StockDetail />} />
-      <Route path="/watchlists" element={<Watchlists />} />
-      <Route path="/transactions" element={<Transactions />} />
-      <Route path="/settings" element={<Settings />} />
-      <Route path="/transfers" element={<Transfers />} />
-      <Route path="/news" element={<FinancialNews />} />
-      <Route path="/news-feed" element={<NewsFeed />} />
-      <Route path="/recurring" element={<Recurring />} />
-      <Route path="/stock-lending" element={<StockLending />} />
-      <Route path="/tax-center" element={<TaxCenter />} />
-      <Route path="/reports" element={<ReportsAndStatements />} />
-      <Route path="/trending-assets" element={<TrendingAssets />} />
-      <Route path="/stocks" element={<StockBrowser />} />
-      <Route path="/crypto" element={<Crypto />} />
-      <Route path="/investing/*" element={<Investing />} />
-      <Route path="/spending" element={<Spending />} />
-      <Route path="/history" element={<History />} />
-      <Route path="/keyboard-shortcuts" element={<KeyboardShortcuts />} />
-      <Route path="/help" element={<Help />} />
-      <Route path="*" element={<NotFound />} />
-    </Routes>
+    <Suspense fallback={<LoadingFallback />}>
+      <Routes>
+        <Route path="/" element={<Dashboard />} />
+        <Route path="/profile" element={<Profile />} />
+        <Route path="/portfolio" element={<Portfolio />} />
+        <Route path="/dashboard" element={<Dashboard />} />
+        <Route path="/stocks/:symbol" element={<StockDetail />} />
+        <Route path="/watchlists" element={<Watchlists />} />
+        <Route path="/transactions" element={<Transactions />} />
+        <Route path="/settings" element={<Settings />} />
+        <Route path="/transfers" element={<Transfers />} />
+        <Route path="/news" element={<FinancialNews />} />
+        <Route path="/news-feed" element={<NewsFeed />} />
+        <Route path="/recurring" element={<Recurring />} />
+        <Route path="/stock-lending" element={<StockLending />} />
+        <Route path="/tax-center" element={<TaxCenter />} />
+        <Route path="/reports" element={<ReportsAndStatements />} />
+        <Route path="/trending-assets" element={<TrendingAssets />} />
+        <Route path="/stocks" element={<StockBrowser />} />
+        <Route path="/crypto" element={<Crypto />} />
+        <Route path="/investing/*" element={<Investing />} />
+        <Route path="/spending" element={<Spending />} />
+        <Route path="/history" element={<History />} />
+        <Route path="/keyboard-shortcuts" element={<KeyboardShortcuts />} />
+        <Route path="/help" element={<Help />} />
+        <Route path="*" element={<NotFound />} />
+      </Routes>
+    </Suspense>
   );
 };
 

@@ -1,5 +1,5 @@
 
-import React, { Suspense, lazy } from 'react';
+import React, { Suspense, lazy, memo } from 'react';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { ThemeProvider } from './components/theme-provider';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
@@ -10,12 +10,14 @@ import { PreferencesProvider } from './contexts/PreferencesContext';
 import ProtectedRoute from './components/auth/ProtectedRoute';
 import './App.css';
 
-// Create a client for React Query
+// Create a client for React Query with improved settings
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
       staleTime: 60 * 1000, // 1 minute
-      refetchOnWindowFocus: false
+      refetchOnWindowFocus: false,
+      retry: 1, // Reduce retries for faster feedback
+      refetchInterval: false, // Disable polling by default
     },
   },
 });
@@ -26,12 +28,13 @@ const AccountRoutes = lazy(() => import('./routes/AccountRoutes'));
 const DashboardRoutes = lazy(() => import('./routes/DashboardRoutes'));
 const InvestingRoutes = lazy(() => import('./routes/InvestingRoutes'));
 
-// Loading component
-const LoadingFallback = () => (
+// Loading component (memoized for performance)
+const LoadingFallback = memo(() => (
   <div className="min-h-screen flex items-center justify-center">
     <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
   </div>
-);
+));
+LoadingFallback.displayName = 'LoadingFallback';
 
 function App() {
   return (
@@ -73,7 +76,7 @@ function App() {
                     />
                   </Routes>
                 </Suspense>
-                <Toaster />
+                <Toaster position="top-right" />
               </PreferencesProvider>
             </AuthProvider>
           </ThemeProvider>

@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { memo } from 'react';
 import { Switch } from '@/components/ui/switch';
 import {
   Card,
@@ -18,24 +18,45 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { usePreferences } from '@/contexts/PreferencesContext';
+import { useIsMobile } from '@/hooks/use-mobile';
 
-const ChartPreferencesSettings: React.FC = () => {
+// Memoize the component for better performance
+const ChartPreferencesSettings: React.FC = memo(() => {
   const { preferences, updateChartPreferences } = usePreferences();
+  const isMobile = useIsMobile();
+
+  const timeRangeOptions = [
+    { value: '1D', label: '1 Day' },
+    { value: '1W', label: '1 Week' },
+    { value: '1M', label: '1 Month' },
+    { value: '3M', label: '3 Months' },
+    { value: '1Y', label: '1 Year' },
+    { value: 'YTD', label: 'Year to Date' },
+  ];
+
+  const themeOptions = [
+    { value: 'light', label: 'Light' },
+    { value: 'dark', label: 'Dark' },
+    { value: 'system', label: 'System' },
+  ];
 
   return (
-    <Card>
-      <CardHeader>
+    <Card className={isMobile ? "border-none shadow-none p-0" : ""}>
+      <CardHeader className={isMobile ? "px-0 pt-0" : ""}>
         <CardTitle>Chart Preferences</CardTitle>
         <CardDescription>
           Customize chart display settings
         </CardDescription>
       </CardHeader>
-      <CardContent className="space-y-4">
+      <CardContent className={`space-y-4 ${isMobile ? "px-0" : ""}`}>
         <div className="space-y-2">
           <h4 className="font-medium">Default Time Range</h4>
           <Select
             value={preferences.chartPreferences.defaultTimeRange}
-            onValueChange={(value) => updateChartPreferences('defaultTimeRange', value)}
+            onValueChange={(value) => updateChartPreferences(
+              'defaultTimeRange', 
+              value as any
+            )}
           >
             <SelectTrigger className="w-full">
               <SelectValue placeholder="Select default time range" />
@@ -43,12 +64,11 @@ const ChartPreferencesSettings: React.FC = () => {
             <SelectContent>
               <SelectGroup>
                 <SelectLabel>Time Range</SelectLabel>
-                <SelectItem value="1D">1 Day</SelectItem>
-                <SelectItem value="1W">1 Week</SelectItem>
-                <SelectItem value="1M">1 Month</SelectItem>
-                <SelectItem value="3M">3 Months</SelectItem>
-                <SelectItem value="1Y">1 Year</SelectItem>
-                <SelectItem value="YTD">Year to Date</SelectItem>
+                {timeRangeOptions.map(option => (
+                  <SelectItem key={option.value} value={option.value}>
+                    {option.label}
+                  </SelectItem>
+                ))}
               </SelectGroup>
             </SelectContent>
           </Select>
@@ -71,7 +91,7 @@ const ChartPreferencesSettings: React.FC = () => {
           <h4 className="font-medium">Chart Theme</h4>
           <Select
             value={preferences.chartPreferences.theme}
-            onValueChange={(value) => updateChartPreferences('theme', value)}
+            onValueChange={(value) => updateChartPreferences('theme', value as any)}
           >
             <SelectTrigger className="w-full">
               <SelectValue placeholder="Select theme" />
@@ -79,9 +99,11 @@ const ChartPreferencesSettings: React.FC = () => {
             <SelectContent>
               <SelectGroup>
                 <SelectLabel>Theme</SelectLabel>
-                <SelectItem value="light">Light</SelectItem>
-                <SelectItem value="dark">Dark</SelectItem>
-                <SelectItem value="system">System</SelectItem>
+                {themeOptions.map(option => (
+                  <SelectItem key={option.value} value={option.value}>
+                    {option.label}
+                  </SelectItem>
+                ))}
               </SelectGroup>
             </SelectContent>
           </Select>
@@ -89,6 +111,7 @@ const ChartPreferencesSettings: React.FC = () => {
       </CardContent>
     </Card>
   );
-};
+});
 
+ChartPreferencesSettings.displayName = 'ChartPreferencesSettings';
 export default ChartPreferencesSettings;
