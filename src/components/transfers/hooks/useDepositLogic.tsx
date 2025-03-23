@@ -17,18 +17,24 @@ export const useDepositLogic = (
   // Create a Plaid link token
   useEffect(() => {
     const createLinkToken = async () => {
+      if (!user) return;
+      
       try {
+        setIsProcessing(true);
         const { data, error } = await supabase.functions.invoke('transfer-funds', {
-          body: { action: 'create_link_token', user_id: user?.id }
+          body: { action: 'create_link_token', user_id: user.id }
         });
         
         if (error) throw error;
         if (data?.link_token) {
+          console.log("Link token created:", data.link_token);
           setLinkToken(data.link_token);
         }
       } catch (err) {
         console.error('Error creating link token:', err);
         toast.error('Failed to connect to bank service');
+      } finally {
+        setIsProcessing(false);
       }
     };
 
@@ -43,6 +49,8 @@ export const useDepositLogic = (
     
     setIsProcessing(true);
     try {
+      console.log("Processing deposit with amount:", amount);
+      
       const { data, error } = await supabase.functions.invoke('transfer-funds', {
         body: {
           action: 'exchange_public_token',
@@ -55,26 +63,15 @@ export const useDepositLogic = (
       
       if (error) throw error;
       
+      if (!data.success) {
+        throw new Error(data.error || 'Transaction failed');
+      }
+      
       toast.success(`Successfully deposited $${amount}`);
       setDepositCompleted(true);
       
       if (onDepositSuccess) {
         onDepositSuccess();
-      }
-      
-      // Update the user's buying power in the database
-      const { data: profile } = await supabase
-        .from('profiles')
-        .select('buying_power')
-        .eq('id', user.id)
-        .single();
-        
-      if (profile) {
-        const newBuyingPower = (profile.buying_power || 0) + parseFloat(amount);
-        await supabase
-          .from('profiles')
-          .update({ buying_power: newBuyingPower })
-          .eq('id', user.id);
       }
     } catch (err) {
       console.error('Error processing bank transfer:', err);
@@ -93,18 +90,56 @@ export const useDepositLogic = (
     },
   });
 
-  // Handle Stripe payment
+  // Handle mock bank connection (since we don't have a real Plaid integration)
+  const handleConnectBank = () => {
+    if (!user) {
+      toast.error('You must be logged in to make a deposit');
+      return;
+    }
+    
+    if (parseFloat(amount) <= 0 || isNaN(parseFloat(amount))) {
+      toast.error('Please enter a valid amount');
+      return;
+    }
+    
+    // Create a mock public token that would normally come from Plaid
+    const mockPublicToken = `mock-public-token-${Date.now()}`;
+    const mockMetadata = {
+      institution: {
+        name: 'Mock Bank',
+        institution_id: 'mock_inst'
+      },
+      account: {
+        id: 'mock_account_id',
+        name: 'Mock Checking Account',
+        mask: '1234'
+      }
+    };
+    
+    // Call the same handler that would be called by Plaid
+    onPlaidSuccess(mockPublicToken, mockMetadata);
+  };
+
+  // Handle Stripe payment (mock implementation)
   const handleStripePayment = async () => {
     if (!user) {
       toast.error('You must be logged in to make a deposit');
       return;
     }
 
+    if (parseFloat(amount) <= 0 || isNaN(parseFloat(amount))) {
+      toast.error('Please enter a valid amount');
+      return;
+    }
+
     setIsProcessing(true);
     try {
-      // Process payment with Stripe
-      const { data, error } = await supabase.functions.invoke('create-payment-intent', {
+      // Process a deposit with the same backend endpoint
+      const { data, error } = await supabase.functions.invoke('transfer-funds', {
         body: {
+          action: 'exchange_public_token',
+          public_token: 'mock-card-payment',
+          metadata: { payment_method: 'card' },
           amount: parseFloat(amount),
           user_id: user.id
         }
@@ -112,15 +147,9 @@ export const useDepositLogic = (
       
       if (error) throw error;
       
-      // After successful payment intent creation, process the payment
-      const paymentResponse = await supabase.functions.invoke('payment-success', {
-        body: {
-          paymentIntentId: data.id,
-          amount: parseFloat(amount)
-        }
-      });
-      
-      if (paymentResponse.error) throw new Error(paymentResponse.error);
+      if (!data.success) {
+        throw new Error(data.error || 'Transaction failed');
+      }
       
       toast.success(`Successfully deposited $${amount}`);
       setDepositCompleted(true);
@@ -133,15 +162,6 @@ export const useDepositLogic = (
       toast.error('Failed to process card payment');
     } finally {
       setIsProcessing(false);
-    }
-  };
-
-  // Handle connecting a bank account
-  const handleConnectBank = () => {
-    if (linkToken) {
-      openPlaidLink();
-    } else {
-      toast.error('Unable to connect to bank at this time');
     }
   };
 

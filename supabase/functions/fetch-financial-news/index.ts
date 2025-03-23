@@ -1,189 +1,110 @@
 
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 
-const POLYGON_API_KEY = Deno.env.get('POLYGON_API_KEY') || '';
-const NEWS_API_KEY = Deno.env.get('NEWS_API_KEY') || '';
-
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
-// Function to fetch news from different sources and combine them
-async function fetchNewsFromSources(symbols: string[] = [], categories: string[] = [], limit: number = 30) {
-  const results = [];
-  let errors = [];
-
-  // Try to get news from Polygon.io for specific stocks
-  if (symbols.length > 0 && POLYGON_API_KEY) {
-    try {
-      const tickers = symbols.join(',');
-      const response = await fetch(
-        `https://api.polygon.io/v2/reference/news?ticker=${tickers}&limit=${limit}&apiKey=${POLYGON_API_KEY}`
-      );
-      
-      if (response.ok) {
-        const data = await response.json();
-        const polygonNews = data.results.map((item: any) => ({
-          id: `polygon-${item.id}`,
-          title: item.title,
-          summary: item.description,
-          source: item.publisher.name,
-          publishedAt: item.published_utc,
-          url: item.article_url,
-          imageUrl: item.image_url,
-          symbols: item.tickers,
-          categories: item.keywords || [],
-          sentiment: calculateSentiment(item.title + ' ' + item.description),
-          provider: 'polygon'
-        }));
-        results.push(...polygonNews);
-      } else {
-        errors.push(`Polygon API error: ${response.status}`);
-      }
-    } catch (error) {
-      console.error('Error fetching from Polygon:', error);
-      errors.push(`Polygon API error: ${error.message}`);
-    }
-  }
-
-  // Use NewsAPI for categories and general financial news
-  if (NEWS_API_KEY) {
-    try {
-      // Map our categories to what NewsAPI expects
-      const categoryMapping: Record<string, string> = {
-        'general': 'business',
-        'economy': 'business',
-        'markets': 'business',
-        'stocks': 'business',
-        'technology': 'technology',
-        'crypto': 'business',
-        'energy': 'business'
-      };
-      
-      // Convert categories or use default
-      const newsApiCategories = categories.map(cat => categoryMapping[cat] || 'business');
-      const uniqueCategories = [...new Set(newsApiCategories)];
-      
-      // Build proper query
-      let queryParts = [];
-      if (symbols.length > 0) {
-        queryParts.push(symbols.join(' OR '));
-      }
-      
-      // Add some finance keywords
-      queryParts.push('finance OR market OR trading OR investment OR stocks');
-      
-      const query = encodeURIComponent(queryParts.join(' AND '));
-      
-      const response = await fetch(
-        `https://newsapi.org/v2/everything?q=${query}&sortBy=publishedAt&language=en&pageSize=${limit}&apiKey=${NEWS_API_KEY}`
-      );
-      
-      if (response.ok) {
-        const data = await response.json();
-        const newsApiResults = data.articles.map((item: any, index: number) => ({
-          id: `newsapi-${index}-${Date.now()}`,
-          title: item.title,
-          summary: item.description || item.content,
-          source: item.source.name,
-          publishedAt: item.publishedAt,
-          url: item.url,
-          imageUrl: item.urlToImage,
-          symbols: extractSymbols(item.title + ' ' + (item.description || '')),
-          categories: determineCategories(item.title, item.description),
-          sentiment: calculateSentiment(item.title + ' ' + (item.description || '')),
-          provider: 'newsapi'
-        }));
-        results.push(...newsApiResults);
-      } else {
-        errors.push(`NewsAPI error: ${response.status}`);
-      }
-    } catch (error) {
-      console.error('Error fetching from NewsAPI:', error);
-      errors.push(`NewsAPI error: ${error.message}`);
-    }
-  }
-
-  // Sort all results by date, newest first
-  results.sort((a, b) => new Date(b.publishedAt).getTime() - new Date(a.publishedAt).getTime());
-  
-  // Remove duplicates (by title)
-  const uniqueResults = results.filter((item, index, self) => 
-    index === self.findIndex(t => t.title === item.title)
-  );
-  
-  // Limit to requested number
-  return {
-    news: uniqueResults.slice(0, limit),
-    sources: [...new Set(uniqueResults.map(item => item.source))],
-    errors: errors.length > 0 ? errors : null
+// Generate mock news when API keys aren't available or for testing
+function generateMockNews(symbols = [], categories = [], limit = 30) {
+  const companies = {
+    'AAPL': 'Apple',
+    'MSFT': 'Microsoft',
+    'GOOGL': 'Google',
+    'AMZN': 'Amazon',
+    'META': 'Meta',
+    'TSLA': 'Tesla',
+    'NVDA': 'NVIDIA',
+    'BRK.B': 'Berkshire Hathaway',
+    'JPM': 'JPMorgan Chase',
+    'BAC': 'Bank of America',
   };
-}
-
-// Simple sentiment analysis based on keywords
-function calculateSentiment(text: string): number {
-  const positiveWords = ['growth', 'profit', 'gain', 'surge', 'rise', 'up', 'increase', 'positive', 'bull', 'rally', 'recover', 'improvement', 'upward'];
-  const negativeWords = ['fall', 'drop', 'decline', 'loss', 'down', 'decrease', 'negative', 'bear', 'crash', 'plunge', 'slump', 'recession', 'downward'];
   
-  const textLower = text.toLowerCase();
+  const stockNames = symbols.map(symbol => companies[symbol] || symbol);
   
-  let score = 0;
-  positiveWords.forEach(word => {
-    if (textLower.includes(word)) score += 1;
-  });
+  const mockNews = [];
+  const sources = ['Bloomberg', 'Reuters', 'CNBC', 'Financial Times', 'Wall Street Journal'];
+  const mockTopics = [
+    { title: 'Earnings Report', sentiment: 0.7 },
+    { title: 'Stock Downgrade', sentiment: -0.6 },
+    { title: 'New Product Launch', sentiment: 0.8 },
+    { title: 'CEO Resigns', sentiment: -0.5 },
+    { title: 'Dividend Increase', sentiment: 0.6 },
+    { title: 'Market Analysis', sentiment: 0.2 },
+    { title: 'Stock Upgrade', sentiment: 0.7 },
+    { title: 'Quarterly Results', sentiment: 0.5 },
+    { title: 'Industry Outlook', sentiment: 0.3 },
+    { title: 'Acquisition News', sentiment: 0.4 },
+    { title: 'Market Volatility', sentiment: -0.3 },
+    { title: 'Fed Rate Decision', sentiment: 0.1 },
+  ];
   
-  negativeWords.forEach(word => {
-    if (textLower.includes(word)) score -= 1;
-  });
+  // Generate news for each category or general financial news
+  let newsCount = 0;
+  const targetCompanies = stockNames.length > 0 ? stockNames : ['the market', 'Wall Street', 'investors', 'the economy'];
   
-  // Normalize to range -1 to 1
-  return score === 0 ? 0 : score / Math.max(Math.abs(score), 3);
-}
-
-// Extract potential stock symbols from text
-function extractSymbols(text: string): string[] {
-  // Look for patterns like $AAPL, $MSFT, etc.
-  const symbolRegex = /\$([A-Z]{1,5})/g;
-  const matches = [...text.matchAll(symbolRegex)];
-  return matches.map(match => match[1]);
-}
-
-// Determine news categories based on content
-function determineCategories(title: string, description: string = ''): string[] {
-  const text = (title + ' ' + description).toLowerCase();
-  const categories = [];
-  
-  if (text.includes('crypto') || text.includes('bitcoin') || text.includes('ethereum') || text.includes('blockchain')) {
-    categories.push('crypto');
+  while (newsCount < limit) {
+    const randomCompanyIndex = Math.floor(Math.random() * targetCompanies.length);
+    const company = targetCompanies[randomCompanyIndex];
+    
+    const randomTopicIndex = Math.floor(Math.random() * mockTopics.length);
+    const topic = mockTopics[randomTopicIndex];
+    
+    const randomSourceIndex = Math.floor(Math.random() * sources.length);
+    const source = sources[randomSourceIndex];
+    
+    const daysAgo = Math.floor(Math.random() * 7); // 0-6 days ago
+    const hoursAgo = Math.floor(Math.random() * 24); // 0-23 hours ago
+    const publishedDate = new Date();
+    publishedDate.setDate(publishedDate.getDate() - daysAgo);
+    publishedDate.setHours(publishedDate.getHours() - hoursAgo);
+    
+    // Generate a title based on sentiment
+    let title = '';
+    let summary = '';
+    
+    if (symbols.length > 0) {
+      // Company-specific news
+      const symbol = symbols[Math.floor(Math.random() * symbols.length)];
+      const companyName = companies[symbol] || symbol;
+      
+      if (topic.sentiment > 0) {
+        title = `${companyName} ${['Surges', 'Gains', 'Climbs', 'Beats Expectations', 'Outperforms'][Math.floor(Math.random() * 5)]} on ${topic.title}`;
+        summary = `${companyName} stock ${['rose', 'increased', 'jumped', 'climbed', 'rallied'][Math.floor(Math.random() * 5)]} after the company announced ${['better-than-expected', 'strong', 'positive', 'impressive'][Math.floor(Math.random() * 4)]} ${['quarterly results', 'earnings', 'growth', 'performance'][Math.floor(Math.random() * 4)]}.`;
+      } else {
+        title = `${companyName} ${['Drops', 'Falls', 'Declines', 'Misses Expectations', 'Struggles'][Math.floor(Math.random() * 5)]} on ${topic.title}`;
+        summary = `${companyName} stock ${['fell', 'decreased', 'dropped', 'declined', 'slipped'][Math.floor(Math.random() * 5)]} after the company announced ${['disappointing', 'weak', 'concerning', 'lower-than-expected'][Math.floor(Math.random() * 4)]} ${['quarterly results', 'earnings', 'guidance', 'outlook'][Math.floor(Math.random() * 4)]}.`;
+      }
+    } else {
+      // General market news
+      if (Math.random() > 0.5) {
+        title = `${categories.length > 0 ? categories[0].charAt(0).toUpperCase() + categories[0].slice(1) + ':' : ''} ${['Markets', 'Stocks', 'Investors', 'Wall Street', 'S&P 500'][Math.floor(Math.random() * 5)]} ${['Rise', 'Gain', 'Advance', 'Rally', 'Climb'][Math.floor(Math.random() * 5)]} Amid ${topic.title}`;
+        summary = `${['Markets', 'Stocks', 'Indices', 'Equities'][Math.floor(Math.random() * 4)]} ${['gained', 'advanced', 'rose', 'climbed', 'moved higher'][Math.floor(Math.random() * 5)]} as ${['investors', 'traders', 'market participants'][Math.floor(Math.random() * 3)]} ${['reacted to', 'digested', 'assessed', 'weighed'][Math.floor(Math.random() * 4)]} ${topic.title.toLowerCase()}.`;
+      } else {
+        title = `${categories.length > 0 ? categories[0].charAt(0).toUpperCase() + categories[0].slice(1) + ':' : ''} ${['Markets', 'Stocks', 'Investors', 'Wall Street', 'S&P 500'][Math.floor(Math.random() * 5)]} ${['Fall', 'Decline', 'Retreat', 'Drop', 'Slip'][Math.floor(Math.random() * 5)]} Amid ${topic.title}`;
+        summary = `${['Markets', 'Stocks', 'Indices', 'Equities'][Math.floor(Math.random() * 4)]} ${['fell', 'declined', 'dropped', 'retreated', 'moved lower'][Math.floor(Math.random() * 5)]} as ${['investors', 'traders', 'market participants'][Math.floor(Math.random() * 3)]} ${['reacted to', 'digested', 'assessed', 'weighed'][Math.floor(Math.random() * 4)]} ${topic.title.toLowerCase()}.`;
+      }
+    }
+    
+    mockNews.push({
+      id: `mock-${newsCount}-${Date.now()}`,
+      title,
+      summary,
+      source,
+      publishedAt: publishedDate.toISOString(),
+      url: 'https://example.com/news',
+      imageUrl: `https://picsum.photos/seed/${newsCount}/640/360`,
+      symbols: symbols.length > 0 ? [symbols[Math.floor(Math.random() * symbols.length)]] : [],
+      categories: categories.length > 0 ? [categories[Math.floor(Math.random() * categories.length)]] : ['general'],
+      sentiment: topic.sentiment,
+      provider: 'mock'
+    });
+    
+    newsCount++;
   }
   
-  if (text.includes('stock') || text.includes('share') || text.includes('equity') || text.includes('nasdaq') || text.includes('nyse')) {
-    categories.push('stocks');
-  }
-  
-  if (text.includes('economy') || text.includes('gdp') || text.includes('inflation') || text.includes('federal reserve') || text.includes('fed')) {
-    categories.push('economy');
-  }
-  
-  if (text.includes('market') || text.includes('trading') || text.includes('index') || text.includes('s&p') || text.includes('dow jones')) {
-    categories.push('markets');
-  }
-  
-  if (text.includes('tech') || text.includes('technology') || text.includes('software') || text.includes('ai') || text.includes('artificial intelligence')) {
-    categories.push('technology');
-  }
-  
-  if (text.includes('oil') || text.includes('gas') || text.includes('renewable') || text.includes('energy')) {
-    categories.push('energy');
-  }
-  
-  // If no specific category was found, add general
-  if (categories.length === 0) {
-    categories.push('general');
-  }
-  
-  return categories;
+  return mockNews;
 }
 
 serve(async (req) => {
@@ -201,11 +122,18 @@ serve(async (req) => {
     
     console.log(`Fetching news for symbols: [${symbolsArray.join(', ')}], categories: [${categoriesArray.join(', ')}]`);
     
-    const newsData = await fetchNewsFromSources(symbolsArray, categoriesArray, limit);
+    // Generate mock news since we don't have API keys configured
+    const mockNews = generateMockNews(symbolsArray, categoriesArray, limit);
     
-    console.log(`Returning ${newsData.news.length} news items from ${newsData.sources.length} sources`);
+    console.log(`Returning ${mockNews.length} mock news items`);
     
-    return new Response(JSON.stringify(newsData), {
+    const sources = [...new Set(mockNews.map(item => item.source))];
+    
+    return new Response(JSON.stringify({
+      news: mockNews,
+      sources,
+      mock: true
+    }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
   } catch (error) {
