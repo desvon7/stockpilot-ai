@@ -1,6 +1,6 @@
 
 import React, { Suspense, lazy } from "react";
-import { Routes, Route, Navigate } from "react-router-dom";
+import { Routes, Route, Navigate, Outlet } from "react-router-dom";
 import { Skeleton } from "@/components/ui/skeleton";
 import AccountLayout from "@/components/layout/AccountLayout";
 import ProtectedRoute from "@/components/auth/ProtectedRoute";
@@ -45,12 +45,21 @@ const LoadingFallback = () => (
   </div>
 );
 
+// Layout wrapper to ensure children are passed properly
+const AccountLayoutWrapper = () => {
+  return (
+    <AccountLayout>
+      <Outlet />
+    </AccountLayout>
+  );
+};
+
 // This routes component handles all authenticated routes
 const AccountRoutes: React.FC = () => {
   return (
     <Routes>
       <Route element={<ProtectedRoute />}>
-        <Route element={<AccountLayout />}>
+        <Route element={<AccountLayoutWrapper />}>
           <Route index element={<Navigate to="/account/home" replace />} />
           <Route path="home" element={
             <Suspense fallback={<LoadingFallback />}>
