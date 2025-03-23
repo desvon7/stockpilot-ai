@@ -85,3 +85,26 @@ export const getBgColorByChange = (change: number): string => {
 export const getArrowByChange = (change: number): string => {
   return change > 0 ? '▲' : change < 0 ? '▼' : '-';
 };
+
+/**
+ * Format a date to a readable string
+ * @param dateString The date string to format
+ * @param options Intl.DateTimeFormatOptions to customize formatting
+ * @returns Formatted date string
+ */
+export const formatDate = (
+  dateString: string | Date,
+  options: Intl.DateTimeFormatOptions = { 
+    year: 'numeric',
+    month: 'short',
+    day: 'numeric'
+  }
+): string => {
+  const date = typeof dateString === 'string' ? new Date(dateString) : dateString;
+  
+  if (isNaN(date.getTime())) {
+    return 'Invalid date';
+  }
+  
+  return new Intl.DateTimeFormat('en-US', options).format(date);
+};
