@@ -8,6 +8,7 @@ import Profile from "@/pages/Profile";
 import Dashboard from "@/pages/Dashboard";
 import Portfolio from "@/pages/Portfolio";
 import NotFound from "@/pages/NotFound";
+import Home from "@/pages/Home";
 
 // Lazy load less-frequently used pages
 const StockDetail = lazy(() => import("@/pages/StockDetail"));
@@ -48,6 +49,7 @@ const AccountRoutes: React.FC = () => {
     <Suspense fallback={<LoadingFallback />}>
       <Routes>
         <Route path="/" element={<Dashboard />} />
+        <Route path="/home" element={<Home />} />
         <Route path="/profile" element={<Profile />} />
         <Route path="/portfolio" element={<Portfolio />} />
         <Route path="/dashboard" element={<Dashboard />} />

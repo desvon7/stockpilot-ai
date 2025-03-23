@@ -2,35 +2,43 @@
 import React from 'react';
 import { Helmet } from 'react-helmet-async';
 import AccountLayout from '@/components/layout/AccountLayout';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 
 const KeyboardShortcuts: React.FC = () => {
-  // Define keyboard shortcuts
+  // Define shortcuts
   const navigationShortcuts = [
-    { key: 'g + h', description: 'Go to Home' },
-    { key: 'g + s', description: 'Go to Stocks' },
-    { key: 'g + c', description: 'Go to Crypto' },
-    { key: 'g + w', description: 'Go to Watchlists' },
-    { key: 'g + n', description: 'Go to News' },
-    { key: 'g + p', description: 'Go to Profile' }
+    { keys: ['g', 'h'], action: 'Go to Home' },
+    { keys: ['g', 'p'], action: 'Go to Portfolio' },
+    { keys: ['g', 'w'], action: 'Go to Watchlists' },
+    { keys: ['g', 'n'], action: 'Go to News' },
+    { keys: ['g', 's'], action: 'Go to Settings' },
   ];
 
-  const stockDetailShortcuts = [
-    { key: 'b', description: 'Open Buy Dialog' },
-    { key: 's', description: 'Open Sell Dialog' },
-    { key: 't', description: 'Toggle Time Period (1D, 1W, 1M, etc.)' },
-    { key: 'a', description: 'Add to Watchlist' },
-    { key: 'e', description: 'Show Earnings' },
-    { key: 'c', description: 'Show Company Info' }
+  const tradingShortcuts = [
+    { keys: ['b'], action: 'Buy' },
+    { keys: ['s'], action: 'Sell' },
+    { keys: ['t'], action: 'Trade' },
+    { keys: ['d'], action: 'Deposit' },
   ];
 
-  const generalShortcuts = [
-    { key: '/', description: 'Focus Search' },
-    { key: 'Esc', description: 'Close Modal / Dialog' },
-    { key: 'Shift + ?', description: 'Show Keyboard Shortcuts' },
-    { key: 'Ctrl + d', description: 'Toggle Dark Mode' },
-    { key: 'r', description: 'Refresh Data' }
+  const searchShortcuts = [
+    { keys: ['/'], action: 'Search' },
+    { keys: ['Esc'], action: 'Close search' },
+    { keys: ['↑', '↓'], action: 'Navigate search results' },
+    { keys: ['Enter'], action: 'Go to selected result' },
   ];
+
+  const miscShortcuts = [
+    { keys: ['?'], action: 'Show keyboard shortcuts' },
+    { keys: ['Shift', 'c'], action: 'Customer support' },
+    { keys: ['Shift', 'r'], action: 'Refresh page' },
+    { keys: ['Shift', 'd'], action: 'Toggle dark mode' },
+  ];
+
+  // Helper to render shortcut keys
+  const renderKey = (key: string) => (
+    <span key={key} className="px-2 py-1 bg-muted rounded border border-border text-xs font-mono">{key}</span>
+  );
 
   return (
     <>
@@ -38,92 +46,97 @@ const KeyboardShortcuts: React.FC = () => {
         <title>Keyboard Shortcuts | StockPilot</title>
       </Helmet>
       
-      <AccountLayout>
-        <div className="border-b border-border pb-4 mb-6">
-          <div className="flex justify-between items-center mb-4">
-            <nav className="flex space-x-4 text-sm font-medium">
-              {['Investing', 'Spending', 'Crypto', 'Transfers', 'Recurring', 'Stock Lending', 'Reports and statements', 'Tax center', 'History', 'Settings', 'Help'].map((item) => (
-                <a 
-                  key={item} 
-                  href={`/${item.toLowerCase().replace(/\s+/g, '-')}`} 
-                  className={`${item === 'Keyboard Shortcuts' ? 'text-primary border-b-2 border-primary' : 'text-muted-foreground'} px-2 py-1`}
-                >
-                  {item}
-                </a>
-              ))}
-            </nav>
-          </div>
-          
-          <h1 className="text-3xl font-bold mb-2">Keyboard Shortcuts</h1>
-          <p className="text-muted-foreground mb-6">Use these keyboard shortcuts to navigate and interact with StockPilot more efficiently.</p>
-        </div>
+      <AccountLayout title="Keyboard Shortcuts">
+        <p className="text-muted-foreground mb-8">Use these keyboard shortcuts to quickly navigate and perform actions in the app.</p>
         
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
           <Card>
-            <CardHeader>
-              <CardTitle>Navigation</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <table className="w-full">
-                <tbody>
-                  {navigationShortcuts.map((shortcut, index) => (
-                    <tr key={index} className={index < navigationShortcuts.length - 1 ? "border-b border-border" : ""}>
-                      <td className="py-3">
-                        <kbd className="px-2 py-1.5 text-xs font-semibold text-gray-800 bg-gray-100 border border-gray-200 rounded-lg dark:bg-gray-600 dark:text-gray-100 dark:border-gray-500">{shortcut.key}</kbd>
-                      </td>
-                      <td className="py-3 pl-6">{shortcut.description}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+            <CardContent className="p-6">
+              <h2 className="text-lg font-medium mb-4">Navigation</h2>
+              <div className="space-y-3">
+                {navigationShortcuts.map((shortcut, index) => (
+                  <div key={index} className="flex justify-between items-center">
+                    <span>{shortcut.action}</span>
+                    <div className="flex items-center gap-1">
+                      {shortcut.keys.map((key, i) => (
+                        <React.Fragment key={i}>
+                          {i > 0 && <span className="text-muted-foreground mx-1">+</span>}
+                          {renderKey(key)}
+                        </React.Fragment>
+                      ))}
+                    </div>
+                  </div>
+                ))}
+              </div>
             </CardContent>
           </Card>
           
           <Card>
-            <CardHeader>
-              <CardTitle>Stock Detail View</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <table className="w-full">
-                <tbody>
-                  {stockDetailShortcuts.map((shortcut, index) => (
-                    <tr key={index} className={index < stockDetailShortcuts.length - 1 ? "border-b border-border" : ""}>
-                      <td className="py-3">
-                        <kbd className="px-2 py-1.5 text-xs font-semibold text-gray-800 bg-gray-100 border border-gray-200 rounded-lg dark:bg-gray-600 dark:text-gray-100 dark:border-gray-500">{shortcut.key}</kbd>
-                      </td>
-                      <td className="py-3 pl-6">{shortcut.description}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+            <CardContent className="p-6">
+              <h2 className="text-lg font-medium mb-4">Trading</h2>
+              <div className="space-y-3">
+                {tradingShortcuts.map((shortcut, index) => (
+                  <div key={index} className="flex justify-between items-center">
+                    <span>{shortcut.action}</span>
+                    <div className="flex items-center gap-1">
+                      {shortcut.keys.map((key, i) => (
+                        <React.Fragment key={i}>
+                          {i > 0 && <span className="text-muted-foreground mx-1">+</span>}
+                          {renderKey(key)}
+                        </React.Fragment>
+                      ))}
+                    </div>
+                  </div>
+                ))}
+              </div>
             </CardContent>
           </Card>
           
-          <Card className="md:col-span-2">
-            <CardHeader>
-              <CardTitle>General</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <table className="w-full">
-                <tbody>
-                  {generalShortcuts.map((shortcut, index) => (
-                    <tr key={index} className={index < generalShortcuts.length - 1 ? "border-b border-border" : ""}>
-                      <td className="py-3">
-                        <kbd className="px-2 py-1.5 text-xs font-semibold text-gray-800 bg-gray-100 border border-gray-200 rounded-lg dark:bg-gray-600 dark:text-gray-100 dark:border-gray-500">{shortcut.key}</kbd>
-                      </td>
-                      <td className="py-3 pl-6">{shortcut.description}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+          <Card>
+            <CardContent className="p-6">
+              <h2 className="text-lg font-medium mb-4">Search</h2>
+              <div className="space-y-3">
+                {searchShortcuts.map((shortcut, index) => (
+                  <div key={index} className="flex justify-between items-center">
+                    <span>{shortcut.action}</span>
+                    <div className="flex items-center gap-1">
+                      {shortcut.keys.map((key, i) => (
+                        <React.Fragment key={i}>
+                          {i > 0 && <span className="text-muted-foreground mx-1">+</span>}
+                          {renderKey(key)}
+                        </React.Fragment>
+                      ))}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+          
+          <Card>
+            <CardContent className="p-6">
+              <h2 className="text-lg font-medium mb-4">Miscellaneous</h2>
+              <div className="space-y-3">
+                {miscShortcuts.map((shortcut, index) => (
+                  <div key={index} className="flex justify-between items-center">
+                    <span>{shortcut.action}</span>
+                    <div className="flex items-center gap-1">
+                      {shortcut.keys.map((key, i) => (
+                        <React.Fragment key={i}>
+                          {i > 0 && <span className="text-muted-foreground mx-1">+</span>}
+                          {renderKey(key)}
+                        </React.Fragment>
+                      ))}
+                    </div>
+                  </div>
+                ))}
+              </div>
             </CardContent>
           </Card>
         </div>
         
-        <div className="mt-8 p-4 bg-gray-100 dark:bg-gray-800 rounded-lg">
-          <p className="text-muted-foreground text-sm">
-            <strong>Pro tip:</strong> You can press <kbd className="px-1.5 py-0.5 text-xs font-semibold text-gray-800 bg-gray-200 border border-gray-300 rounded dark:bg-gray-700 dark:text-gray-100 dark:border-gray-600">Shift + ?</kbd> at any time to display this shortcuts page.
-          </p>
+        <div className="p-4 border border-border rounded-md bg-muted/30">
+          <p className="text-sm">To activate keyboard shortcuts, make sure you're not focused in an input field. Press <span className="px-2 py-1 bg-muted rounded border border-border text-xs font-mono">?</span> at any time to show this help screen.</p>
         </div>
       </AccountLayout>
     </>
