@@ -25,9 +25,12 @@ const WatchlistsContainer: React.FC = () => {
     queryKey: ['watchlists'], 
     queryFn: getUserWatchlists,
     enabled: !!user,
-    onError: (err) => {
-      console.error('Error fetching watchlists:', err);
-      toast.error('Failed to load watchlists. Please try again later.');
+    // Replace onError with onSettled to handle errors in @tanstack/react-query v5
+    onSettled: (data, error) => {
+      if (error) {
+        console.error('Error fetching watchlists:', error);
+        toast.error('Failed to load watchlists. Please try again later.');
+      }
     }
   });
 
