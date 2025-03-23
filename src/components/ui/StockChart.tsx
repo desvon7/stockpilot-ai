@@ -150,14 +150,12 @@ const StockChart: React.FC<StockChartProps> = ({
               style={{ fontSize: '12px' }}
               domain={['dataMin', 'dataMax']}
               minTickGap={30}
-              isAnimationActive={false}
             />
             <YAxis 
               domain={['auto', 'auto']}
               tickFormatter={(value) => formatCurrency(value)}
               width={80}
               style={{ fontSize: '12px' }}
-              isAnimationActive={false}
             />
             <Tooltip
               formatter={(value: number) => [formatCurrency(value), 'Price']}
