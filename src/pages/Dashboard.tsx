@@ -7,7 +7,7 @@ import StockOverview from '@/components/dashboard/StockOverview';
 import Recommendations from '@/components/dashboard/Recommendations';
 import { useAuth } from '@/contexts/AuthContext';
 import AccountSidebar from '@/components/layout/AccountSidebar';
-import { usePortfolioData } from '@/hooks/usePortfolioData';
+import usePortfolioData from '@/hooks/usePortfolioData';
 import PortfolioSectors from '@/components/dashboard/PortfolioSectors';
 import PortfolioPerformance from '@/components/dashboard/PortfolioPerformance';
 import { mockStocks } from '@/utils/mockData';

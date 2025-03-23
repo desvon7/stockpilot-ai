@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/contexts/AuthContext';
@@ -40,6 +39,11 @@ const usePortfolioData = () => {
   const [portfolio, setPortfolio] = React.useState<PortfolioData | null>(null);
   const [isLoading, setIsLoading] = React.useState(true);
   const [error, setError] = React.useState<Error | null>(null);
+  
+  // Extract sector data for easier use in components
+  const sectors = React.useMemo(() => {
+    return portfolio?.sectorAllocations || [];
+  }, [portfolio]);
 
   // Mock sector classification for stocks
   const sectorMap: Record<string, string> = {
@@ -204,7 +208,7 @@ const usePortfolioData = () => {
     fetchPortfolioData();
   }, [user]);
 
-  return { portfolio, isLoading, error };
+  return { portfolio, sectors, isLoading, error };
 };
 
 export default usePortfolioData;
