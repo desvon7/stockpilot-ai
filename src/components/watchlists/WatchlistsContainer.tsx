@@ -7,6 +7,7 @@ import WatchlistSidebar from './WatchlistSidebar';
 import WatchlistContent from './WatchlistContent';
 import AddToWatchlist from './AddToWatchlist';
 import { toast } from 'sonner';
+import { useHotkeys } from '@/hooks/useHotkeys';
 
 const WatchlistsContainer: React.FC = () => {
   const { user } = useAuth();
@@ -24,15 +25,16 @@ const WatchlistsContainer: React.FC = () => {
   } = useQuery({
     queryKey: ['watchlists'], 
     queryFn: getUserWatchlists,
-    enabled: !!user,
-    // Replace onError with onSettled to handle errors in @tanstack/react-query v5
-    onSettled: (data, error) => {
-      if (error) {
-        console.error('Error fetching watchlists:', error);
-        toast.error('Failed to load watchlists. Please try again later.');
-      }
-    }
+    enabled: !!user
   });
+
+  // Handle errors manually since onSettled is not available in this version
+  useEffect(() => {
+    if (error) {
+      console.error('Error fetching watchlists:', error);
+      toast.error('Failed to load watchlists. Please try again later.');
+    }
+  }, [error]);
 
   // Set the first watchlist as active if none is selected and data is loaded
   useEffect(() => {
@@ -41,7 +43,20 @@ const WatchlistsContainer: React.FC = () => {
     }
   }, [watchlists, activeWatchlistId]);
 
-  const activeWatchlist = watchlists?.find(w => w.id === activeWatchlistId);
+  // Add keyboard shortcut for refreshing watchlists
+  useHotkeys({
+    key: 'r',
+    modifier: 'ctrl',
+    handler: () => {
+      refetch();
+      toast.info('Refreshing watchlists data...');
+    }
+  });
+
+  const activeWatchlist = useMemo(() => 
+    watchlists?.find(w => w.id === activeWatchlistId),
+    [watchlists, activeWatchlistId]
+  );
 
   // Get all unique symbols across watchlists
   const allSymbols = useMemo(() => {
@@ -97,7 +112,10 @@ const WatchlistsContainer: React.FC = () => {
     }));
   }, [watchlists, priceData]);
 
-  const activeWatchlistWithPrices = watchlistsWithPrices?.find(w => w.id === activeWatchlistId);
+  const activeWatchlistWithPrices = useMemo(() => 
+    watchlistsWithPrices?.find(w => w.id === activeWatchlistId),
+    [watchlistsWithPrices, activeWatchlistId]
+  );
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
