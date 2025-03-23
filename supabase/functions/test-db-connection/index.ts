@@ -36,8 +36,9 @@ serve(async (req) => {
     const timeoutId = setTimeout(() => controller.abort(), 5000); // 5 second timeout
     
     try {
+      // Fix: Remove the trailing semicolon after controller.signal
       const result = await sql`SELECT NOW() as current_time, current_database() as database_name`,
-                              { signal: controller.signal };
+                            { signal: controller.signal };
       clearTimeout(timeoutId);
       
       return new Response(
