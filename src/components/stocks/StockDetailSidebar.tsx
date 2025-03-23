@@ -46,16 +46,16 @@ const StockDetailSidebar: React.FC<StockDetailSidebarProps> = ({
   return (
     <div className="space-y-6">
       <div className="flex space-x-2 mb-2">
-        <Button variant="outline" size="sm" asChild>
+        <Button variant="outline" size="sm" asChild className="flex-1 sm:flex-none">
           <Link to="/stocks">
             <ArrowLeft className="h-4 w-4 mr-1" />
-            Back to Stocks
+            <span className="truncate">Back to Stocks</span>
           </Link>
         </Button>
-        <Button variant="outline" size="sm" asChild>
+        <Button variant="outline" size="sm" asChild className="flex-1 sm:flex-none">
           <Link to="/home">
             <Home className="h-4 w-4 mr-1" />
-            Home
+            <span className="truncate">Home</span>
           </Link>
         </Button>
       </div>

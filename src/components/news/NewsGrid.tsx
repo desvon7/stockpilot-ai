@@ -1,8 +1,8 @@
 
 import React from 'react';
-import { Loader2 } from 'lucide-react';
 import NewsCard from './NewsCard';
 import { Skeleton } from '@/components/ui/skeleton';
+import LoadingState from '@/components/ui/LoadingState';
 
 interface NewsItem {
   id: string;
@@ -29,41 +29,32 @@ const NewsGrid: React.FC<NewsGridProps> = ({
   isLoading, 
   compact = false 
 }) => {
-  const getCardStyle = () => {
+  const getGridStyle = () => {
     if (compact) {
       return "grid grid-cols-1 gap-4";
     }
-    return "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6";
+    return "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6";
   };
+
+  if (isLoading && news.length === 0) {
+    return <LoadingState variant="skeleton" count={compact ? 3 : 6} />;
+  }
 
   return (
     <>
-      <div className={getCardStyle()}>
-        {isLoading && news.length === 0 ? (
-          // Skeleton loading state
-          Array(compact ? 3 : 6).fill(0).map((_, i) => (
-            <div key={i} className="flex flex-col space-y-3">
-              <Skeleton className="h-[180px] w-full rounded-md" />
-              <div className="space-y-2">
-                <Skeleton className="h-4 w-full" />
-                <Skeleton className="h-4 w-3/4" />
-              </div>
-            </div>
-          ))
-        ) : (
-          displayedNews.map(article => (
-            <NewsCard 
-              key={article.id} 
-              article={article} 
-              compact={compact}
-            />
-          ))
-        )}
+      <div className={getGridStyle()}>
+        {displayedNews.map(article => (
+          <NewsCard 
+            key={article.id} 
+            article={article} 
+            compact={compact}
+          />
+        ))}
       </div>
       
       {isLoading && news.length > 0 && (
-        <div className="w-full flex justify-center mt-4">
-          <Loader2 className="h-6 w-6 animate-spin text-primary" />
+        <div className="w-full flex justify-center mt-6">
+          <LoadingState size="sm" text="Loading more..." />
         </div>
       )}
     </>

@@ -1,13 +1,14 @@
 
 import React, { useState } from 'react';
 import { Helmet } from 'react-helmet-async';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import DashboardLayout from '@/components/layout/DashboardLayout';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import NewsCard from '@/components/news/NewsCard';
 import { useStockNews } from '@/hooks/useStockNews';
-import { Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
+import LoadingState from '@/components/ui/LoadingState';
+import NewsGrid from '@/components/news/NewsGrid';
+import NewsErrorState from '@/components/news/states/NewsErrorState';
+import { Card, CardHeader, CardContent, CardTitle, CardDescription } from '@/components/ui/card';
 
 const NewsFeed: React.FC = () => {
   const [activeCategory, setActiveCategory] = useState('all');
@@ -16,7 +17,7 @@ const NewsFeed: React.FC = () => {
   const trackedSymbols = ['AAPL', 'MSFT', 'GOOGL', 'AMZN', 'TSLA'];
   
   // Fetch news for tracked symbols
-  const { news, isLoading, error } = useStockNews(trackedSymbols);
+  const { news, isLoading, error, refetch } = useStockNews(trackedSymbols);
   
   // Filter news by category if needed
   const filteredNews = activeCategory === 'all' 
@@ -62,11 +63,11 @@ const NewsFeed: React.FC = () => {
         <title>Financial News | StockPilot</title>
       </Helmet>
       
-      <div className="container mx-auto px-4 py-6">
+      <div className="container mx-auto px-4 py-6 max-w-7xl">
         <h1 className="text-2xl font-bold mb-6">Financial News</h1>
         
         <Tabs defaultValue="all" value={activeCategory} onValueChange={setActiveCategory}>
-          <TabsList className="mb-4">
+          <TabsList className="mb-6 w-full sm:w-auto flex overflow-x-auto py-1">
             <TabsTrigger value="all">All News</TabsTrigger>
             <TabsTrigger value="earnings">Earnings</TabsTrigger>
             <TabsTrigger value="market">Market</TabsTrigger>
@@ -77,23 +78,28 @@ const NewsFeed: React.FC = () => {
             <Card>
               <CardHeader>
                 <CardTitle>{activeCategory === 'all' ? 'Latest Financial News' : `${activeCategory.charAt(0).toUpperCase() + activeCategory.slice(1)} News`}</CardTitle>
+                <CardDescription>
+                  Updates and insights to help you stay informed about the financial markets
+                </CardDescription>
               </CardHeader>
               <CardContent>
                 {isLoading ? (
-                  <div className="flex justify-center items-center py-10">
-                    <Loader2 className="h-8 w-8 animate-spin text-primary" />
-                    <span className="ml-2">Loading news...</span>
-                  </div>
+                  <LoadingState 
+                    variant="skeleton" 
+                    count={6}
+                  />
+                ) : error ? (
+                  <NewsErrorState refetch={refetch} />
                 ) : filteredNews.length === 0 ? (
                   <div className="text-center py-10 text-muted-foreground">
                     <p>No news articles found for this category.</p>
                   </div>
                 ) : (
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    {filteredNews.map((article) => (
-                      <NewsCard key={article.id} article={article} className="h-full" />
-                    ))}
-                  </div>
+                  <NewsGrid 
+                    news={filteredNews} 
+                    displayedNews={filteredNews} 
+                    isLoading={false}
+                  />
                 )}
               </CardContent>
             </Card>

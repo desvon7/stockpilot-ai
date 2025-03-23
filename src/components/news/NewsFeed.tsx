@@ -1,6 +1,5 @@
 
 import React, { useState } from 'react';
-import { useQuery } from '@tanstack/react-query';
 import NewsGrid from './NewsGrid';
 import NewsFilterBar from './filters/NewsFilterBar';
 import NewsLoadingState from './states/NewsLoadingState';
@@ -9,6 +8,7 @@ import NewsEmptyState from './states/NewsEmptyState';
 import NewsSourceInfo from './NewsSourceInfo';
 import { useStockNews } from '@/hooks/useStockNews';
 import { Button } from '@/components/ui/button';
+import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 
 interface NewsFeedProps {
   title?: string;
@@ -62,70 +62,75 @@ const NewsFeed: React.FC<NewsFeedProps> = ({
     setActiveCategory(categories[0] || 'general');
   };
   
-  // Show the appropriate state based on the query status
-  if (isLoading) {
-    return <NewsLoadingState isFullPage={false} />;
-  }
-  
-  if (error) {
-    return <NewsErrorState refetch={refetch} />;
-  }
-  
-  if (!news.length) {
-    return <NewsEmptyState 
-      searchInput={searchInput} 
-      categories={[activeCategory]} 
-      clearAllCategories={clearAllCategories} 
-    />;
-  }
-  
   return (
-    <div className="space-y-4">
-      <div className="flex justify-between items-center mb-4">
-        <h2 className="text-2xl font-bold">{title}</h2>
-        {news.length > maxItems && !viewAll && (
-          <Button 
-            variant="outline" 
-            size="sm" 
-            onClick={() => setViewAll(true)}
-          >
-            View All
-          </Button>
-        )}
-      </div>
-      
-      <NewsSourceInfo 
-        news={news} 
-        sourceCount={sourceCount} 
-        newsSource={newsSource} 
-      />
-      
-      {showFilters && categories.length > 1 && (
-        <NewsFilterBar 
-          categories={categories}
-          onSelectCategory={(category) => setActiveCategory(category)}
-          activeFilter={activeCategory}
-        />
-      )}
-      
-      <NewsGrid 
-        news={displayedNews} 
-        displayedNews={displayedNews}
-        isLoading={false}
-        compact={isCompact} 
-      />
-      
-      {news.length > maxItems && !viewAll && (
-        <div className="flex justify-center mt-6">
-          <Button 
-            variant="outline" 
-            onClick={() => setViewAll(true)}
-          >
-            Load More
-          </Button>
+    <Card className="overflow-hidden">
+      <CardHeader className="px-4 sm:px-6">
+        <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
+          <CardTitle className="text-xl md:text-2xl">{title}</CardTitle>
+          {news.length > maxItems && !viewAll && (
+            <Button 
+              variant="outline" 
+              size="sm" 
+              onClick={() => setViewAll(true)}
+            >
+              View All
+            </Button>
+          )}
         </div>
-      )}
-    </div>
+        
+        {!isLoading && !error && news.length > 0 && (
+          <NewsSourceInfo 
+            news={news} 
+            sourceCount={sourceCount} 
+            newsSource={newsSource} 
+          />
+        )}
+      </CardHeader>
+      
+      <CardContent className="px-4 sm:px-6 pb-6">
+        {showFilters && categories.length > 1 && !isLoading && !error && news.length > 0 && (
+          <div className="mb-6">
+            <NewsFilterBar 
+              categories={categories}
+              onSelectCategory={(category) => setActiveCategory(category)}
+              activeFilter={activeCategory}
+            />
+          </div>
+        )}
+        
+        {isLoading ? (
+          <NewsLoadingState isFullPage={false} message="Fetching latest financial news..." />
+        ) : error ? (
+          <NewsErrorState refetch={refetch} />
+        ) : !news.length ? (
+          <NewsEmptyState 
+            searchInput={searchInput} 
+            categories={[activeCategory]} 
+            clearAllCategories={clearAllCategories} 
+          />
+        ) : (
+          <>
+            <NewsGrid 
+              news={news} 
+              displayedNews={displayedNews}
+              isLoading={isLoading}
+              compact={isCompact} 
+            />
+            
+            {news.length > maxItems && !viewAll && (
+              <div className="flex justify-center mt-6">
+                <Button 
+                  variant="outline" 
+                  onClick={() => setViewAll(true)}
+                >
+                  Load More
+                </Button>
+              </div>
+            )}
+          </>
+        )}
+      </CardContent>
+    </Card>
   );
 };
 
