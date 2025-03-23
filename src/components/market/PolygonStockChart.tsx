@@ -1,13 +1,11 @@
 
 import React, { useState } from 'react';
 import { usePolygonChartData } from '@/hooks/usePolygonChartData';
-import StockChart from '@/components/ui/StockChart';
+import StockChart, { TimeRange } from '@/components/ui/StockChart';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { AlertCircle, RefreshCw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-
-type TimeRange = '1D' | '1W' | '1M' | '3M' | '6M' | '1Y' | '5Y';
 
 interface PolygonStockChartProps {
   symbol: string;

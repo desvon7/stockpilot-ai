@@ -2,8 +2,7 @@
 import { useState, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { getHistoricalData, PolygonHistoricalData } from '@/services/polygonService';
-
-type TimeRange = '1D' | '1W' | '1M' | '3M' | '6M' | '1Y' | '5Y';
+import { TimeRange } from '@/components/ui/StockChart';
 
 interface ChartDataPoint {
   date: string;
@@ -58,13 +57,6 @@ export const usePolygonChartData = ({
         const last3Months = new Date(now);
         last3Months.setDate(now.getDate() - 90);
         start = last3Months.toISOString().split('T')[0];
-        resolution = 'day';
-        break;
-      case '6M':
-        // Last 180 days
-        const last6Months = new Date(now);
-        last6Months.setDate(now.getDate() - 180);
-        start = last6Months.toISOString().split('T')[0];
         resolution = 'day';
         break;
       case '1Y':
