@@ -96,6 +96,16 @@ export const useOrderFormLogic = ({
     setIsSubmitting(true);
 
     try {
+      console.log("Submitting order:", {
+        symbol,
+        companyName,
+        transaction_type: values.orderType,
+        shares: Number(values.shares),
+        price_per_share: currentPrice,
+        execution_type: values.executionType,
+        limit_price: values.executionType === 'limit' ? Number(values.limitPrice) : null
+      });
+
       // Execute the transaction through our dedicated edge function
       const { data, error } = await supabase.functions.invoke('execute-stock-transaction', {
         body: {
@@ -109,6 +119,8 @@ export const useOrderFormLogic = ({
         }
       });
 
+      console.log("Transaction response:", data, error);
+
       if (error) {
         throw new Error(error.message);
       }
@@ -120,20 +132,30 @@ export const useOrderFormLogic = ({
           setBuyingPower(newBuyingPower);
           
           // Update in database
-          await supabase
+          const { error: updateError } = await supabase
             .from('profiles')
             .update({ buying_power: newBuyingPower })
             .eq('id', user.id);
+            
+          if (updateError) {
+            console.error('Error updating buying power:', updateError);
+            toast.error('Order processed but failed to update buying power');
+          }
         } else if (values.orderType === 'sell') {
           const sellTotal = sharesNum * currentPrice;
           const newBuyingPower = buyingPower + sellTotal;
           setBuyingPower(newBuyingPower);
           
           // Update in database
-          await supabase
+          const { error: updateError } = await supabase
             .from('profiles')
             .update({ buying_power: newBuyingPower })
             .eq('id', user.id);
+            
+          if (updateError) {
+            console.error('Error updating buying power:', updateError);
+            toast.error('Order processed but failed to update buying power');
+          }
         }
       }
 
