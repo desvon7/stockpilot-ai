@@ -5,7 +5,7 @@ import AccountLayout from '@/components/layout/AccountLayout';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Gear, ListBullets } from 'lucide-react';
+import { Settings, ListChecks } from 'lucide-react';
 
 const StockLending: React.FC = () => {
   const [account, setAccount] = useState('individual');
@@ -41,7 +41,7 @@ const StockLending: React.FC = () => {
             </Select>
             
             <Button variant="ghost" size="icon" className="ml-2">
-              <Gear className="h-5 w-5" />
+              <Settings className="h-5 w-5" />
             </Button>
           </div>
         </div>
@@ -86,7 +86,7 @@ const StockLending: React.FC = () => {
           
           <Card className="bg-background p-8 flex flex-col items-center justify-center text-center min-h-[300px]">
             <div className="mb-4 bg-muted rounded-full p-4">
-              <ListBullets className="h-8 w-8 text-muted-foreground" />
+              <ListChecks className="h-8 w-8 text-muted-foreground" />
             </div>
             <p className="mb-1 text-muted-foreground">You don't have any stocks on loan right now.</p>
             <p className="mb-6 text-muted-foreground">If we loan out any of your stocks, they will be listed here.</p>
