@@ -7,6 +7,7 @@ import {
   PaginationLink,
   PaginationNext,
   PaginationPrevious,
+  PaginationEllipsis
 } from '@/components/ui/pagination';
 
 interface NewsPaginationProps {
@@ -47,7 +48,7 @@ const NewsPagination: React.FC<NewsPaginationProps> = ({
     if (startPage > 2) {
       pages.push(
         <PaginationItem key="ellipsis-1">
-          <PaginationLink disabled>...</PaginationLink>
+          <PaginationEllipsis />
         </PaginationItem>
       );
     }
@@ -70,7 +71,7 @@ const NewsPagination: React.FC<NewsPaginationProps> = ({
     if (endPage < totalPages - 1) {
       pages.push(
         <PaginationItem key="ellipsis-2">
-          <PaginationLink disabled>...</PaginationLink>
+          <PaginationEllipsis />
         </PaginationItem>
       );
     }
@@ -97,8 +98,10 @@ const NewsPagination: React.FC<NewsPaginationProps> = ({
       <PaginationContent>
         <PaginationItem>
           <PaginationPrevious
-            onClick={() => onPageChange(Math.max(1, currentPage - 1))}
-            disabled={currentPage === 1}
+            onClick={() => currentPage > 1 && onPageChange(Math.max(1, currentPage - 1))}
+            aria-disabled={currentPage === 1}
+            tabIndex={currentPage === 1 ? -1 : undefined}
+            className={currentPage === 1 ? "pointer-events-none opacity-50" : ""}
           />
         </PaginationItem>
         
@@ -106,8 +109,10 @@ const NewsPagination: React.FC<NewsPaginationProps> = ({
         
         <PaginationItem>
           <PaginationNext
-            onClick={() => onPageChange(Math.min(totalPages, currentPage + 1))}
-            disabled={currentPage === totalPages}
+            onClick={() => currentPage < totalPages && onPageChange(Math.min(totalPages, currentPage + 1))}
+            aria-disabled={currentPage === totalPages}
+            tabIndex={currentPage === totalPages ? -1 : undefined}
+            className={currentPage === totalPages ? "pointer-events-none opacity-50" : ""}
           />
         </PaginationItem>
       </PaginationContent>

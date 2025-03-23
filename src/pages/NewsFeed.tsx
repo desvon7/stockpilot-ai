@@ -9,15 +9,18 @@ import LoadingState from '@/components/ui/LoadingState';
 import NewsGrid from '@/components/news/NewsGrid';
 import NewsErrorState from '@/components/news/states/NewsErrorState';
 import { Card, CardHeader, CardContent, CardTitle, CardDescription } from '@/components/ui/card';
+import NewsPagination from '@/components/news/pagination/NewsPagination';
 
 const NewsFeed: React.FC = () => {
   const [activeCategory, setActiveCategory] = useState('all');
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage, setItemsPerPage] = useState(12);
   
   // Popular tech and financial stocks for news tracking
   const trackedSymbols = ['AAPL', 'MSFT', 'GOOGL', 'AMZN', 'TSLA'];
   
   // Fetch news for tracked symbols
-  const { news, isLoading, error, refetch } = useStockNews(trackedSymbols);
+  const { news, isLoading, error, refetch, isRefetching } = useStockNews(trackedSymbols);
   
   // Filter news by category if needed
   const filteredNews = activeCategory === 'all' 
@@ -53,6 +56,20 @@ const NewsFeed: React.FC = () => {
         }
       });
 
+  // Calculate pagination
+  const totalPages = Math.max(1, Math.ceil(filteredNews.length / itemsPerPage));
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const endIndex = startIndex + itemsPerPage;
+  
+  // Get current page items
+  const currentItems = filteredNews.slice(startIndex, endIndex);
+
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
+    // Scroll to top
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
   if (error) {
     toast.error('Failed to fetch news data. Please try again later.');
   }
@@ -77,10 +94,31 @@ const NewsFeed: React.FC = () => {
           <TabsContent value={activeCategory}>
             <Card>
               <CardHeader>
-                <CardTitle>{activeCategory === 'all' ? 'Latest Financial News' : `${activeCategory.charAt(0).toUpperCase() + activeCategory.slice(1)} News`}</CardTitle>
-                <CardDescription>
-                  Updates and insights to help you stay informed about the financial markets
-                </CardDescription>
+                <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
+                  <div>
+                    <CardTitle>{activeCategory === 'all' ? 'Latest Financial News' : `${activeCategory.charAt(0).toUpperCase() + activeCategory.slice(1)} News`}</CardTitle>
+                    <CardDescription>
+                      Updates and insights to help you stay informed about the financial markets
+                    </CardDescription>
+                  </div>
+                  
+                  {!isLoading && !error && filteredNews.length > 0 && (
+                    <div className="flex items-center space-x-2">
+                      <select 
+                        className="bg-background border border-input rounded-md text-sm px-2 py-1"
+                        value={itemsPerPage}
+                        onChange={(e) => {
+                          setItemsPerPage(Number(e.target.value));
+                          setCurrentPage(1);
+                        }}
+                      >
+                        <option value={6}>6 per page</option>
+                        <option value={12}>12 per page</option>
+                        <option value={24}>24 per page</option>
+                      </select>
+                    </div>
+                  )}
+                </div>
               </CardHeader>
               <CardContent>
                 {isLoading ? (
@@ -95,11 +133,22 @@ const NewsFeed: React.FC = () => {
                     <p>No news articles found for this category.</p>
                   </div>
                 ) : (
-                  <NewsGrid 
-                    news={filteredNews} 
-                    displayedNews={filteredNews} 
-                    isLoading={false}
-                  />
+                  <>
+                    <NewsGrid 
+                      news={filteredNews} 
+                      displayedNews={currentItems} 
+                      isLoading={false}
+                      isLoadingMore={isRefetching}
+                    />
+                    
+                    {filteredNews.length > itemsPerPage && (
+                      <NewsPagination
+                        currentPage={currentPage}
+                        totalPages={totalPages}
+                        onPageChange={handlePageChange}
+                      />
+                    )}
+                  </>
                 )}
               </CardContent>
             </Card>

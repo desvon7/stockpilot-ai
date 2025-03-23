@@ -162,7 +162,8 @@ export const useStockNews = (symbols: string[], categories?: string[]) => {
   return {
     news: response?.news || [],
     newsSource: response?.source,
-    isLoading: isLoading || isFetching,
+    isLoading,
+    isRefetching: isFetching && !isLoading, // Add this line to provide isRefetching
     error,
     refetch
   };
