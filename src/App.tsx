@@ -1,5 +1,5 @@
 
-import { BrowserRouter } from "react-router-dom";
+import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { ThemeProvider } from "@/components/theme-provider";
 import MobileMenu from "@/components/layout/MobileMenu";
 import { AuthProvider } from "@/contexts/AuthContext";
@@ -7,7 +7,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
 import { HelmetProvider } from "react-helmet-async";
 
-// Route Groups
+// Route components
 import PublicRoutes from "@/routes/PublicRoutes";
 import DashboardRoutes from "@/routes/DashboardRoutes";
 import InvestingRoutes from "@/routes/InvestingRoutes";
@@ -23,10 +23,12 @@ function App() {
           <BrowserRouter>
             <AuthProvider>
               <MobileMenu />
-              <PublicRoutes />
-              <DashboardRoutes />
-              <InvestingRoutes />
-              <AccountRoutes />
+              <Routes>
+                <Route path="/*" element={<PublicRoutes />} />
+                <Route path="/*" element={<DashboardRoutes />} />
+                <Route path="/*" element={<InvestingRoutes />} />
+                <Route path="/*" element={<AccountRoutes />} />
+              </Routes>
               <Toaster />
             </AuthProvider>
           </BrowserRouter>
