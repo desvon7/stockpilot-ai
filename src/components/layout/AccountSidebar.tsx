@@ -3,7 +3,9 @@ import React, { useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { 
-  User, Home, LogOut
+  User, Home, LogOut, Briefcase, DollarSign, Bitcoin, 
+  ArrowLeftRight, RefreshCw, FileText, FileSpreadsheet, 
+  Calculator, Clock, Settings, HelpCircle, Keyboard
 } from 'lucide-react';
 import { 
   Sidebar, 
@@ -41,10 +43,22 @@ const AccountSidebar: React.FC = () => {
     return nameParts[0][0] || 'U';
   };
 
-  // Simplified menu items - removed duplicate items shown in the navbar
+  // Full menu items based on the second image
   const menuItems = [
     { icon: Home, title: 'Home', path: '/home' },
     { icon: User, title: 'Profile', path: '/profile' },
+    { icon: Briefcase, title: 'Investing', path: '/investing' },
+    { icon: DollarSign, title: 'Spending', path: '/spending' },
+    { icon: Bitcoin, title: 'Crypto', path: '/crypto' },
+    { icon: ArrowLeftRight, title: 'Transfers', path: '/transfers' },
+    { icon: RefreshCw, title: 'Recurring', path: '/recurring' },
+    { icon: FileText, title: 'Stock Lending', path: '/stock-lending' },
+    { icon: FileSpreadsheet, title: 'Reports and statements', path: '/reports-and-statements' },
+    { icon: Calculator, title: 'Tax center', path: '/tax-center' },
+    { icon: Clock, title: 'History', path: '/history' },
+    { icon: Settings, title: 'Settings', path: '/settings' },
+    { icon: HelpCircle, title: 'Help', path: '/help' },
+    { icon: Keyboard, title: 'Keyboard Shortcuts', path: '/keyboard-shortcuts' },
   ];
 
   return (
@@ -88,7 +102,7 @@ const AccountSidebar: React.FC = () => {
                       <AvatarFallback>{getUserInitials()}</AvatarFallback>
                     </Avatar>
                     <div>
-                      <p className="text-sm font-medium">{user.user_metadata?.full_name || user.email}</p>
+                      <p className="text-sm font-medium">{user.user_metadata?.full_name || "Its us"}</p>
                       <p className="text-xs text-muted-foreground">{user.email}</p>
                     </div>
                   </div>
