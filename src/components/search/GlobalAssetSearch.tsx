@@ -60,6 +60,7 @@ const GlobalAssetSearch: React.FC<GlobalAssetSearchProps> = ({
     
     // Mock search results - this would be replaced with a real API call
     const mockSearch = setTimeout(() => {
+      // Fix: Explicitly specify the type literals for each mock result
       const mockResults: AssetSearchResult[] = [
         { symbol: 'AAPL', name: 'Apple Inc.', type: 'stock', price: 175.34, change: 1.2 },
         { symbol: 'MSFT', name: 'Microsoft Corporation', type: 'stock', price: 326.78, change: -0.8 },
