@@ -1,6 +1,6 @@
 
 import React from "react";
-import { Route } from "react-router-dom";
+import { Route, Routes } from "react-router-dom";
 import ProtectedRoute from "@/components/auth/ProtectedRoute";
 import ReportsAndStatements from "@/pages/ReportsAndStatements";
 import TaxCenter from "@/pages/TaxCenter";
@@ -11,7 +11,7 @@ import KeyboardShortcuts from "@/pages/KeyboardShortcuts";
 
 const AccountRoutes: React.FC = () => {
   return (
-    <>
+    <Routes>
       <Route
         path="/reports-and-statements"
         element={
@@ -60,7 +60,7 @@ const AccountRoutes: React.FC = () => {
           </ProtectedRoute>
         }
       />
-    </>
+    </Routes>
   );
 };
 

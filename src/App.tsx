@@ -1,5 +1,5 @@
 
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter } from "react-router-dom";
 import { ThemeProvider } from "@/components/theme-provider";
 import MobileMenu from "@/components/layout/MobileMenu";
 import { AuthProvider } from "@/contexts/AuthContext";
@@ -23,12 +23,10 @@ function App() {
           <BrowserRouter>
             <AuthProvider>
               <MobileMenu />
-              <Routes>
-                <PublicRoutes />
-                <DashboardRoutes />
-                <InvestingRoutes />
-                <AccountRoutes />
-              </Routes>
+              <PublicRoutes />
+              <DashboardRoutes />
+              <InvestingRoutes />
+              <AccountRoutes />
               <Toaster />
             </AuthProvider>
           </BrowserRouter>

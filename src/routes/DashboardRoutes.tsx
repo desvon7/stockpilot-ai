@@ -1,6 +1,6 @@
 
 import React from "react";
-import { Route } from "react-router-dom";
+import { Route, Routes } from "react-router-dom";
 import ProtectedRoute from "@/components/auth/ProtectedRoute";
 import Dashboard from "@/pages/Dashboard";
 import Profile from "@/pages/Profile";
@@ -13,7 +13,7 @@ import TrendingAssets from "@/pages/TrendingAssets";
 
 const DashboardRoutes: React.FC = () => {
   return (
-    <>
+    <Routes>
       <Route
         path="/dashboard"
         element={
@@ -78,7 +78,7 @@ const DashboardRoutes: React.FC = () => {
           </ProtectedRoute>
         }
       />
-    </>
+    </Routes>
   );
 };
 

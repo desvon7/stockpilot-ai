@@ -1,6 +1,6 @@
 
 import React from "react";
-import { Route } from "react-router-dom";
+import { Route, Routes } from "react-router-dom";
 import ProtectedRoute from "@/components/auth/ProtectedRoute";
 import Investing from "@/pages/Investing";
 import Spending from "@/pages/Spending";
@@ -11,7 +11,7 @@ import StockLending from "@/pages/StockLending";
 
 const InvestingRoutes: React.FC = () => {
   return (
-    <>
+    <Routes>
       <Route
         path="/investing"
         element={
@@ -60,7 +60,7 @@ const InvestingRoutes: React.FC = () => {
           </ProtectedRoute>
         }
       />
-    </>
+    </Routes>
   );
 };
 
