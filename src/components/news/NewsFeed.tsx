@@ -1,11 +1,12 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import NewsGrid from './NewsGrid';
 import NewsFilterBar from './filters/NewsFilterBar';
 import NewsLoadingState from './states/NewsLoadingState';
 import NewsErrorState from './states/NewsErrorState';
 import NewsEmptyState from './states/NewsEmptyState';
 import NewsSourceInfo from './NewsSourceInfo';
+import NewsPagination from './pagination/NewsPagination';
 import { useStockNews } from '@/hooks/useStockNews';
 import { Button } from '@/components/ui/button';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
@@ -17,6 +18,7 @@ interface NewsFeedProps {
   maxItems?: number;
   showFilters?: boolean;
   isCompact?: boolean;
+  className?: string;
 }
 
 const NewsFeed: React.FC<NewsFeedProps> = ({
@@ -25,11 +27,13 @@ const NewsFeed: React.FC<NewsFeedProps> = ({
   categories = ['general'],
   maxItems = 12,
   showFilters = true,
-  isCompact = false
+  isCompact = false,
+  className
 }) => {
   const [activeCategory, setActiveCategory] = useState<string>(categories[0] || 'general');
-  const [viewAll, setViewAll] = useState(false);
   const [searchInput, setSearchInput] = useState('');
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage, setItemsPerPage] = useState(isCompact ? 6 : maxItems);
   
   // Use the stock news hook for fetching data
   const {
@@ -37,14 +41,22 @@ const NewsFeed: React.FC<NewsFeedProps> = ({
     isLoading,
     error,
     refetch,
-    newsSource
+    newsSource,
+    isRefetching
   } = useStockNews(symbols, [activeCategory]);
   
-  // Calculate number of items to show
-  const displayCount = viewAll ? undefined : maxItems;
+  // Reset to first page when filters change
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [activeCategory, searchInput]);
+  
+  // Calculate pagination
+  const totalPages = Math.max(1, Math.ceil(news.length / itemsPerPage));
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const endIndex = startIndex + itemsPerPage;
   
   // Filter and slice the news items
-  const displayedNews = news.slice(0, displayCount);
+  const displayedNews = news.slice(startIndex, endIndex);
   
   // Calculate source distribution
   const getSourceCount = () => {
@@ -61,20 +73,38 @@ const NewsFeed: React.FC<NewsFeedProps> = ({
   const clearAllCategories = () => {
     setActiveCategory(categories[0] || 'general');
   };
+
+  // Handle page change
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
+    // Scroll to top of news feed
+    window.scrollTo({
+      top: 0,
+      behavior: 'smooth'
+    });
+  };
   
   return (
-    <Card className="overflow-hidden">
+    <Card className={`overflow-hidden ${className}`}>
       <CardHeader className="px-4 sm:px-6">
         <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
           <CardTitle className="text-xl md:text-2xl">{title}</CardTitle>
-          {news.length > maxItems && !viewAll && (
-            <Button 
-              variant="outline" 
-              size="sm" 
-              onClick={() => setViewAll(true)}
-            >
-              View All
-            </Button>
+          
+          {!isLoading && !error && news.length > 0 && (
+            <div className="flex items-center space-x-2">
+              <select 
+                className="bg-background border border-input rounded-md text-sm px-2 py-1"
+                value={itemsPerPage}
+                onChange={(e) => {
+                  setItemsPerPage(Number(e.target.value));
+                  setCurrentPage(1);
+                }}
+              >
+                <option value={6}>6 per page</option>
+                <option value={12}>12 per page</option>
+                <option value={24}>24 per page</option>
+              </select>
+            </div>
           )}
         </div>
         
@@ -114,18 +144,16 @@ const NewsFeed: React.FC<NewsFeedProps> = ({
               news={news} 
               displayedNews={displayedNews}
               isLoading={isLoading}
-              compact={isCompact} 
+              compact={isCompact}
+              isLoadingMore={isRefetching} 
             />
             
-            {news.length > maxItems && !viewAll && (
-              <div className="flex justify-center mt-6">
-                <Button 
-                  variant="outline" 
-                  onClick={() => setViewAll(true)}
-                >
-                  Load More
-                </Button>
-              </div>
+            {news.length > itemsPerPage && (
+              <NewsPagination
+                currentPage={currentPage}
+                totalPages={totalPages}
+                onPageChange={handlePageChange}
+              />
             )}
           </>
         )}

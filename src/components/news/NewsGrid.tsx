@@ -1,7 +1,6 @@
 
 import React from 'react';
 import NewsCard from './NewsCard';
-import { Skeleton } from '@/components/ui/skeleton';
 import LoadingState from '@/components/ui/LoadingState';
 
 interface NewsItem {
@@ -21,13 +20,15 @@ interface NewsGridProps {
   displayedNews: NewsItem[];
   isLoading: boolean;
   compact?: boolean;
+  isLoadingMore?: boolean;
 }
 
 const NewsGrid: React.FC<NewsGridProps> = ({ 
   news, 
   displayedNews, 
   isLoading, 
-  compact = false 
+  compact = false,
+  isLoadingMore = false
 }) => {
   const getGridStyle = () => {
     if (compact) {
@@ -52,9 +53,15 @@ const NewsGrid: React.FC<NewsGridProps> = ({
         ))}
       </div>
       
-      {isLoading && news.length > 0 && (
+      {isLoadingMore && (
         <div className="w-full flex justify-center mt-6">
-          <LoadingState size="sm" text="Loading more..." />
+          <LoadingState size="sm" text="Loading more..." fullPage={false} />
+        </div>
+      )}
+      
+      {displayedNews.length === 0 && !isLoading && (
+        <div className="w-full text-center py-8">
+          <p className="text-muted-foreground">No news articles to display for the current selection.</p>
         </div>
       )}
     </>

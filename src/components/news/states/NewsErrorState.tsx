@@ -7,13 +7,15 @@ import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
 interface NewsErrorStateProps {
   refetch: () => void;
   errorMessage?: string;
+  className?: string;
 }
 
 const NewsErrorState: React.FC<NewsErrorStateProps> = ({ 
   refetch,
-  errorMessage = 'An error occurred while fetching news. Please try again later.'
+  errorMessage = 'An error occurred while fetching news. Please try again later.',
+  className
 }) => (
-  <Alert variant="destructive" className="text-center py-6">
+  <Alert variant="destructive" className={`text-center py-6 ${className}`}>
     <AlertCircle className="h-6 w-6 mx-auto mb-2" />
     <AlertTitle className="text-center">Error loading news</AlertTitle>
     <AlertDescription className="text-center">
