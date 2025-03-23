@@ -1,0 +1,56 @@
+
+import "https://deno.land/x/xhr@0.1.0/mod.ts";
+import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2.38.4";
+import { drizzle } from 'npm:drizzle-orm/postgres-js';
+import postgres from 'npm:postgres';
+
+const corsHeaders = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+};
+
+serve(async (req) => {
+  if (req.method === 'OPTIONS') {
+    return new Response(null, { headers: corsHeaders });
+  }
+
+  try {
+    // Get database URL from environment variables
+    const databaseUrl = Deno.env.get('DATABASE_URL');
+    
+    if (!databaseUrl) {
+      throw new Error('DATABASE_URL environment variable is not set');
+    }
+    
+    // Create a Postgres client
+    const client = postgres(databaseUrl);
+    
+    // Test the connection
+    const result = await client`SELECT NOW() as current_time`;
+    
+    return new Response(
+      JSON.stringify({ 
+        success: true, 
+        message: 'Database connection successful', 
+        timestamp: result[0].current_time 
+      }),
+      { 
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+      }
+    );
+  } catch (error) {
+    console.error('Error:', error.message);
+    
+    return new Response(
+      JSON.stringify({ 
+        success: false, 
+        error: error.message 
+      }),
+      { 
+        status: 500, 
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+      }
+    );
+  }
+});

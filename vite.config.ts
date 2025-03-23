@@ -1,3 +1,4 @@
+
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react-swc";
 import path from "path";
@@ -17,6 +18,11 @@ export default defineConfig(({ mode }) => ({
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "./src"),
+      "@db": path.resolve(__dirname, "./db"),
     },
+  },
+  define: {
+    // Make environment variables available in the client
+    'process.env.DATABASE_URL': JSON.stringify(process.env.DATABASE_URL),
   },
 }));
