@@ -7,7 +7,9 @@ import StockOverview from '@/components/dashboard/StockOverview';
 import Recommendations from '@/components/dashboard/Recommendations';
 import { useAuth } from '@/contexts/AuthContext';
 import AccountSidebar from '@/components/layout/AccountSidebar';
-import usePortfolio from '@/hooks/usePortfolio';
+import { usePortfolioData } from '@/hooks/usePortfolioData';
+import PortfolioSectors from '@/components/dashboard/PortfolioSectors';
+import PortfolioPerformance from '@/components/dashboard/PortfolioPerformance';
 import { mockStocks } from '@/utils/mockData';
 import PortfolioSummary from '@/components/dashboard/PortfolioSummary';
 import RecentActivity from '@/components/dashboard/RecentActivity';
@@ -21,7 +23,7 @@ import { toast } from 'sonner';
 const Dashboard: React.FC = () => {
   const { user } = useAuth();
   const [selectedStock, setSelectedStock] = useState<string | null>(null);
-  const { portfolio, isLoading } = usePortfolio();
+  const { portfolio, sectors, isLoading } = usePortfolioData();
   const [watchlistSymbols, setWatchlistSymbols] = useState<string[]>(['AAPL', 'MSFT', 'GOOGL', 'AMZN', 'TSLA']);
   
   // Fetch user's watchlist symbols from Supabase
@@ -158,6 +160,10 @@ const Dashboard: React.FC = () => {
                 <Portfolio 
                   portfolio={portfolio} 
                   isLoading={isLoading} 
+                />
+                <PortfolioSectors 
+                  sectors={sectors}
+                  isLoading={isLoading}
                 />
                 <StockOverview stocks={stocksToDisplay} />
                 <RecentActivity activities={mockActivities} />
