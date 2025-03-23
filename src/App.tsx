@@ -1,5 +1,5 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom";
-import { ThemeProvider } from "@/components/theme-provider";
+import { ThemeProvider } from "@/contexts/ThemeContext";
 import Dashboard from "@/pages/Dashboard";
 import Auth from "@/pages/Auth";
 import Index from "@/pages/Index";
@@ -38,7 +38,7 @@ const queryClient = new QueryClient();
 function App() {
   return (
     <QueryClientProvider client={queryClient}>
-      <ThemeProvider defaultTheme="system" storageKey="stock-pilot-theme">
+      <ThemeProvider>
         <HelmetProvider>
           <BrowserRouter>
             <AuthProvider>
