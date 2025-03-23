@@ -1,172 +1,94 @@
 
-import { toast } from 'sonner';
+import { Quote, Trade } from '@/types/marketData';
 
-/**
- * Creates a WebSocket connection for real-time market data
- */
 export const createMarketDataWebSocket = (
   symbols: string[],
   onOpen: () => void,
   onMessage: (event: MessageEvent) => void,
   onError: (event: Event) => void,
   onClose: (event: CloseEvent) => void
-): WebSocket | null => {
-  try {
-    const wsProtocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-    let wsUrl = '';
-    
-    if (import.meta.env.MODE === 'development') {
-      wsUrl = `${wsProtocol}//${window.location.hostname}:54321/functions/v1/stock-market-websocket`;
-    } else {
-      wsUrl = `wss://fansbktmwnskvolllfhk.supabase.co/functions/v1/stock-market-websocket`;
-    }
-    
-    const ws = new WebSocket(wsUrl);
-    
-    ws.onopen = () => {
-      console.log('WebSocket connected');
-      onOpen();
-      toast.success('Connected to real-time market data');
-    };
-    
-    ws.onmessage = onMessage;
-    ws.onerror = onError;
-    ws.onclose = onClose;
-    
-    return ws;
-  } catch (err) {
-    console.error('Error establishing WebSocket connection:', err);
-    toast.error('Failed to establish WebSocket connection');
-    return null;
-  }
+): WebSocket => {
+  const wsUrl = import.meta.env.VITE_MARKET_DATA_WS_URL || 'wss://stream.data.alpaca.markets/v2/iex';
+  const ws = new WebSocket(wsUrl);
+  
+  ws.onopen = onOpen;
+  ws.onmessage = onMessage;
+  ws.onerror = onError;
+  ws.onclose = onClose;
+  
+  return ws;
 };
 
-/**
- * Parse WebSocket message data
- */
 export const parseWebSocketMessage = (
   event: MessageEvent,
-  onQuoteUpdate?: (symbol: string, quote: any) => void,
-  onTradeUpdate?: (symbol: string, trade: any) => void,
-  updateQuotes?: (updateFn: (prev: any) => any) => void,
-  updateTrades?: (updateFn: (prev: any) => any) => void
+  onQuoteUpdate?: (symbol: string, quote: Quote) => void,
+  onTradeUpdate?: (symbol: string, trade: Trade) => void,
+  setQuotes?: React.Dispatch<React.SetStateAction<Record<string, Quote>>>,
+  setTrades?: React.Dispatch<React.SetStateAction<Record<string, Trade>>>
 ) => {
   try {
     const data = JSON.parse(event.data);
     
-    if (Array.isArray(data)) {
-      data.forEach(item => {
-        if (item.T === 'q') {
-          handleQuoteMessage(item, onQuoteUpdate, updateQuotes);
-        } else if (item.T === 't') {
-          handleTradeMessage(item, onTradeUpdate, updateTrades, updateQuotes);
+    // Handle authentication response
+    if (Array.isArray(data) && data[0] && data[0].T === 'success') {
+      console.log('Authentication successful:', data[0].msg);
+      return;
+    }
+    
+    // Handle quotes
+    if (Array.isArray(data) && data[0] && data[0].T === 'q') {
+      data.forEach((quote) => {
+        if (quote.T !== 'q') return;
+        
+        const formattedQuote: Quote = {
+          symbol: quote.S,
+          price: quote.ap || quote.bp || 0,
+          ask: quote.ap || 0,
+          bid: quote.bp || 0,
+          askSize: quote.as || 0,
+          bidSize: quote.bs || 0,
+          timestamp: new Date(quote.t).getTime()
+        };
+        
+        if (onQuoteUpdate) {
+          onQuoteUpdate(formattedQuote.symbol, formattedQuote);
+        }
+        
+        if (setQuotes) {
+          setQuotes(prev => ({
+            ...prev,
+            [formattedQuote.symbol]: formattedQuote
+          }));
         }
       });
-    } else if (data.type === 'status') {
-      console.log('WebSocket status:', data.status);
-      
-      if (data.status === 'authenticated') {
-        console.log('WebSocket authenticated with data provider');
-      } else if (data.status === 'disconnected') {
-        console.warn('WebSocket disconnected from data provider:', data.message);
-        toast.warning('Real-time data connection interrupted. Reconnecting...');
-      }
-    } else if (data.type === 'subscription') {
-      console.log(`Subscription ${data.status}:`, data.symbols);
-    } else if (data.type === 'error') {
-      console.error('WebSocket error message:', data.message);
-      toast.error(`WebSocket error: ${data.message}`);
     }
-  } catch (err) {
-    console.error('Error processing WebSocket message:', err);
+    
+    // Handle trades
+    if (Array.isArray(data) && data[0] && data[0].T === 't') {
+      data.forEach((trade) => {
+        if (trade.T !== 't') return;
+        
+        const formattedTrade: Trade = {
+          symbol: trade.S,
+          price: trade.p,
+          size: trade.s,
+          timestamp: new Date(trade.t).getTime(),
+          exchange: trade.x
+        };
+        
+        if (onTradeUpdate) {
+          onTradeUpdate(formattedTrade.symbol, formattedTrade);
+        }
+        
+        if (setTrades) {
+          setTrades(prev => ({
+            ...prev,
+            [formattedTrade.symbol]: formattedTrade
+          }));
+        }
+      });
+    }
+  } catch (error) {
+    console.error('Error parsing WebSocket message:', error);
   }
-};
-
-/**
- * Handle a quote message from WebSocket
- */
-const handleQuoteMessage = (
-  item: any,
-  onQuoteUpdate?: (symbol: string, quote: any) => void,
-  updateQuotes?: (updateFn: (prev: any) => any) => void
-) => {
-  if (!updateQuotes) return;
-  
-  const quoteUpdate = {
-    symbol: item.S,
-    price: (item.ap || item.bp) || 0,
-    bid: item.bp || 0,
-    ask: item.ap || 0,
-    bidSize: item.bs,
-    askSize: item.as,
-    timestamp: item.t,
-  };
-  
-  updateQuotes(prev => {
-    const prevQuote = prev[item.S] || {} as any;
-    const newQuote = {
-      ...prevQuote,
-      ...quoteUpdate
-    };
-    
-    if (prevQuote.previousClose !== undefined) {
-      newQuote.change = newQuote.price - prevQuote.previousClose;
-      newQuote.changePercent = (newQuote.change / prevQuote.previousClose) * 100;
-    }
-    
-    if (onQuoteUpdate) {
-      onQuoteUpdate(item.S, newQuote);
-    }
-    
-    return {
-      ...prev,
-      [item.S]: newQuote
-    };
-  });
-};
-
-/**
- * Handle a trade message from WebSocket
- */
-const handleTradeMessage = (
-  item: any,
-  onTradeUpdate?: (symbol: string, trade: any) => void,
-  updateTrades?: (updateFn: (prev: any) => any) => void,
-  updateQuotes?: (updateFn: (prev: any) => any) => void
-) => {
-  if (!updateTrades || !updateQuotes) return;
-  
-  const tradeUpdate = {
-    symbol: item.S,
-    price: item.p || 0,
-    size: item.s || 0,
-    timestamp: item.t,
-    exchange: item.x || '',
-  };
-  
-  updateTrades(prev => {
-    const newTrades = {
-      ...prev,
-      [item.S]: tradeUpdate
-    };
-    
-    if (onTradeUpdate) {
-      onTradeUpdate(item.S, tradeUpdate);
-    }
-    
-    return newTrades;
-  });
-  
-  updateQuotes(prev => {
-    if (!prev[item.S]) return prev;
-    
-    const volume = (prev[item.S].volume || 0) + (item.s || 0);
-    return {
-      ...prev,
-      [item.S]: {
-        ...prev[item.S],
-        volume
-      }
-    };
-  });
 };

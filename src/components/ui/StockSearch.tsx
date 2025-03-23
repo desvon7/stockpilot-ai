@@ -13,6 +13,8 @@ interface StockSearchProps {
   isLoading?: boolean;
   buttonText?: string;
   disabled?: boolean;
+  placeholder?: string;
+  showAllAssetTypes?: boolean;
 }
 
 const StockSearch: React.FC<StockSearchProps> = ({ 
@@ -21,7 +23,9 @@ const StockSearch: React.FC<StockSearchProps> = ({
   onSelectStock,
   isLoading: externalLoading,
   buttonText,
-  disabled
+  disabled,
+  placeholder = "Search for stocks, ETFs, crypto...",
+  showAllAssetTypes = true
 }) => {
   const navigate = useNavigate();
   const {
@@ -57,6 +61,11 @@ const StockSearch: React.FC<StockSearchProps> = ({
     }
   };
 
+  // Filter results based on showAllAssetTypes setting
+  const filteredResults = showAllAssetTypes
+    ? searchResults
+    : searchResults?.filter(result => result.type === 'Equity' || result.type === 'ETF');
+
   return (
     <div ref={searchRef} className={className}>
       <StockSearchInput
@@ -68,12 +77,13 @@ const StockSearch: React.FC<StockSearchProps> = ({
         darkMode={darkMode}
         onFocus={() => query.length >= 2 && setIsOpen(true)}
         disabled={disabled}
+        placeholder={placeholder}
       />
 
       <StockSearchResults
         isOpen={isOpen}
         query={query}
-        results={searchResults}
+        results={filteredResults || []}
         selectedIndex={selectedIndex}
         darkMode={darkMode}
         buttonText={buttonText}
@@ -81,6 +91,7 @@ const StockSearch: React.FC<StockSearchProps> = ({
         onSelect={handleSelectStock}
         onSetSelectedIndex={setSelectedIndex}
         onClose={() => setIsOpen(false)}
+        highlightQuery={query}
       />
     </div>
   );

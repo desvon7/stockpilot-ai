@@ -13,6 +13,7 @@ export interface NewsItem {
   imageUrl?: string;
   symbols?: string[];
   sentiment?: number;
+  categories?: string[];
 }
 
 export const useStockNews = (symbols: string[], categories?: string[]) => {
@@ -53,11 +54,9 @@ export const useStockNews = (symbols: string[], categories?: string[]) => {
             throw error;
           }
           
-          console.log(`Received general news response:`, data);
-          
-          if (!data.news || data.news.length === 0) {
-            console.log('No general news returned from API');
-            return { news: [] };
+          // Auto-categorize news if not already categorized
+          if (data.news && data.news.length > 0) {
+            data.news = categorizeNews(data.news);
           }
           
           return data;
@@ -75,11 +74,9 @@ export const useStockNews = (symbols: string[], categories?: string[]) => {
           throw error;
         }
         
-        console.log(`Received news response for ${symbols.join(',')}:`, data);
-        
-        if (!data.news || data.news.length === 0) {
-          console.log('No news returned from API for the specified symbols');
-          return { news: [] };
+        // Auto-categorize news if not already categorized
+        if (data.news && data.news.length > 0) {
+          data.news = categorizeNews(data.news);
         }
         
         return data;
@@ -98,6 +95,69 @@ export const useStockNews = (symbols: string[], categories?: string[]) => {
     retryDelay: attemptIndex => Math.min(1000 * 2 ** attemptIndex, 30000),
     refetchOnWindowFocus: false
   });
+  
+  // Automatically categorize news if categories aren't provided
+  const categorizeNews = (news: NewsItem[]): NewsItem[] => {
+    return news.map(item => {
+      if (item.categories && item.categories.length) {
+        return item;
+      }
+      
+      const categories: string[] = [];
+      const text = (item.title + ' ' + item.summary).toLowerCase();
+      
+      // Basic category detection by keywords
+      const categoryKeywords = {
+        earnings: ['earnings', 'revenue', 'profit', 'quarterly', 'financial results'],
+        market: ['market', 'index', 'stocks', 'trading', 'investors'],
+        economy: ['economy', 'inflation', 'fed', 'federal reserve', 'interest rates'],
+        technology: ['technology', 'tech', 'ai', 'artificial intelligence', 'innovation'],
+        crypto: ['crypto', 'bitcoin', 'ethereum', 'blockchain', 'digital currency'],
+      };
+      
+      Object.entries(categoryKeywords).forEach(([category, keywords]) => {
+        if (keywords.some(word => text.includes(word))) {
+          categories.push(category);
+        }
+      });
+      
+      // Add mentioned symbols if available
+      if (symbols.length > 0) {
+        for (const symbol of symbols) {
+          if (text.includes(symbol.toLowerCase())) {
+            if (!item.symbols) {
+              item.symbols = [symbol];
+            } else if (!item.symbols.includes(symbol)) {
+              item.symbols.push(symbol);
+            }
+          }
+        }
+      }
+      
+      // Basic sentiment analysis - this is a simple approach
+      if (item.sentiment === undefined) {
+        const positiveWords = ['surge', 'gain', 'jump', 'rise', 'positive', 'growth', 'profit', 'bullish', 'upward'];
+        const negativeWords = ['fall', 'drop', 'plunge', 'decline', 'negative', 'loss', 'bearish', 'downward'];
+        
+        let sentiment = 0;
+        
+        positiveWords.forEach(word => {
+          if (text.includes(word)) sentiment += 0.1;
+        });
+        
+        negativeWords.forEach(word => {
+          if (text.includes(word)) sentiment -= 0.1;
+        });
+        
+        item.sentiment = Number(sentiment.toFixed(1));
+      }
+      
+      return {
+        ...item,
+        categories: categories.length > 0 ? categories : ['general']
+      };
+    });
+  };
   
   return {
     news: response?.news || [],

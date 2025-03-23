@@ -1,11 +1,12 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { useStockNews } from '@/hooks/useStockNews';
 import NewsCard from '@/components/news/NewsCard';
-import { Loader2, RefreshCw, AlertCircle } from 'lucide-react';
+import { Loader2, RefreshCw, AlertCircle, Filter } from 'lucide-react';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 interface StockNewsTabProps {
   stockName: string;
@@ -13,11 +14,56 @@ interface StockNewsTabProps {
 }
 
 const StockNewsTab: React.FC<StockNewsTabProps> = ({ stockName, symbol }) => {
+  const [activeCategory, setActiveCategory] = useState<string>('all');
   const { news, newsSource, isLoading, error, refetch } = useStockNews([symbol]);
 
   const handleRefresh = () => {
     refetch();
   };
+
+  // Extract categories from news items for filtering
+  const categories = React.useMemo(() => {
+    const uniqueCategories = new Set<string>();
+    
+    news.forEach(item => {
+      // Extract categories from title and summary using keyword matching
+      const keywords = {
+        earnings: ['earnings', 'revenue', 'profit', 'quarterly', 'financial results'],
+        market: ['market', 'index', 'stocks', 'bonds', 'shares', 'trading'],
+        economy: ['economy', 'inflation', 'federal reserve', 'interest rates', 'economic'],
+        technology: ['technology', 'tech', 'innovation', 'digital', 'software', 'hardware'],
+        crypto: ['crypto', 'bitcoin', 'ethereum', 'blockchain', 'token', 'digital currency'],
+      };
+      
+      const text = (item.title + ' ' + item.summary).toLowerCase();
+      
+      Object.entries(keywords).forEach(([category, terms]) => {
+        if (terms.some(term => text.includes(term))) {
+          uniqueCategories.add(category);
+        }
+      });
+    });
+    
+    return ['all', ...Array.from(uniqueCategories)];
+  }, [news]);
+
+  // Filter news by category
+  const filteredNews = React.useMemo(() => {
+    if (activeCategory === 'all') return news;
+    
+    const keywords = {
+      earnings: ['earnings', 'revenue', 'profit', 'quarterly', 'financial results'],
+      market: ['market', 'index', 'stocks', 'bonds', 'shares', 'trading'],
+      economy: ['economy', 'inflation', 'federal reserve', 'interest rates', 'economic'],
+      technology: ['technology', 'tech', 'innovation', 'digital', 'software', 'hardware'],
+      crypto: ['crypto', 'bitcoin', 'ethereum', 'blockchain', 'token', 'digital currency'],
+    };
+    
+    return news.filter(item => {
+      const text = (item.title + ' ' + item.summary).toLowerCase();
+      return keywords[activeCategory as keyof typeof keywords]?.some(term => text.includes(term));
+    });
+  }, [news, activeCategory]);
 
   return (
     <Card>
@@ -33,6 +79,21 @@ const StockNewsTab: React.FC<StockNewsTabProps> = ({ stockName, symbol }) => {
           </Button>
         </div>
       </CardHeader>
+      
+      {categories.length > 1 && (
+        <div className="px-6 pb-2">
+          <Tabs value={activeCategory} onValueChange={setActiveCategory}>
+            <TabsList className="w-full">
+              {categories.map(category => (
+                <TabsTrigger key={category} value={category} className="capitalize">
+                  {category}
+                </TabsTrigger>
+              ))}
+            </TabsList>
+          </Tabs>
+        </div>
+      )}
+      
       <CardContent>
         {isLoading ? (
           <div className="flex flex-col justify-center items-center py-6">
@@ -54,27 +115,32 @@ const StockNewsTab: React.FC<StockNewsTabProps> = ({ stockName, symbol }) => {
               Try Again
             </Button>
           </div>
-        ) : news.length === 0 ? (
+        ) : filteredNews.length === 0 ? (
           <div className="text-center py-6 text-muted-foreground">
-            <p>No recent news found for {stockName}.</p>
+            <p>No {activeCategory !== 'all' ? activeCategory + ' ' : ''}news found for {stockName}.</p>
             <Button 
               variant="ghost" 
               size="sm" 
-              onClick={handleRefresh}
+              onClick={() => setActiveCategory('all')}
               className="mt-2"
             >
-              Try Again
+              Show All News
             </Button>
           </div>
         ) : (
           <div className="space-y-4">
-            {news.map((newsItem) => (
-              <NewsCard key={newsItem.id} article={newsItem} />
+            {filteredNews.map((newsItem) => (
+              <NewsCard 
+                key={newsItem.id} 
+                article={newsItem} 
+                showDate={true}
+                highlightSymbols={[symbol]}
+              />
             ))}
           </div>
         )}
       </CardContent>
-      {newsSource && news.length > 0 && (
+      {newsSource && filteredNews.length > 0 && (
         <CardFooter className="text-xs text-muted-foreground border-t pt-4">
           <div className="flex items-center">
             <span className="mr-2">News source:</span>
