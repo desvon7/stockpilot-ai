@@ -2,8 +2,8 @@
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.38.4";
-import { drizzle } from 'npm:drizzle-orm/postgres-js';
-import postgres from 'npm:postgres';
+import { neon } from 'npm:@neondatabase/serverless';
+import { drizzle } from 'npm:drizzle-orm/neon-http';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -23,11 +23,12 @@ serve(async (req) => {
       throw new Error('DATABASE_URL environment variable is not set');
     }
     
-    // Create a Postgres client
-    const client = postgres(databaseUrl);
+    // Create a Neon client
+    const sql = neon(databaseUrl);
+    const db = drizzle(sql);
     
     // Test the connection
-    const result = await client`SELECT NOW() as current_time`;
+    const result = await sql`SELECT NOW() as current_time`;
     
     return new Response(
       JSON.stringify({ 
