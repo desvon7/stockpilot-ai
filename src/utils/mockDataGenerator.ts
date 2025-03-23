@@ -2,6 +2,18 @@
 import { NewsItem } from '@/services/newsService';
 import { v4 as uuidv4 } from 'uuid';
 
+// Define proper types for headlines
+interface BaseHeadline {
+  title: string;
+  category: string;
+}
+
+interface CompanyHeadline extends BaseHeadline {
+  symbols: string[];
+}
+
+type Headline = BaseHeadline | CompanyHeadline;
+
 /**
  * Generates mock financial news articles
  * Used as a fallback when the news API doesn't return results
@@ -16,7 +28,7 @@ export const generateMockNews = (
   const stockTickers = symbols.length > 0 ? symbols : ['AAPL', 'MSFT', 'GOOGL', 'AMZN', 'TSLA'];
   
   // Generate mock news headlines based on symbols and categories
-  const headlines = [
+  const headlines: BaseHeadline[] = [
     { title: 'Market Update: Stocks Rally on Economic Data', category: 'market' },
     { title: 'Fed Signals Possible Rate Changes in Coming Months', category: 'economy' },
     { title: 'Earnings Season: What Investors Need to Know', category: 'earnings' },
@@ -30,7 +42,7 @@ export const generateMockNews = (
   ];
   
   // Generate company-specific headlines for the requested symbols
-  const companyHeadlines = stockTickers.flatMap(symbol => [
+  const companyHeadlines: CompanyHeadline[] = stockTickers.flatMap(symbol => [
     { 
       title: `${symbol} Reports Quarterly Earnings Above Expectations`, 
       category: 'earnings',
@@ -54,14 +66,14 @@ export const generateMockNews = (
   ]);
   
   // Combine general and company-specific headlines
-  const allHeadlines = [...headlines, ...companyHeadlines];
+  const allHeadlines: Headline[] = [...headlines, ...companyHeadlines];
   
   // Filter by categories if specified
   const filteredHeadlines = categories.includes('general') 
     ? allHeadlines 
     : allHeadlines.filter(headline => 
         categories.includes(headline.category) || 
-        (headline.symbols && headline.symbols.some(s => symbols.includes(s)))
+        ('symbols' in headline && headline.symbols.some(s => symbols.includes(s)))
       );
   
   // Generate the requested number of mock news items
@@ -82,7 +94,7 @@ export const generateMockNews = (
       publishedAt: publishDate.toISOString(),
       url: 'https://example.com/financial-news',
       imageUrl: `https://picsum.photos/seed/${i + 1}/800/400`,
-      symbols: headline.symbols || [],
+      symbols: 'symbols' in headline ? headline.symbols : [],
       categories: [headline.category],
       sentiment: Math.random() * 2 - 1, // Random sentiment between -1 and 1
       provider: 'mock-data'
