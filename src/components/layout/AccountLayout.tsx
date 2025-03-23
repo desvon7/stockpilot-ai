@@ -35,7 +35,7 @@ const AccountLayout: React.FC<AccountLayoutProps> = ({
   
   return (
     <div className={cn(
-      "min-h-screen flex flex-col",
+      "flex min-h-screen flex-col",
       theme === 'dark' ? 'bg-gray-950 text-white' : 'bg-white text-gray-900'
     )}>
       {title && (
@@ -47,11 +47,11 @@ const AccountLayout: React.FC<AccountLayoutProps> = ({
       
       <Navbar />
       
-      <div className="flex-grow flex mt-16">
+      <div className="flex flex-1 mt-16">
         <AccountSidebar />
         
         <main className={cn(
-          "flex-grow p-4 md:p-6 overflow-x-hidden",
+          "flex-1 p-4 md:p-6 overflow-x-hidden",
           isMobile ? "pb-20" : "" // Add padding at bottom for mobile to avoid content being hidden by nav
         )}>
           {children}

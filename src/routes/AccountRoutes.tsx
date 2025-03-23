@@ -45,7 +45,7 @@ const LoadingFallback = () => (
   </div>
 );
 
-// Layout wrapper to ensure children are passed properly
+// Layout wrapper component that properly uses Outlet to pass children to AccountLayout
 const AccountLayoutWrapper = () => {
   return (
     <AccountLayout>
@@ -61,26 +61,10 @@ const AccountRoutes: React.FC = () => {
       <Route element={<ProtectedRoute />}>
         <Route element={<AccountLayoutWrapper />}>
           <Route index element={<Navigate to="/account/home" replace />} />
-          <Route path="home" element={
-            <Suspense fallback={<LoadingFallback />}>
-              <Home />
-            </Suspense>
-          } />
-          <Route path="profile" element={
-            <Suspense fallback={<LoadingFallback />}>
-              <Profile />
-            </Suspense>
-          } />
-          <Route path="portfolio" element={
-            <Suspense fallback={<LoadingFallback />}>
-              <Portfolio />
-            </Suspense>
-          } />
-          <Route path="dashboard" element={
-            <Suspense fallback={<LoadingFallback />}>
-              <Dashboard />
-            </Suspense>
-          } />
+          <Route path="home" element={<Home />} />
+          <Route path="profile" element={<Profile />} />
+          <Route path="portfolio" element={<Portfolio />} />
+          <Route path="dashboard" element={<Dashboard />} />
           <Route path="stocks/:symbol" element={
             <Suspense fallback={<LoadingFallback />}>
               <StockDetail />

@@ -24,7 +24,6 @@ export function useHotkeys(configs: HotkeyConfig | HotkeyConfig[]): void {
           : (e.ctrlKey || e.metaKey); // Default to either ctrl or meta if no modifier specified
         
         if (isModifierMatched && e.key.toLowerCase() === config.key.toLowerCase()) {
-          e.preventDefault();
           config.handler(e);
         }
       });

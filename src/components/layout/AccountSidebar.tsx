@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { 
@@ -26,12 +26,28 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Button } from '@/components/ui/button';
+import { cn } from '@/lib/utils';
 
 const AccountSidebar: React.FC = () => {
   const { user, signOut } = useAuth();
   const location = useLocation();
   const navigate = useNavigate();
   const [isOpen, setIsOpen] = useState(true);
+  const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
+
+  useEffect(() => {
+    const handleResize = () => {
+      setIsMobile(window.innerWidth < 768);
+      if (window.innerWidth < 768) {
+        setIsOpen(false);
+      } else {
+        setIsOpen(true);
+      }
+    };
+
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
   const getUserInitials = () => {
     if (!user?.user_metadata?.full_name) return 'U';
@@ -64,19 +80,33 @@ const AccountSidebar: React.FC = () => {
   // Get the current path for active state
   const currentPath = location.pathname;
 
+  const handleNavigation = (path: string) => {
+    navigate(path);
+    if (isMobile) {
+      setIsOpen(false);
+    }
+  };
+
   return (
     <SidebarProvider defaultOpen={isOpen}>
-      <Sidebar variant="sidebar" collapsible="offcanvas">
+      <Sidebar 
+        variant="sidebar" 
+        collapsible={isMobile ? "offcanvas" : true}
+        className={cn(
+          "border-r border-border",
+          isOpen ? "w-64" : "w-[70px]"
+        )}
+      >
         <SidebarHeader className="flex flex-col items-start py-4">
-          <Link 
-            to="/account/home" 
-            className="flex items-center px-4 py-2 w-full hover:bg-muted/50 rounded-md"
+          <div 
+            onClick={() => handleNavigation('/account/home')} 
+            className="flex items-center px-4 py-2 w-full hover:bg-muted/50 rounded-md cursor-pointer"
           >
-            <div className="w-8 h-8 mr-3 rounded-full bg-amber-500 flex items-center justify-center">
-              <span className="text-amber-100 font-bold">SP</span>
+            <div className="w-8 h-8 mr-3 rounded-full bg-primary flex items-center justify-center">
+              <span className="text-primary-foreground font-bold">SP</span>
             </div>
-            <h2 className="text-lg font-semibold">StockPilot Gold</h2>
-          </Link>
+            <h2 className="text-lg font-semibold">StockPilot</h2>
+          </div>
         </SidebarHeader>
 
         <SidebarContent>
@@ -87,11 +117,12 @@ const AccountSidebar: React.FC = () => {
                   asChild 
                   isActive={currentPath === item.path || 
                     (item.path !== '/account/home' && currentPath.startsWith(item.path))}
+                  onClick={() => handleNavigation(item.path)}
                 >
-                  <Link to={item.path} className="flex items-center">
-                    <item.icon className="mr-3" />
+                  <div className="flex items-center cursor-pointer">
+                    <item.icon className="mr-3 h-4 w-4" />
                     <span>{item.title}</span>
-                  </Link>
+                  </div>
                 </SidebarMenuButton>
               </SidebarMenuItem>
             ))}
@@ -109,29 +140,36 @@ const AccountSidebar: React.FC = () => {
                       <AvatarFallback>{getUserInitials()}</AvatarFallback>
                     </Avatar>
                     <div>
-                      <p className="text-sm font-medium">{user.user_metadata?.full_name || user.email}</p>
-                      <p className="text-xs text-muted-foreground">{user.email}</p>
+                      <p className="text-sm font-medium truncate max-w-[150px]">
+                        {user.user_metadata?.full_name || user.email}
+                      </p>
+                      <p className="text-xs text-muted-foreground truncate max-w-[150px]">
+                        {user.email}
+                      </p>
                     </div>
                   </div>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="start" className="w-56">
-                  <DropdownMenuItem asChild>
-                    <Link to="/account/profile" className="cursor-pointer">
-                      <User className="mr-2 h-4 w-4" />
-                      <span>Profile</span>
-                    </Link>
+                  <DropdownMenuItem 
+                    onClick={() => handleNavigation('/account/profile')}
+                    className="cursor-pointer"
+                  >
+                    <User className="mr-2 h-4 w-4" />
+                    <span>Profile</span>
                   </DropdownMenuItem>
-                  <DropdownMenuItem asChild>
-                    <Link to="/account/settings" className="cursor-pointer">
-                      <Settings className="mr-2 h-4 w-4" />
-                      <span>Settings</span>
-                    </Link>
+                  <DropdownMenuItem 
+                    onClick={() => handleNavigation('/account/settings')}
+                    className="cursor-pointer"
+                  >
+                    <Settings className="mr-2 h-4 w-4" />
+                    <span>Settings</span>
                   </DropdownMenuItem>
-                  <DropdownMenuItem asChild>
-                    <Link to="/account/home" className="cursor-pointer">
-                      <Home className="mr-2 h-4 w-4" />
-                      <span>Home</span>
-                    </Link>
+                  <DropdownMenuItem 
+                    onClick={() => handleNavigation('/account/home')}
+                    className="cursor-pointer"
+                  >
+                    <Home className="mr-2 h-4 w-4" />
+                    <span>Home</span>
                   </DropdownMenuItem>
                   <DropdownMenuSeparator />
                   <DropdownMenuItem onClick={() => signOut()} className="text-red-500 cursor-pointer">
