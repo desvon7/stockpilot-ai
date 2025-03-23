@@ -19,7 +19,10 @@ function App() {
           <BrowserRouter>
             <AuthProvider>
               <div className="min-h-screen bg-background text-foreground flex flex-col">
-                <AppRoutes />
+                <NavigationBar />
+                <div className="flex-1 flex flex-col">
+                  <AppRoutes />
+                </div>
                 <MobileMenu />
                 <Toaster />
               </div>

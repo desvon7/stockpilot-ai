@@ -1,9 +1,11 @@
+
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { useTheme } from '@/hooks/useTheme';
-import { Moon, Sun, Menu } from 'lucide-react';
+import { Moon, Sun, Menu, Search } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { Switch } from '@/components/ui/switch';
 import {
   Sheet,
   SheetContent,
@@ -13,6 +15,7 @@ import {
   SheetTrigger,
 } from "@/components/ui/sheet";
 import { cn } from '@/lib/utils';
+import GlobalAssetSearch from '@/components/search/GlobalAssetSearch';
 
 interface MobileMenuProps {
   isOpen?: boolean;
@@ -37,78 +40,99 @@ const MobileMenu: React.FC<MobileMenuProps> = ({ isOpen: propIsOpen, setIsOpen: 
   };
 
   return (
-    <Sheet open={isOpen} onOpenChange={setIsOpen}>
-      <SheetTrigger asChild>
-        <Button variant="ghost" size="icon" className="md:hidden">
-          <Menu className="h-6 w-6" />
-          <span className="sr-only">Open menu</span>
-        </Button>
-      </SheetTrigger>
-      <SheetContent side="left" className="w-[300px] sm:w-[400px]">
-        <div className="flex flex-col space-y-4 py-4">
-          <SheetHeader>
-            <SheetTitle>StockPilot</SheetTitle>
-            <SheetDescription>
-              Your personal stock portfolio tracker
-            </SheetDescription>
-          </SheetHeader>
-          
-          <div className="space-y-1">
-            {user ? (
-              <>
-                <Link to="/dashboard" className="mobile-nav-link">
-                  Dashboard
-                </Link>
-                <Link to="/stocks" className="mobile-nav-link">
-                  Browse Stocks
-                </Link>
-                <Link to="/watchlists" className="mobile-nav-link">
-                  Watchlists
-                </Link>
-                <Link to="/news" className="mobile-nav-link">
-                  News Feed
-                </Link>
-                <Link to="/transactions" className="mobile-nav-link">
-                  Transactions
-                </Link>
-                <Link to="/trending" className="mobile-nav-link">
-                  Trending Assets
-                </Link>
-              </>
-            ) : (
-              <>
-                <Link to="/" className="mobile-nav-link">
-                  Home
-                </Link>
-                <Link to="/auth" className="mobile-nav-link">
-                  Sign In / Sign Up
-                </Link>
-              </>
+    <div className="md:hidden fixed bottom-4 right-4 z-50">
+      <Sheet open={isOpen} onOpenChange={setIsOpen}>
+        <SheetTrigger asChild>
+          <Button size="icon" className="rounded-full shadow-lg">
+            <Menu className="h-6 w-6" />
+            <span className="sr-only">Open menu</span>
+          </Button>
+        </SheetTrigger>
+        <SheetContent side="left" className="w-[300px] sm:w-[400px]">
+          <div className="flex flex-col space-y-4 py-4">
+            <SheetHeader>
+              <SheetTitle>StockPilot</SheetTitle>
+              <SheetDescription>
+                Your personal stock portfolio tracker
+              </SheetDescription>
+            </SheetHeader>
+            
+            <div className="px-4">
+              <GlobalAssetSearch 
+                darkMode={theme === 'dark'}
+                trigger={
+                  <Button variant="outline" className="w-full flex justify-between items-center">
+                    <div className="flex items-center">
+                      <Search className="w-4 h-4 mr-2" />
+                      <span className="text-sm">Search assets...</span>
+                    </div>
+                  </Button>
+                }
+              />
+            </div>
+            
+            <div className="space-y-1">
+              {user ? (
+                <>
+                  <Link to="/dashboard" className="mobile-nav-link">
+                    Dashboard
+                  </Link>
+                  <Link to="/rewards" className="mobile-nav-link">
+                    Rewards
+                  </Link>
+                  <Link to="/investing" className="mobile-nav-link">
+                    Investing
+                  </Link>
+                  <Link to="/crypto" className="mobile-nav-link">
+                    Crypto
+                  </Link>
+                  <Link to="/spending" className="mobile-nav-link">
+                    Spending
+                  </Link>
+                  <Link to="/retirement" className="mobile-nav-link">
+                    Retirement
+                  </Link>
+                  <Link to="/notifications" className="mobile-nav-link">
+                    Notifications
+                  </Link>
+                </>
+              ) : (
+                <>
+                  <Link to="/" className="mobile-nav-link">
+                    Home
+                  </Link>
+                  <Link to="/auth" className="mobile-nav-link">
+                    Sign In / Sign Up
+                  </Link>
+                </>
+              )}
+            </div>
+            
+            <div className="flex items-center px-4 py-2">
+              <span className="text-sm mr-2">{theme === 'dark' ? 'Dark' : 'Light'} Mode</span>
+              <div className="flex items-center space-x-2">
+                <Switch
+                  checked={theme === 'dark'}
+                  onCheckedChange={toggleTheme}
+                  className="data-[state=checked]:bg-primary"
+                />
+                {theme === 'dark' ? (
+                  <Moon className="h-4 w-4" />
+                ) : (
+                  <Sun className="h-4 w-4" />
+                )}
+              </div>
+            </div>
+            
+            {user && (
+              <Button variant="destructive" size="sm" className="mx-4" onClick={handleSignOut}>
+                Sign Out
+              </Button>
             )}
           </div>
-          
-          <Button variant="outline" size="sm" className="w-full justify-start gap-2" onClick={toggleTheme}>
-            {theme === 'dark' ? (
-              <>
-                <Sun className="h-4 w-4" />
-                Light
-              </>
-            ) : (
-              <>
-                <Moon className="h-4 w-4" />
-                Dark
-              </>
-            )}
-          </Button>
-          
-          {user && (
-            <Button variant="destructive" size="sm" className="w-full" onClick={handleSignOut}>
-              Sign Out
-            </Button>
-          )}
-        </div>
-      </SheetContent>
-    </Sheet>
+        </SheetContent>
+      </Sheet>
+    </div>
   );
 };
 

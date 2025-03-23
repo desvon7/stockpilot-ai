@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { useTheme } from '@/hooks/useTheme';
@@ -21,7 +21,10 @@ import {
   HelpCircle,
   Keyboard,
   LogOut,
-  ChevronDown
+  ChevronDown,
+  Sun,
+  Moon,
+  Search
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
@@ -34,12 +37,20 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Switch } from '@/components/ui/switch';
+import GlobalAssetSearch from '@/components/search/GlobalAssetSearch';
 
 const NavigationBar = () => {
   const { user, signOut } = useAuth();
   const { theme, setTheme } = useTheme();
   const location = useLocation();
   const [isAccountMenuOpen, setIsAccountMenuOpen] = useState(false);
+  const [mounted, setMounted] = useState(false);
+
+  // After mounting, we can safely show the UI that depends on the theme
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   const isActive = (path: string) => {
     return location.pathname === path;
@@ -48,7 +59,7 @@ const NavigationBar = () => {
   const NavItem = ({ to, label, className }: { to: string; label: string; className?: string }) => (
     <Link to={to} className={cn(
       "text-sm font-medium transition-colors hover:text-primary whitespace-nowrap",
-      isActive(to) ? "text-primary" : "text-white",
+      isActive(to) ? "text-primary" : "text-foreground",
       className
     )}>
       {label}
@@ -76,13 +87,24 @@ const NavigationBar = () => {
     { icon: Keyboard, label: 'Keyboard Shortcuts', path: '/keyboard-shortcuts' }
   ];
 
+  const handleThemeToggle = () => {
+    setTheme(theme === 'dark' ? 'light' : 'dark');
+  };
+
+  if (!mounted) {
+    return null;
+  }
+
   return (
-    <nav className="bg-black border-b border-gray-800 py-4">
+    <nav className={cn(
+      "border-b py-4",
+      theme === 'dark' ? "bg-black border-gray-800" : "bg-white border-gray-200"
+    )}>
       <div className="container mx-auto px-4 flex items-center justify-between">
         <div className="flex items-center space-x-8">
           <Link to="/" className="flex items-center space-x-2">
-            <TrendingUp className="h-6 w-6 text-white" />
-            <span className="font-bold text-xl text-white">StockPilot</span>
+            <TrendingUp className={cn("h-6 w-6", theme === 'dark' ? "text-white" : "text-black")} />
+            <span className={cn("font-bold text-xl", theme === 'dark' ? "text-white" : "text-black")}>StockPilot</span>
           </Link>
           
           <div className="hidden md:flex space-x-6">
@@ -95,13 +117,46 @@ const NavigationBar = () => {
           </div>
         </div>
         
-        <div>
+        <div className="flex items-center space-x-4">
+          {/* Global Asset Search */}
+          <div className="hidden md:block w-64">
+            <GlobalAssetSearch 
+              darkMode={theme === 'dark'}
+              trigger={
+                <Button variant="outline" className="w-full flex justify-between items-center relative">
+                  <div className="flex items-center">
+                    <Search className="w-4 h-4 mr-2" />
+                    <span className="text-sm">Search assets...</span>
+                  </div>
+                  <kbd className="pointer-events-none absolute right-2 top-1/2 transform -translate-y-1/2 inline-flex h-5 select-none items-center gap-1 rounded border bg-muted px-1.5 font-mono text-xs font-medium opacity-100">
+                    <span className="text-xs">⌘</span>K
+                  </kbd>
+                </Button>
+              }
+            />
+          </div>
+          
+          {/* Theme Toggle */}
+          <div className="flex items-center space-x-2">
+            <Switch
+              checked={theme === 'dark'}
+              onCheckedChange={handleThemeToggle}
+              className="data-[state=checked]:bg-primary"
+            />
+            {theme === 'dark' ? (
+              <Moon className="h-4 w-4 text-gray-300" />
+            ) : (
+              <Sun className="h-4 w-4 text-yellow-500" />
+            )}
+          </div>
+          
+          {/* Account Dropdown */}
           <DropdownMenu open={isAccountMenuOpen} onOpenChange={setIsAccountMenuOpen}>
             <DropdownMenuTrigger asChild>
               <button 
                 className={cn(
                   "flex items-center text-sm font-medium transition-colors",
-                  isAccountMenuOpen ? "text-primary" : "text-white hover:text-primary"
+                  isAccountMenuOpen ? "text-primary" : "hover:text-primary"
                 )}
               >
                 <span className="mr-1">Account</span>
@@ -109,16 +164,25 @@ const NavigationBar = () => {
               </button>
             </DropdownMenuTrigger>
             <DropdownMenuContent 
-              className="w-64 bg-gray-900 border border-gray-800 text-white" 
+              className={cn(
+                "w-64 border text-foreground", 
+                theme === 'dark' ? "bg-gray-900 border-gray-800" : "bg-white border-gray-200"
+              )} 
               align="end"
             >
               {user ? (
                 <>
-                  <DropdownMenuLabel className="border-b border-gray-800 py-4">
+                  <DropdownMenuLabel className={cn(
+                    "border-b py-4",
+                    theme === 'dark' ? "border-gray-800" : "border-gray-200"
+                  )}>
                     <div className="font-bold text-lg">{user.email?.split('@')[0] || 'User'}</div>
                   </DropdownMenuLabel>
                   
-                  <div className="flex items-center px-3 py-3 border-b border-gray-800">
+                  <div className={cn(
+                    "flex items-center px-3 py-3 border-b",
+                    theme === 'dark' ? "border-gray-800" : "border-gray-200"
+                  )}>
                     <Award className="h-5 w-5 text-amber-500 mr-3" />
                     <span>StockPilot Gold</span>
                   </div>
@@ -132,7 +196,7 @@ const NavigationBar = () => {
                     </DropdownMenuItem>
                   ))}
                   
-                  <DropdownMenuSeparator className="bg-gray-800" />
+                  <DropdownMenuSeparator className={theme === 'dark' ? "bg-gray-800" : "bg-gray-200"} />
                   
                   <DropdownMenuItem onClick={signOut} className="py-3 px-3 cursor-pointer">
                     <LogOut className="h-5 w-5 mr-3" />

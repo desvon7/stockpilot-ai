@@ -5,8 +5,13 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Award, Gift, ChevronRight, Calendar, Sparkles } from 'lucide-react';
+import { useTheme } from '@/hooks/useTheme';
+import { cn } from '@/lib/utils';
 
 const Rewards: React.FC = () => {
+  const { theme } = useTheme();
+  const isDark = theme === 'dark';
+
   return (
     <>
       <Helmet>
@@ -22,7 +27,10 @@ const Rewards: React.FC = () => {
           </Button>
         </div>
         
-        <div className="bg-gradient-to-r from-amber-600 to-amber-400 rounded-xl p-6 mb-10">
+        <div className={cn(
+          "rounded-xl p-6 mb-10",
+          "bg-gradient-to-r from-amber-600 to-amber-400"
+        )}>
           <div className="flex items-center mb-4">
             <Award className="h-8 w-8 text-white mr-3" />
             <h2 className="text-2xl font-bold text-white">StockPilot Gold</h2>
@@ -32,7 +40,7 @@ const Rewards: React.FC = () => {
         </div>
         
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-10">
-          <Card className="bg-gray-900 border-gray-800">
+          <Card className={isDark ? "bg-gray-900 border-gray-800" : ""}>
             <CardHeader>
               <CardTitle>Free Stock</CardTitle>
               <CardDescription>Invite friends to get free stocks</CardDescription>
@@ -48,7 +56,7 @@ const Rewards: React.FC = () => {
             </CardFooter>
           </Card>
           
-          <Card className="bg-gray-900 border-gray-800">
+          <Card className={isDark ? "bg-gray-900 border-gray-800" : ""}>
             <CardHeader>
               <CardTitle>Cashback</CardTitle>
               <CardDescription>Earn on eligible purchases</CardDescription>
@@ -64,7 +72,7 @@ const Rewards: React.FC = () => {
             </CardFooter>
           </Card>
           
-          <Card className="bg-gray-900 border-gray-800">
+          <Card className={isDark ? "bg-gray-900 border-gray-800" : ""}>
             <CardHeader>
               <CardTitle>Daily Rewards</CardTitle>
               <CardDescription>Check in daily for bonuses</CardDescription>
@@ -81,9 +89,12 @@ const Rewards: React.FC = () => {
         </div>
         
         <h2 className="text-xl font-bold mb-4">Reward History</h2>
-        <div className="bg-gray-900 border border-gray-800 rounded-lg p-6 text-center">
+        <div className={cn(
+          "rounded-lg p-6 text-center",
+          isDark ? "bg-gray-900 border border-gray-800" : "bg-card border border-border"
+        )}>
           <div className="flex flex-col items-center justify-center py-10">
-            <Gift className="h-16 w-16 text-gray-600 mb-4" />
+            <Gift className={cn("h-16 w-16 mb-4", isDark ? "text-gray-600" : "text-gray-300")} />
             <p className="text-gray-400 mb-2">No rewards earned yet</p>
             <p className="text-gray-500 mb-6 max-w-md mx-auto">Complete actions like inviting friends, making trades, or using your StockPilot card to earn rewards</p>
             <Button className="bg-green-500 hover:bg-green-600">Start Earning</Button>
