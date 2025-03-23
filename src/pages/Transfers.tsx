@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { formatCurrency } from '@/utils/formatters';
 import { ChevronRight, ArrowRight, Upload, RefreshCw, Building, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
-import DepositModal from '@/components/transfers/DepositModal';
+import DepositModal from '@/components/transfers/deposit/DepositModal';
 import AddBankAccountForm from '@/components/transfers/AddBankAccountForm';
 
 const Transfers: React.FC = () => {
