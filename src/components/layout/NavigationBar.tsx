@@ -1,230 +1,158 @@
 
-import React, { useState, useEffect } from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import React, { useState } from 'react';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { useTheme } from '@/hooks/useTheme';
-import { 
-  Award,
-  TrendingUp, 
-  Bitcoin,
-  CreditCard,
-  Building,
-  Bell,
-  User,
-  ArrowLeftRight,
-  RefreshCw,
-  BookText,
-  FileText,
-  Calculator,
-  History,
-  Settings,
-  HelpCircle,
-  Keyboard,
-  LogOut,
-  ChevronDown,
-  Sun,
-  Moon,
-  Search
-} from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { cn } from '@/lib/utils';
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuLabel,
   DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+  DropdownMenuTrigger
+} from '@/components/ui/dropdown-menu';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Switch } from '@/components/ui/switch';
+import { 
+  Home, 
+  BarChart2, 
+  DollarSign, 
+  Award, 
+  Briefcase,
+  Bitcoin,
+  Bell,
+  Settings,
+  HelpCircle,
+  LogOut,
+  User,
+  Moon,
+  Sun,
+  Search
+} from 'lucide-react';
 import GlobalAssetSearch from '@/components/search/GlobalAssetSearch';
+import { cn } from '@/lib/utils';
 
-const NavigationBar = () => {
+const NavigationBar: React.FC = () => {
+  const navigate = useNavigate();
+  const location = useLocation();
   const { user, signOut } = useAuth();
   const { theme, setTheme } = useTheme();
-  const location = useLocation();
-  const [isAccountMenuOpen, setIsAccountMenuOpen] = useState(false);
-  const [mounted, setMounted] = useState(false);
-
-  // After mounting, we can safely show the UI that depends on the theme
-  useEffect(() => {
-    setMounted(true);
-  }, []);
-
+  const [searchOpen, setSearchOpen] = useState(false);
+  
   const isActive = (path: string) => {
     return location.pathname === path;
   };
 
-  const NavItem = ({ to, label, className }: { to: string; label: string; className?: string }) => (
-    <Link to={to} className={cn(
-      "text-sm font-medium transition-colors hover:text-primary whitespace-nowrap",
-      isActive(to) ? "text-primary" : "text-foreground",
-      className
-    )}>
-      {label}
-    </Link>
-  );
-
-  const getUserInitials = () => {
-    if (!user?.email) return 'U';
-    return user.email.charAt(0).toUpperCase();
+  const handleSignOut = async () => {
+    await signOut();
+    navigate('/');
   };
 
-  const accountMenuItems = [
-    { icon: User, label: 'Profile', path: '/profile' },
-    { icon: TrendingUp, label: 'Investing', path: '/investing' },
-    { icon: CreditCard, label: 'Spending', path: '/spending' },
-    { icon: Bitcoin, label: 'Crypto', path: '/crypto' },
-    { icon: ArrowLeftRight, label: 'Transfers', path: '/transfers' },
-    { icon: RefreshCw, label: 'Recurring', path: '/recurring' },
-    { icon: BookText, label: 'Stock Lending', path: '/stock-lending' },
-    { icon: FileText, label: 'Reports and statements', path: '/reports-and-statements' },
-    { icon: Calculator, label: 'Tax center', path: '/tax-center' },
-    { icon: History, label: 'History', path: '/history' },
-    { icon: Settings, label: 'Settings', path: '/settings' },
-    { icon: HelpCircle, label: 'Help', path: '/help' },
-    { icon: Keyboard, label: 'Keyboard Shortcuts', path: '/keyboard-shortcuts' }
+  const navItems = [
+    { name: 'Home', path: '/home', icon: <Home className="w-4 h-4 mr-2" /> },
+    { name: 'Investing', path: '/investing', icon: <BarChart2 className="w-4 h-4 mr-2" /> },
+    { name: 'Spending', path: '/spending', icon: <DollarSign className="w-4 h-4 mr-2" /> },
+    { name: 'Rewards', path: '/rewards', icon: <Award className="w-4 h-4 mr-2" /> },
+    { name: 'Retirement', path: '/retirement', icon: <Briefcase className="w-4 h-4 mr-2" /> },
+    { name: 'Crypto', path: '/crypto', icon: <Bitcoin className="w-4 h-4 mr-2" /> },
+    { name: 'Notifications', path: '/notifications', icon: <Bell className="w-4 h-4 mr-2" /> }
   ];
 
-  const handleThemeToggle = () => {
-    setTheme(theme === 'dark' ? 'light' : 'dark');
-  };
-
-  if (!mounted) {
-    return null;
-  }
-
   return (
-    <nav className={cn(
-      "border-b py-4",
-      theme === 'dark' ? "bg-black border-gray-800" : "bg-white border-gray-200"
-    )}>
-      <div className="container mx-auto px-4 flex items-center justify-between">
-        <div className="flex items-center space-x-8">
+    <header className="sticky top-0 z-40 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+      <div className="container flex h-16 items-center">
+        <div className="flex items-center">
           <Link to="/" className="flex items-center space-x-2">
-            <TrendingUp className={cn("h-6 w-6", theme === 'dark' ? "text-white" : "text-black")} />
-            <span className={cn("font-bold text-xl", theme === 'dark' ? "text-white" : "text-black")}>StockPilot</span>
+            <DollarSign className="h-6 w-6 text-primary" />
+            <span className="font-bold text-lg hidden md:inline-block">StockPilot</span>
           </Link>
-          
-          <div className="hidden md:flex space-x-6">
-            <NavItem to="/rewards" label="Rewards" />
-            <NavItem to="/investing" label="Investing" />
-            <NavItem to="/crypto" label="Crypto" />
-            <NavItem to="/spending" label="Spending" />
-            <NavItem to="/retirement" label="Retirement" />
-            <NavItem to="/notifications" label="Notifications" />
-          </div>
         </div>
         
-        <div className="flex items-center space-x-4">
-          {/* Global Asset Search */}
-          <div className="hidden md:block w-64">
+        {user && (
+          <nav className="mx-6 flex items-center space-x-1 md:space-x-2 lg:space-x-4">
+            {navItems.map((item) => (
+              <Link
+                key={item.path}
+                to={item.path}
+                className={cn(
+                  "nav-link flex items-center",
+                  isActive(item.path) && "active"
+                )}
+              >
+                {item.icon}
+                <span className="hidden md:inline-block">{item.name}</span>
+              </Link>
+            ))}
+          </nav>
+        )}
+        
+        <div className="ml-auto flex items-center space-x-2">
+          {user && (
             <GlobalAssetSearch 
               darkMode={theme === 'dark'}
               trigger={
-                <Button variant="outline" className="w-full flex justify-between items-center relative">
-                  <div className="flex items-center">
-                    <Search className="w-4 h-4 mr-2" />
-                    <span className="text-sm">Search assets...</span>
-                  </div>
-                  <kbd className="pointer-events-none absolute right-2 top-1/2 transform -translate-y-1/2 inline-flex h-5 select-none items-center gap-1 rounded border bg-muted px-1.5 font-mono text-xs font-medium opacity-100">
-                    <span className="text-xs">⌘</span>K
-                  </kbd>
+                <Button variant="ghost" size="icon" className="mr-2">
+                  <Search className="h-5 w-5" />
+                  <span className="sr-only">Search</span>
                 </Button>
               }
             />
-          </div>
+          )}
           
-          {/* Theme Toggle */}
-          <div className="flex items-center space-x-2">
-            <Switch
-              checked={theme === 'dark'}
-              onCheckedChange={handleThemeToggle}
-              className="data-[state=checked]:bg-primary"
-            />
-            {theme === 'dark' ? (
-              <Moon className="h-4 w-4 text-gray-300" />
-            ) : (
-              <Sun className="h-4 w-4 text-yellow-500" />
-            )}
-          </div>
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => setTheme(theme === 'light' ? 'dark' : 'light')}
+            className="mr-2"
+          >
+            {theme === 'dark' ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
+            <span className="sr-only">Toggle theme</span>
+          </Button>
           
-          {/* Account Dropdown */}
-          <DropdownMenu open={isAccountMenuOpen} onOpenChange={setIsAccountMenuOpen}>
-            <DropdownMenuTrigger asChild>
-              <button 
-                className={cn(
-                  "flex items-center text-sm font-medium transition-colors",
-                  isAccountMenuOpen ? "text-primary" : "hover:text-primary"
-                )}
-              >
-                <span className="mr-1">Account</span>
-                <ChevronDown className="h-4 w-4" />
-              </button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent 
-              className={cn(
-                "w-64 border text-foreground", 
-                theme === 'dark' ? "bg-gray-900 border-gray-800" : "bg-white border-gray-200"
-              )} 
-              align="end"
-            >
-              {user ? (
-                <>
-                  <DropdownMenuLabel className={cn(
-                    "border-b py-4",
-                    theme === 'dark' ? "border-gray-800" : "border-gray-200"
-                  )}>
-                    <div className="font-bold text-lg">{user.email?.split('@')[0] || 'User'}</div>
-                  </DropdownMenuLabel>
-                  
-                  <div className={cn(
-                    "flex items-center px-3 py-3 border-b",
-                    theme === 'dark' ? "border-gray-800" : "border-gray-200"
-                  )}>
-                    <Award className="h-5 w-5 text-amber-500 mr-3" />
-                    <span>StockPilot Gold</span>
+          {user ? (
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" className="relative h-8 w-8 rounded-full">
+                  <Avatar className="h-8 w-8">
+                    <AvatarImage src="/avatar.png" alt={user.email || "User avatar"} />
+                    <AvatarFallback>{user.email?.[0].toUpperCase() || "U"}</AvatarFallback>
+                  </Avatar>
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent className="w-56" align="end" forceMount>
+                <DropdownMenuLabel className="font-normal">
+                  <div className="flex flex-col space-y-1">
+                    <p className="text-sm font-medium leading-none">{user.email}</p>
+                    <p className="text-xs leading-none text-muted-foreground">
+                      {user.email}
+                    </p>
                   </div>
-                  
-                  {accountMenuItems.map(item => (
-                    <DropdownMenuItem key={item.path} asChild className="py-3 px-3 cursor-pointer">
-                      <Link to={item.path} className="flex items-center">
-                        <item.icon className="h-5 w-5 mr-3" />
-                        <span>{item.label}</span>
-                      </Link>
-                    </DropdownMenuItem>
-                  ))}
-                  
-                  <DropdownMenuSeparator className={theme === 'dark' ? "bg-gray-800" : "bg-gray-200"} />
-                  
-                  <DropdownMenuItem onClick={signOut} className="py-3 px-3 cursor-pointer">
-                    <LogOut className="h-5 w-5 mr-3" />
-                    <span>Log Out</span>
-                  </DropdownMenuItem>
-                </>
-              ) : (
-                <>
-                  <DropdownMenuLabel className="font-bold">Account</DropdownMenuLabel>
-                  <DropdownMenuItem asChild className="cursor-pointer">
-                    <Link to="/auth" className="flex items-center">
-                      <User className="h-5 w-5 mr-3" />
-                      <span>Sign In</span>
-                    </Link>
-                  </DropdownMenuItem>
-                  <DropdownMenuItem asChild className="cursor-pointer">
-                    <Link to="/auth" className="flex items-center">
-                      <User className="h-5 w-5 mr-3" />
-                      <span>Sign Up</span>
-                    </Link>
-                  </DropdownMenuItem>
-                </>
-              )}
-            </DropdownMenuContent>
-          </DropdownMenu>
+                </DropdownMenuLabel>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem onClick={() => navigate('/settings')}>
+                  <Settings className="mr-2 h-4 w-4" />
+                  <span>Settings</span>
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => navigate('/help')}>
+                  <HelpCircle className="mr-2 h-4 w-4" />
+                  <span>Help</span>
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem onClick={handleSignOut}>
+                  <LogOut className="mr-2 h-4 w-4" />
+                  <span>Log out</span>
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          ) : (
+            <div className="flex items-center space-x-2">
+              <Button variant="outline" onClick={() => navigate('/auth/login')}>Sign In</Button>
+              <Button onClick={() => navigate('/auth/register')}>Sign Up</Button>
+            </div>
+          )}
         </div>
       </div>
-    </nav>
+    </header>
   );
 };
 
