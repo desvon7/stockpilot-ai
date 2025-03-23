@@ -1,6 +1,6 @@
 
-import React, { useState } from 'react';
-import { Search } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { Search, Command, X } from 'lucide-react';
 import {
   Dialog,
   DialogContent,
@@ -11,6 +11,7 @@ import {
 import { Button } from "@/components/ui/button";
 import SearchDialogContent from '@/components/search/SearchDialogContent';
 import { VisuallyHidden } from '@/components/ui/visually-hidden';
+import { useHotkeys } from '@/hooks/useHotkeys';
 
 interface GlobalAssetSearchProps {
   darkMode?: boolean;
@@ -22,6 +23,19 @@ const GlobalAssetSearch: React.FC<GlobalAssetSearchProps> = ({
   trigger
 }) => {
   const [open, setOpen] = useState(false);
+  
+  // Handle keyboard shortcut for search
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+        e.preventDefault();
+        setOpen(prev => !prev);
+      }
+    };
+    
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, []);
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
@@ -33,7 +47,7 @@ const GlobalAssetSearch: React.FC<GlobalAssetSearchProps> = ({
         <DialogTrigger asChild>
           <Button 
             variant="outline" 
-            className="relative w-full rounded-full pr-12 justify-start text-muted-foreground"
+            className="relative w-full rounded-full pr-12 justify-start text-muted-foreground hover:bg-muted/50"
           >
             <Search className="mr-2 h-4 w-4" />
             <span>Search assets...</span>
@@ -44,7 +58,13 @@ const GlobalAssetSearch: React.FC<GlobalAssetSearchProps> = ({
         </DialogTrigger>
       )}
       
-      <DialogContent className="sm:max-w-[600px] p-0">
+      <DialogContent 
+        className="sm:max-w-[600px] p-0 overflow-hidden" 
+        onInteractOutside={(e) => {
+          // Prevent closing when clicking inside the dialog
+          e.preventDefault();
+        }}
+      >
         <DialogTitle className="sr-only">
           <VisuallyHidden>Search Assets</VisuallyHidden>
         </DialogTitle>

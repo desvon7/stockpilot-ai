@@ -1,5 +1,6 @@
 
 import { Quote, Trade } from '@/types/marketData';
+import { toast } from 'sonner';
 
 export const createMarketDataWebSocket = (
   symbols: string[],
@@ -12,10 +13,31 @@ export const createMarketDataWebSocket = (
   
   const ws = new WebSocket(baseURL);
   
-  ws.onopen = onOpen;
+  ws.onopen = () => {
+    console.log('WebSocket connection established');
+    
+    // Send authentication message
+    const authMsg = {
+      action: 'auth',
+      key: import.meta.env.VITE_ALPACA_API_KEY || 'PKLD1AL62BCVAENAF2M5',
+      secret: import.meta.env.VITE_ALPACA_API_SECRET || 'rCh0BKBAxlJGngV2Gv4NYrJ9nykKp920srRRLAJu'
+    };
+    
+    ws.send(JSON.stringify(authMsg));
+    
+    // Execute the provided onOpen callback
+    onOpen();
+  };
+  
   ws.onmessage = onMessage;
-  ws.onerror = onError;
-  ws.onclose = onClose;
+  ws.onerror = (event) => {
+    console.error('WebSocket error:', event);
+    onError(event);
+  };
+  ws.onclose = (event) => {
+    console.info('WebSocket disconnected:', event.code);
+    onClose(event);
+  };
   
   return ws;
 };
@@ -34,9 +56,11 @@ export const parseWebSocketMessage = (
     if (data.T === 'success' && data.msg === 'authenticated') {
       console.log('WebSocket authenticated successfully');
       return;
-    }
-    
-    if (data.T === 'subscription') {
+    } else if (data.T === 'error') {
+      console.error('WebSocket error:', data.msg);
+      toast.error(`Market data error: ${data.msg}`);
+      return;
+    } else if (data.T === 'subscription') {
       console.log('Subscription successful:', data.trades, data.quotes);
       return;
     }
@@ -95,11 +119,6 @@ export const parseWebSocketMessage = (
       }
     }
     
-    // Handle error messages
-    if (data.T === 'error') {
-      console.error('WebSocket error:', data.msg);
-    }
-    
     // Handle arrays of messages (batch updates)
     if (Array.isArray(data)) {
       data.forEach(msg => {
@@ -120,5 +139,23 @@ export const parseWebSocketMessage = (
     }
   } catch (error) {
     console.error('Error parsing WebSocket message:', error, event.data);
+  }
+};
+
+// Subscribe to market data for specific symbols
+export const subscribeToMarketData = (ws: WebSocket, symbols: string[]) => {
+  if (ws.readyState === WebSocket.OPEN) {
+    const subscribeMsg = {
+      action: 'subscribe',
+      trades: symbols,
+      quotes: symbols,
+      bars: symbols
+    };
+    
+    console.log('Subscribing to market data for:', symbols);
+    ws.send(JSON.stringify(subscribeMsg));
+  } else {
+    console.warn('WebSocket not open, unable to subscribe');
+    setTimeout(() => subscribeToMarketData(ws, symbols), 1000);
   }
 };

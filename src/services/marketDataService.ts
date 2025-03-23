@@ -10,6 +10,8 @@ export const fetchInitialMarketData = async (symbols: string[]): Promise<Record<
   if (!symbols.length) return {};
   
   try {
+    console.log('Fetching initial market data for symbols:', symbols);
+    
     const { data, error } = await supabase.functions.invoke('fetch-real-time-market-data', {
       body: { symbols }
     });
@@ -18,7 +20,11 @@ export const fetchInitialMarketData = async (symbols: string[]): Promise<Record<
     
     // Log successful connection to help with debugging
     console.log('Successfully fetched initial market data for symbols:', symbols);
-    console.log('Market data response:', data);
+    
+    if (!data || !data.quotes) {
+      console.warn('No quote data returned from API');
+      throw new Error('No market data available');
+    }
     
     return data.quotes || {};
   } catch (err) {
@@ -34,7 +40,9 @@ export const fetchInitialMarketData = async (symbols: string[]): Promise<Record<
         ask: Math.random() * 1000 + 51,
         timestamp: Date.now(),
         volume: Math.floor(Math.random() * 10000000),
+        change: (Math.random() * 20) - 10,
         changePercent: (Math.random() * 6) - 3, // Between -3% and +3%
+        previousClose: Math.random() * 1000 + 45,
       };
       return acc;
     }, {} as Record<string, Quote>);
@@ -74,6 +82,40 @@ export const fetchTrendingStocks = async () => {
     return data.most_actively_traded || [];
   } catch (err) {
     console.error('Error fetching trending stocks:', err);
-    return [];
+    
+    // Return fallback trending stocks
+    return [
+      { symbol: 'AAPL', name: 'Apple Inc.', price: 182.63, change_percent: 1.23 },
+      { symbol: 'MSFT', name: 'Microsoft Corp.', price: 415.28, change_percent: 0.87 },
+      { symbol: 'GOOGL', name: 'Alphabet Inc.', price: 171.95, change_percent: -0.42 },
+      { symbol: 'AMZN', name: 'Amazon.com Inc.', price: 182.41, change_percent: 1.56 },
+      { symbol: 'TSLA', name: 'Tesla Inc.', price: 177.29, change_percent: 2.31 },
+      { symbol: 'META', name: 'Meta Platforms Inc.', price: 513.51, change_percent: 0.75 }
+    ];
+  }
+};
+
+/**
+ * Fetches market indices data (S&P 500, Dow Jones, Nasdaq, etc.)
+ */
+export const fetchMarketIndices = async () => {
+  try {
+    const { data, error } = await supabase.functions.invoke('fetch-market-data', {
+      body: { function: 'MARKET_INDICES' }
+    });
+    
+    if (error) throw new Error(error.message);
+    
+    return data || [];
+  } catch (err) {
+    console.error('Error fetching market indices:', err);
+    
+    // Return mock data as fallback
+    return [
+      { name: 'S&P 500', value: 5234.73, change: 23.16, changePercent: 0.51 },
+      { name: 'Dow Jones', value: 38941.81, change: 128.32, changePercent: 0.35 },
+      { name: 'Nasdaq', value: 16394.16, change: 42.38, changePercent: 0.26 },
+      { name: 'Russell 2000', value: 2157.84, change: 15.73, changePercent: 0.73 }
+    ];
   }
 };

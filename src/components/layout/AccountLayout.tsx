@@ -7,6 +7,7 @@ import { useTheme } from '@/contexts/ThemeContext';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { cn } from '@/lib/utils';
 import { Helmet } from 'react-helmet-async';
+import { toast } from 'sonner';
 
 interface AccountLayoutProps {
   children: React.ReactNode;
@@ -17,12 +18,20 @@ interface AccountLayoutProps {
 
 const AccountLayout: React.FC<AccountLayoutProps> = ({ 
   children, 
-  title,
+  title = 'Account',
   description,
   showFooter = true
 }) => {
   const { theme } = useTheme();
   const isMobile = useIsMobile();
+  
+  // Display reconnection toast when WebSocket disconnects
+  const showReconnectionToast = () => {
+    toast.info('Reconnecting to market data...', {
+      id: 'market-data-reconnection',
+      duration: 5000,
+    });
+  };
   
   return (
     <div className={cn(
