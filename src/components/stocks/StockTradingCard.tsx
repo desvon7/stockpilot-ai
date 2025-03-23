@@ -14,17 +14,22 @@ import { supabase } from '@/integrations/supabase/client';
 interface StockTradingCardProps {
   symbol: string;
   companyName?: string;
+  currentPrice?: number; // Added currentPrice as an optional prop
 }
 
 const StockTradingCard: React.FC<StockTradingCardProps> = ({ 
   symbol, 
-  companyName = ''
+  companyName = '',
+  currentPrice // Add to parameter list
 }) => {
-  const { currentPrice, ownedStock, handleOrderSuccess, isLoadingStock } = useStockTrading({ symbol });
+  const { currentPrice: hookCurrentPrice, ownedStock, handleOrderSuccess, isLoadingStock } = useStockTrading({ symbol });
   const [showInsufficientFundsModal, setShowInsufficientFundsModal] = useState(false);
   const [requiredAmount, setRequiredAmount] = useState(0);
   const { user } = useAuth();
   const [buyingPower, setBuyingPower] = useState(0);
+
+  // Use the prop value if provided, otherwise use the value from the hook
+  const finalCurrentPrice = currentPrice !== undefined ? currentPrice : hookCurrentPrice;
 
   // Fetch user's buying power on component mount
   React.useEffect(() => {
@@ -81,7 +86,7 @@ const StockTradingCard: React.FC<StockTradingCardProps> = ({
             <OrderForm
               symbol={symbol}
               companyName={companyName}
-              currentPrice={currentPrice}
+              currentPrice={finalCurrentPrice}
               availableShares={ownedStock?.shares}
               onOrderSuccess={handleOrderSuccess}
               onInsufficientFunds={handleInsufficientFunds}
@@ -91,7 +96,7 @@ const StockTradingCard: React.FC<StockTradingCardProps> = ({
             <OrderForm
               symbol={symbol}
               companyName={companyName}
-              currentPrice={currentPrice}
+              currentPrice={finalCurrentPrice}
               availableShares={ownedStock?.shares}
               onOrderSuccess={handleOrderSuccess}
               onInsufficientFunds={handleInsufficientFunds}
