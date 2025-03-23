@@ -5,6 +5,7 @@ import { AuthProvider } from "@/contexts/AuthContext";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
 import { HelmetProvider } from "react-helmet-async";
+import NavigationBar from "@/components/layout/NavigationBar";
 import MobileMenu from "@/components/layout/MobileMenu";
 import AppRoutes from "./routes/AppRoutes";
 
@@ -17,9 +18,11 @@ function App() {
         <HelmetProvider>
           <BrowserRouter>
             <AuthProvider>
-              <AppRoutes />
-              <MobileMenu />
-              <Toaster />
+              <div className="min-h-screen bg-background text-foreground flex flex-col">
+                <AppRoutes />
+                <MobileMenu />
+                <Toaster />
+              </div>
             </AuthProvider>
           </BrowserRouter>
         </HelmetProvider>
