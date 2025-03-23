@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import OrderForm from '@/components/orders/OrderForm';
 import AddToWatchlist from '@/components/watchlists/AddToWatchlist';
@@ -39,6 +38,7 @@ const StockTradingCard: React.FC<StockTradingCardProps> = ({
           )}
         </CardTitle>
       </CardHeader>
+      
       <CardContent>
         <Tabs defaultValue="market" className="mb-4">
           <TabsList className="grid w-full grid-cols-2">

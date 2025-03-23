@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { 
   Card, 
@@ -38,7 +37,6 @@ import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/contexts/AuthContext';
 import InsufficientFundsModal from './InsufficientFundsModal';
 
-// Form schema with validation
 const orderFormSchema = z.object({
   orderType: z.enum(['buy', 'sell']),
   shares: z.string()
@@ -69,10 +67,8 @@ const OrderForm: React.FC<OrderFormProps> = ({
   const [showInsufficientFundsModal, setShowInsufficientFundsModal] = useState(false);
   const { user } = useAuth();
   
-  // Mock available funds - in a real app this would come from the user's account
   const availableFunds = 4.75;
 
-  // Initialize form
   const form = useForm<OrderFormValues>({
     resolver: zodResolver(orderFormSchema),
     defaultValues: {
@@ -87,11 +83,9 @@ const OrderForm: React.FC<OrderFormProps> = ({
   const shares = form.watch('shares');
   const executionType = form.watch('executionType');
   
-  // Calculate estimated total
   const sharesNum = Number(shares) || 0;
   const estimatedTotal = sharesNum * currentPrice;
 
-  // Handle form submission
   const onSubmit = async (values: OrderFormValues) => {
     if (!user) {
       toast.error("You must be logged in to place an order");
@@ -103,7 +97,6 @@ const OrderForm: React.FC<OrderFormProps> = ({
       return;
     }
 
-    // Check if user has enough funds for buying
     if (orderType === 'buy' && estimatedTotal > availableFunds) {
       setShowInsufficientFundsModal(true);
       return;
@@ -130,7 +123,6 @@ const OrderForm: React.FC<OrderFormProps> = ({
 
       toast.success(`Order to ${values.orderType} ${values.shares} shares of ${symbol} was successful!`);
       
-      // Reset form to default values
       form.reset({
         orderType: 'buy',
         shares: '1',
@@ -138,7 +130,6 @@ const OrderForm: React.FC<OrderFormProps> = ({
         limitPrice: currentPrice?.toFixed(2) ?? '0'
       });
       
-      // Callback for refreshing data
       if (onOrderSuccess) {
         onOrderSuccess();
       }
@@ -303,12 +294,11 @@ const OrderForm: React.FC<OrderFormProps> = ({
         </CardFooter>
       </Card>
 
-      {/* Insufficient Funds Modal */}
       <InsufficientFundsModal
         open={showInsufficientFundsModal}
         onOpenChange={setShowInsufficientFundsModal}
         availableFunds={availableFunds}
-        requiredAmount={Math.ceil(estimatedTotal - availableFunds)}
+        requiredAmount={estimatedTotal}
         onDismiss={() => setShowInsufficientFundsModal(false)}
       />
     </>
