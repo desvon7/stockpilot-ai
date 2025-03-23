@@ -1,44 +1,29 @@
-
 import { Routes, Route } from "react-router-dom";
-import Index from "@/pages/Index";
-import Home from "@/pages/Home";
-import NotFound from "@/pages/NotFound";
+import { allRoutes } from "./routeConfig";
 
-// Route Groups
-import AuthRoutes from "./AuthRoutes";
-import DashboardRoutes from "./DashboardRoutes";
-import FinanceRoutes from "./FinanceRoutes";
-import ReportRoutes from "./ReportRoutes";
-import StockRoutes from "./StockRoutes";
-import SupportRoutes from "./SupportRoutes";
+// Helper function to render routes recursively
+const renderRoutes = (routes: any[]) => {
+  return routes.map((route) => {
+    // If the route has children, render them recursively
+    if (route.children && route.children.length > 0) {
+      return (
+        <Route key={route.path} path={route.path} element={route.element}>
+          {renderRoutes(route.children)}
+        </Route>
+      );
+    }
+    
+    // Otherwise, render a simple route
+    return (
+      <Route key={route.path} path={route.path} element={route.element} />
+    );
+  });
+};
 
 const AppRoutes = () => {
   return (
     <Routes>
-      {/* Public Routes */}
-      <Route path="/" element={<Index />}>
-        <Route index element={<Home />} />
-        {/* Auth Routes */}
-        <AuthRoutes />
-      </Route>
-
-      {/* Dashboard Routes */}
-      <DashboardRoutes />
-
-      {/* Finance Routes */}
-      <FinanceRoutes />
-
-      {/* Report Routes */}
-      <ReportRoutes />
-      
-      {/* Stock Market Routes */}
-      <StockRoutes />
-      
-      {/* Support & Settings Routes */}
-      <SupportRoutes />
-
-      {/* Fallback Route */}
-      <Route path="*" element={<NotFound />} />
+      {renderRoutes(allRoutes)}
     </Routes>
   );
 };
