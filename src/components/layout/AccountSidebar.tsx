@@ -3,9 +3,7 @@ import React, { useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { 
-  User, Briefcase, DollarSign, Bitcoin, ArrowRightLeft, 
-  RefreshCw, BookText, FileText, Calculator, History, 
-  Settings, HelpCircle, Keyboard, LogOut, Building, Home
+  User, Home, LogOut
 } from 'lucide-react';
 import { 
   Sidebar, 
@@ -43,21 +41,10 @@ const AccountSidebar: React.FC = () => {
     return nameParts[0][0] || 'U';
   };
 
+  // Simplified menu items - removed duplicate items shown in the navbar
   const menuItems = [
     { icon: Home, title: 'Home', path: '/home' },
     { icon: User, title: 'Profile', path: '/profile' },
-    { icon: Briefcase, title: 'Investing', path: '/investing' },
-    { icon: DollarSign, title: 'Spending', path: '/spending' },
-    { icon: Bitcoin, title: 'Crypto', path: '/crypto' },
-    { icon: ArrowRightLeft, title: 'Transfers', path: '/transfers' },
-    { icon: RefreshCw, title: 'Recurring', path: '/recurring' },
-    { icon: BookText, title: 'Stock Lending', path: '/stock-lending' },
-    { icon: FileText, title: 'Reports and statements', path: '/reports-and-statements' },
-    { icon: Calculator, title: 'Tax center', path: '/tax-center' },
-    { icon: History, title: 'History', path: '/history' },
-    { icon: Settings, title: 'Settings', path: '/settings' },
-    { icon: HelpCircle, title: 'Help', path: '/help' },
-    { icon: Keyboard, title: 'Keyboard Shortcuts', path: '/keyboard-shortcuts' }
   ];
 
   return (
@@ -71,7 +58,7 @@ const AccountSidebar: React.FC = () => {
             <div className="w-8 h-8 mr-3 rounded-full bg-amber-500 flex items-center justify-center">
               <span className="text-amber-100 font-bold">SP</span>
             </div>
-            <h2 className="text-lg font-semibold">StockPilot Gold</h2>
+            <h2 className="text-lg font-semibold">StockPilot</h2>
           </Link>
         </SidebarHeader>
 
@@ -111,18 +98,6 @@ const AccountSidebar: React.FC = () => {
                     <Link to="/profile" className="cursor-pointer">
                       <User className="mr-2 h-4 w-4" />
                       <span>Profile</span>
-                    </Link>
-                  </DropdownMenuItem>
-                  <DropdownMenuItem asChild>
-                    <Link to="/settings" className="cursor-pointer">
-                      <Settings className="mr-2 h-4 w-4" />
-                      <span>Settings</span>
-                    </Link>
-                  </DropdownMenuItem>
-                  <DropdownMenuItem asChild>
-                    <Link to="/home" className="cursor-pointer">
-                      <Home className="mr-2 h-4 w-4" />
-                      <span>Home</span>
                     </Link>
                   </DropdownMenuItem>
                   <DropdownMenuSeparator />

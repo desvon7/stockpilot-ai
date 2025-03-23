@@ -36,5 +36,19 @@ export const portfolioData: PortfolioItem[] = [
     shares: 8,
     avgPrice: 160.30,
     currentPrice: 174.63
+  },
+  {
+    symbol: 'EXOD',
+    name: 'Exodus Movement, Inc.',
+    shares: 10,
+    avgPrice: 35.00,
+    currentPrice: 46.80
+  },
+  {
+    symbol: 'PEPE',
+    name: 'Pepe',
+    shares: 6473553,
+    avgPrice: 0.00000008,
+    currentPrice: 0.00000724
   }
 ];

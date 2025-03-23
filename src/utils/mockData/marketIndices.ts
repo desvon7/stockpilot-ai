@@ -12,29 +12,29 @@ export const marketIndices: MarketIndex[] = [
   {
     id: '1',
     name: 'S&P 500',
-    value: 5258.19,
-    change: 38.45,
-    changePercent: 0.74
+    value: 5283.95,
+    change: 25.76,
+    changePercent: 0.49
   },
   {
     id: '2',
     name: 'NASDAQ',
-    value: 16748.33,
-    change: 183.02,
-    changePercent: 1.10
+    value: 16808.15,
+    change: 59.82,
+    changePercent: 0.36
   },
   {
     id: '3',
     name: 'Dow Jones',
-    value: 39275.96,
-    change: 15.35,
-    changePercent: 0.04
+    value: 39172.32,
+    change: -103.64,
+    changePercent: -0.26
   },
   {
     id: '4',
     name: 'Russell 2000',
-    value: 2043.90,
-    change: -2.78,
-    changePercent: -0.14
+    value: 2101.54,
+    change: 14.32,
+    changePercent: 0.69
   }
 ];

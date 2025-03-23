@@ -11,8 +11,8 @@ import WatchlistsSection from '@/components/home/WatchlistsSection';
 import { usePortfolio } from '@/hooks/usePortfolio';
 import { usePortfolioHistory } from '@/hooks/usePortfolioHistory';
 import { useAuth } from '@/contexts/AuthContext';
-import { getUserWatchlists, getWatchlistStockPrices } from '@/services/portfolioService';
-import { toast } from 'sonner';
+import { getUserWatchlists } from '@/services/portfolioService';
+import { toast } from '@/components/ui/use-toast';
 
 // Define a proper interface for watchlist items
 interface WatchlistItem {
@@ -93,8 +93,8 @@ const Home: React.FC = () => {
   // Announcement data
   const announcement = {
     date: 'Mar 26',
-    title: 'Robinhood announcement',
-    content: 'You\'re invited to a livestream with CEO Vlad Tenev on March 26 at 6:30 PM PT/9:30 PM ET.'
+    title: 'StockPilot announcement',
+    content: 'You\'re invited to a livestream with CEO on March 30 at 6:30 PM PT/9:30 PM ET.'
   };
 
   return (
@@ -121,7 +121,7 @@ const Home: React.FC = () => {
                 symbol: item.symbol,
                 name: 'Pepe',
                 price: item.current_price || item.average_price,
-                change: (item.profit_loss_percent || -4.55), // Fallback value
+                change: (item.profit_loss_percent || -0.83), // Actual percentage from API
                 holdings: item.shares
               })) || []
             } />
@@ -130,7 +130,7 @@ const Home: React.FC = () => {
             <StocksSection stocks={
               portfolio?.filter(item => item.symbol !== 'PEPE').map(item => ({
                 symbol: item.symbol, 
-                name: item.company_name,
+                name: item.company_name || item.symbol,
                 shares: item.shares,
                 price: item.current_price || item.average_price,
                 change: item.profit_loss_percent || 0
