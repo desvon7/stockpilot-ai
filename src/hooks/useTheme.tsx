@@ -3,10 +3,12 @@ import { useContext } from 'react';
 import { useTheme as useNextTheme } from 'next-themes';
 
 export function useTheme() {
-  const { theme, setTheme } = useNextTheme();
+  const { theme, setTheme, resolvedTheme } = useNextTheme();
   
   return {
-    theme,
+    theme: resolvedTheme || theme || 'system',
     setTheme,
   };
 }
+
+export default useTheme;

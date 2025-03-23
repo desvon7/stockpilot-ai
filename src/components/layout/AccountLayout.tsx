@@ -3,6 +3,7 @@ import React from 'react';
 import { Navbar } from '@/components/layout/Navbar';
 import Footer from '@/components/layout/Footer';
 import AccountSidebar from '@/components/layout/AccountSidebar';
+import { useTheme } from '@/hooks/useTheme';
 
 interface AccountLayoutProps {
   children: React.ReactNode;
@@ -10,8 +11,10 @@ interface AccountLayoutProps {
 }
 
 const AccountLayout: React.FC<AccountLayoutProps> = ({ children, title }) => {
+  const { theme } = useTheme();
+  
   return (
-    <div className="min-h-screen flex flex-col">
+    <div className={`min-h-screen flex flex-col ${theme === 'dark' ? 'bg-gray-950 text-white' : 'bg-white text-gray-900'}`}>
       <Navbar />
       <div className="flex-grow flex mt-16">
         <AccountSidebar />
