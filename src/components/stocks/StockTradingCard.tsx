@@ -14,13 +14,13 @@ import { supabase } from '@/integrations/supabase/client';
 interface StockTradingCardProps {
   symbol: string;
   companyName?: string;
-  currentPrice?: number; // Added currentPrice as an optional prop
+  currentPrice?: number;
 }
 
 const StockTradingCard: React.FC<StockTradingCardProps> = ({ 
   symbol, 
   companyName = '',
-  currentPrice // Add to parameter list
+  currentPrice 
 }) => {
   const { currentPrice: hookCurrentPrice, ownedStock, handleOrderSuccess, isLoadingStock } = useStockTrading({ symbol });
   const [showInsufficientFundsModal, setShowInsufficientFundsModal] = useState(false);

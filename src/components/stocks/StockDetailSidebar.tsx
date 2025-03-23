@@ -23,7 +23,7 @@ interface StockDetailSidebarProps {
     volume: number;
     avgVolume: number;
   };
-  realTimeQuote?: Quote; // Added realTimeQuote prop
+  realTimeQuote?: Quote;
 }
 
 const StockDetailSidebar: React.FC<StockDetailSidebarProps> = ({
@@ -31,7 +31,7 @@ const StockDetailSidebar: React.FC<StockDetailSidebarProps> = ({
   companyName,
   recommendation,
   statsData,
-  realTimeQuote // Add to parameter list
+  realTimeQuote
 }) => {
   // Use real-time price if available, otherwise use recommendation price
   const [currentPrice, setCurrentPrice] = useState(recommendation.currentPrice);

@@ -96,6 +96,7 @@ export const useOrderFormLogic = ({
     setIsSubmitting(true);
 
     try {
+      // Execute the transaction through our dedicated edge function
       const { data, error } = await supabase.functions.invoke('execute-stock-transaction', {
         body: {
           symbol,
@@ -112,6 +113,30 @@ export const useOrderFormLogic = ({
         throw new Error(error.message);
       }
 
+      // If this was a market order, update the buying power immediately
+      if (values.executionType === 'market') {
+        if (values.orderType === 'buy') {
+          const newBuyingPower = buyingPower - estimatedTotal;
+          setBuyingPower(newBuyingPower);
+          
+          // Update in database
+          await supabase
+            .from('profiles')
+            .update({ buying_power: newBuyingPower })
+            .eq('id', user.id);
+        } else if (values.orderType === 'sell') {
+          const sellTotal = sharesNum * currentPrice;
+          const newBuyingPower = buyingPower + sellTotal;
+          setBuyingPower(newBuyingPower);
+          
+          // Update in database
+          await supabase
+            .from('profiles')
+            .update({ buying_power: newBuyingPower })
+            .eq('id', user.id);
+        }
+      }
+
       toast.success(`Order to ${values.orderType} ${values.shares} shares of ${symbol} was successful!`);
       
       // Reset form to default values
@@ -125,19 +150,6 @@ export const useOrderFormLogic = ({
       // Callback for refreshing data
       if (onOrderSuccess) {
         onOrderSuccess();
-      }
-      
-      // Refresh buying power
-      if (user) {
-        const { data: updatedUser } = await supabase
-          .from('profiles')
-          .select('buying_power')
-          .eq('id', user.id)
-          .single();
-          
-        if (updatedUser) {
-          setBuyingPower(updatedUser.buying_power || 0);
-        }
       }
     } catch (error) {
       console.error('Order submission error:', error);

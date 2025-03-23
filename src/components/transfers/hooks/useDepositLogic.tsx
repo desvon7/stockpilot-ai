@@ -61,6 +61,21 @@ export const useDepositLogic = (
       if (onDepositSuccess) {
         onDepositSuccess();
       }
+      
+      // Update the user's buying power in the database
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('buying_power')
+        .eq('id', user.id)
+        .single();
+        
+      if (profile) {
+        const newBuyingPower = (profile.buying_power || 0) + parseFloat(amount);
+        await supabase
+          .from('profiles')
+          .update({ buying_power: newBuyingPower })
+          .eq('id', user.id);
+      }
     } catch (err) {
       console.error('Error processing bank transfer:', err);
       toast.error('Failed to process bank transfer');
@@ -97,6 +112,16 @@ export const useDepositLogic = (
       
       if (error) throw error;
       
+      // After successful payment intent creation, process the payment
+      const paymentResponse = await supabase.functions.invoke('payment-success', {
+        body: {
+          paymentIntentId: data.id,
+          amount: parseFloat(amount)
+        }
+      });
+      
+      if (paymentResponse.error) throw new Error(paymentResponse.error);
+      
       toast.success(`Successfully deposited $${amount}`);
       setDepositCompleted(true);
       
@@ -129,3 +154,5 @@ export const useDepositLogic = (
     handleStripePayment
   };
 };
+
+export default useDepositLogic;
