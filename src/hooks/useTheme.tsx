@@ -1,5 +1,12 @@
 
-import { useTheme as useThemeContext } from '../contexts/ThemeContext';
+import { useContext } from 'react';
+import { useTheme as useNextTheme } from 'next-themes';
 
-export const useTheme = useThemeContext;
-export default useTheme;
+export function useTheme() {
+  const { theme, setTheme } = useNextTheme();
+  
+  return {
+    theme,
+    setTheme,
+  };
+}

@@ -1,5 +1,4 @@
-
-import React, { useState, useMemo } from 'react';
+import React, { useState } from 'react';
 import { 
   LineChart, 
   Line, 
@@ -33,27 +32,7 @@ const StockChart: React.FC<StockChartProps> = ({
 }) => {
   const [timeRange, setTimeRange] = useState<TimeRange>(timeframe);
   
-  // Ensure data is properly formatted and sorted
-  const formattedData = useMemo(() => {
-    if (!data || !Array.isArray(data) || data.length === 0) {
-      return Array(30).fill(0).map((_, i) => ({
-        date: new Date(Date.now() - (30 - i) * 86400000).toISOString().split('T')[0],
-        price: 100 + Math.random() * 10
-      }));
-    }
-    
-    // Make a deep copy and sort by date
-    return [...data]
-      .map(item => ({
-        date: item.date,
-        price: typeof item.price === 'number' ? item.price : parseFloat(String(item.price)) || 0
-      }))
-      .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
-  }, [data]);
-  
-  const getFilteredData = useMemo(() => {
-    if (!formattedData.length) return [];
-    
+  const getFilteredData = () => {
     const now = new Date();
     let filterDate = new Date();
     
@@ -80,10 +59,10 @@ const StockChart: React.FC<StockChartProps> = ({
         filterDate.setMonth(now.getMonth() - 1);
     }
     
-    const filtered = formattedData.filter(item => new Date(item.date) >= filterDate);
-    return filtered.length > 0 ? filtered : formattedData.slice(-30); // Fallback to last 30 days if filtered is empty
-  }, [formattedData, timeRange]);
+    return data.filter(item => new Date(item.date) >= filterDate);
+  };
   
+  const filteredData = getFilteredData();
   const lineColor = positiveChange ? 'hsl(var(--success))' : 'hsl(var(--destructive))';
   const gradientColor = positiveChange ? 'hsl(var(--success))' : 'hsl(var(--destructive))';
   
@@ -91,7 +70,7 @@ const StockChart: React.FC<StockChartProps> = ({
     return (
       <div className={cn('w-full h-16', className)}>
         <ResponsiveContainer width="100%" height="100%">
-          <AreaChart data={getFilteredData}>
+          <AreaChart data={filteredData}>
             <defs>
               <linearGradient id="colorPrice" x1="0" y1="0" x2="0" y2="1">
                 <stop offset="5%" stopColor={gradientColor} stopOpacity={0.2}/>
@@ -105,7 +84,6 @@ const StockChart: React.FC<StockChartProps> = ({
               strokeWidth={2}
               fillOpacity={1}
               fill="url(#colorPrice)"
-              isAnimationActive={false}
             />
           </AreaChart>
         </ResponsiveContainer>
@@ -134,7 +112,7 @@ const StockChart: React.FC<StockChartProps> = ({
       
       <div className="w-full h-[300px]">
         <ResponsiveContainer width="100%" height="100%">
-          <AreaChart data={getFilteredData}>
+          <AreaChart data={filteredData}>
             <defs>
               <linearGradient id="colorPrice" x1="0" y1="0" x2="0" y2="1">
                 <stop offset="5%" stopColor={gradientColor} stopOpacity={0.2}/>
@@ -152,11 +130,9 @@ const StockChart: React.FC<StockChartProps> = ({
                 return date.toLocaleDateString('en-US', { month: 'short', year: '2-digit' });
               }}
               style={{ fontSize: '12px' }}
-              domain={['dataMin', 'dataMax']}
-              minTickGap={30}
             />
             <YAxis 
-              domain={['auto', 'auto']}
+              domain={['dataMin', 'dataMax']}
               tickFormatter={(value) => formatCurrency(value)}
               width={80}
               style={{ fontSize: '12px' }}
@@ -178,7 +154,6 @@ const StockChart: React.FC<StockChartProps> = ({
                 borderRadius: '8px',
                 boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)'
               }}
-              isAnimationActive={false}
             />
             <Area 
               type="monotone" 
@@ -188,7 +163,6 @@ const StockChart: React.FC<StockChartProps> = ({
               fillOpacity={1}
               fill="url(#colorPrice)"
               activeDot={{ r: 6 }}
-              isAnimationActive={false}
             />
           </AreaChart>
         </ResponsiveContainer>

@@ -8,50 +8,19 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
 import { TrendingUp, Clock } from 'lucide-react';
 import InsufficientFundsModal from '@/components/orders/InsufficientFundsModal';
-import { useAuth } from '@/contexts/AuthContext';
-import { supabase } from '@/integrations/supabase/client';
 
 interface StockTradingCardProps {
   symbol: string;
   companyName?: string;
-  currentPrice?: number;
 }
 
 const StockTradingCard: React.FC<StockTradingCardProps> = ({ 
   symbol, 
-  companyName = '',
-  currentPrice 
+  companyName = ''
 }) => {
-  const { currentPrice: hookCurrentPrice, ownedStock, handleOrderSuccess, isLoadingStock } = useStockTrading({ symbol });
+  const { currentPrice, ownedStock, handleOrderSuccess, isLoadingStock } = useStockTrading({ symbol });
   const [showInsufficientFundsModal, setShowInsufficientFundsModal] = useState(false);
   const [requiredAmount, setRequiredAmount] = useState(0);
-  const { user } = useAuth();
-  const [buyingPower, setBuyingPower] = useState(0);
-
-  // Use the prop value if provided, otherwise use the value from the hook
-  const finalCurrentPrice = currentPrice !== undefined ? currentPrice : hookCurrentPrice;
-
-  // Fetch user's buying power on component mount
-  React.useEffect(() => {
-    const fetchBuyingPower = async () => {
-      if (!user) return;
-
-      try {
-        const { data, error } = await supabase
-          .from('profiles')
-          .select('buying_power')
-          .eq('id', user.id)
-          .single();
-
-        if (error) throw error;
-        setBuyingPower(data?.buying_power || 0);
-      } catch (error) {
-        console.error('Error fetching buying power:', error);
-      }
-    };
-
-    fetchBuyingPower();
-  }, [user]);
 
   const handleInsufficientFunds = (amount: number) => {
     setRequiredAmount(amount);
@@ -86,21 +55,18 @@ const StockTradingCard: React.FC<StockTradingCardProps> = ({
             <OrderForm
               symbol={symbol}
               companyName={companyName}
-              currentPrice={finalCurrentPrice}
+              currentPrice={currentPrice}
               availableShares={ownedStock?.shares}
               onOrderSuccess={handleOrderSuccess}
-              onInsufficientFunds={handleInsufficientFunds}
             />
           </TabsContent>
           <TabsContent value="limit">
             <OrderForm
               symbol={symbol}
               companyName={companyName}
-              currentPrice={finalCurrentPrice}
+              currentPrice={currentPrice}
               availableShares={ownedStock?.shares}
               onOrderSuccess={handleOrderSuccess}
-              onInsufficientFunds={handleInsufficientFunds}
-              orderType="limit"
             />
           </TabsContent>
         </Tabs>
@@ -110,7 +76,7 @@ const StockTradingCard: React.FC<StockTradingCardProps> = ({
         <InsufficientFundsModal
           open={showInsufficientFundsModal}
           onOpenChange={setShowInsufficientFundsModal}
-          availableFunds={buyingPower}
+          availableFunds={0} // This should come from a user context
           requiredAmount={requiredAmount}
           onDismiss={() => setShowInsufficientFundsModal(false)}
         />

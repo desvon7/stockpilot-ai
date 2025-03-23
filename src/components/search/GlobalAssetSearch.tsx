@@ -1,17 +1,13 @@
 
-import React, { useState, useEffect } from 'react';
-import { Search, X } from 'lucide-react';
+import React, { useState } from 'react';
+import { Search } from 'lucide-react';
 import {
   Dialog,
   DialogContent,
-  DialogTitle,
-  DialogDescription,
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import SearchDialogContent from '@/components/search/SearchDialogContent';
-import { VisuallyHidden } from '@/components/ui/visually-hidden';
-import { useHotkeys } from '@/hooks/useHotkeys';
 
 interface GlobalAssetSearchProps {
   darkMode?: boolean;
@@ -23,28 +19,6 @@ const GlobalAssetSearch: React.FC<GlobalAssetSearchProps> = ({
   trigger
 }) => {
   const [open, setOpen] = useState(false);
-  
-  // Handle keyboard shortcut for search
-  useHotkeys({
-    key: 'k',
-    modifier: 'meta',
-    handler: () => {
-      setOpen(prev => !prev);
-    },
-    preventDefault: true
-  });
-
-  // Close search on escape key
-  useEffect(() => {
-    const handleEsc = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') {
-        setOpen(false);
-      }
-    };
-    
-    window.addEventListener('keydown', handleEsc);
-    return () => window.removeEventListener('keydown', handleEsc);
-  }, []);
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
@@ -56,7 +30,7 @@ const GlobalAssetSearch: React.FC<GlobalAssetSearchProps> = ({
         <DialogTrigger asChild>
           <Button 
             variant="outline" 
-            className="relative w-full rounded-full pr-12 justify-start text-muted-foreground hover:bg-muted/50"
+            className="relative w-full rounded-full pr-12 justify-start text-muted-foreground"
           >
             <Search className="mr-2 h-4 w-4" />
             <span>Search assets...</span>
@@ -67,19 +41,7 @@ const GlobalAssetSearch: React.FC<GlobalAssetSearchProps> = ({
         </DialogTrigger>
       )}
       
-      <DialogContent 
-        className="sm:max-w-[600px] p-0 overflow-hidden" 
-        onInteractOutside={(e) => {
-          // Prevent closing when clicking inside the dialog
-          e.preventDefault();
-        }}
-      >
-        <DialogTitle className="sr-only">
-          <VisuallyHidden>Search Assets</VisuallyHidden>
-        </DialogTitle>
-        <DialogDescription className="sr-only">
-          <VisuallyHidden>Search for stocks, ETFs, and other assets</VisuallyHidden>
-        </DialogDescription>
+      <DialogContent className="sm:max-w-[600px] p-0">
         <SearchDialogContent 
           darkMode={darkMode} 
           onClose={() => setOpen(false)} 

@@ -1,26 +1,22 @@
 
 import React, { useState } from 'react';
 import { Helmet } from 'react-helmet-async';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import DashboardLayout from '@/components/layout/DashboardLayout';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import NewsCard from '@/components/news/NewsCard';
 import { useStockNews } from '@/hooks/useStockNews';
+import { Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
-import LoadingState from '@/components/ui/LoadingState';
-import NewsGrid from '@/components/news/NewsGrid';
-import NewsErrorState from '@/components/news/states/NewsErrorState';
-import { Card, CardHeader, CardContent, CardTitle, CardDescription } from '@/components/ui/card';
-import NewsPagination from '@/components/news/pagination/NewsPagination';
 
 const NewsFeed: React.FC = () => {
   const [activeCategory, setActiveCategory] = useState('all');
-  const [currentPage, setCurrentPage] = useState(1);
-  const [itemsPerPage, setItemsPerPage] = useState(12);
   
   // Popular tech and financial stocks for news tracking
   const trackedSymbols = ['AAPL', 'MSFT', 'GOOGL', 'AMZN', 'TSLA'];
   
   // Fetch news for tracked symbols
-  const { news, isLoading, error, refetch, isRefetching } = useStockNews(trackedSymbols);
+  const { news, isLoading, error } = useStockNews(trackedSymbols);
   
   // Filter news by category if needed
   const filteredNews = activeCategory === 'all' 
@@ -56,20 +52,6 @@ const NewsFeed: React.FC = () => {
         }
       });
 
-  // Calculate pagination
-  const totalPages = Math.max(1, Math.ceil(filteredNews.length / itemsPerPage));
-  const startIndex = (currentPage - 1) * itemsPerPage;
-  const endIndex = startIndex + itemsPerPage;
-  
-  // Get current page items
-  const currentItems = filteredNews.slice(startIndex, endIndex);
-
-  const handlePageChange = (page: number) => {
-    setCurrentPage(page);
-    // Scroll to top
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-  };
-
   if (error) {
     toast.error('Failed to fetch news data. Please try again later.');
   }
@@ -80,11 +62,11 @@ const NewsFeed: React.FC = () => {
         <title>Financial News | StockPilot</title>
       </Helmet>
       
-      <div className="container mx-auto px-4 py-6 max-w-7xl">
+      <div className="container mx-auto px-4 py-6">
         <h1 className="text-2xl font-bold mb-6">Financial News</h1>
         
         <Tabs defaultValue="all" value={activeCategory} onValueChange={setActiveCategory}>
-          <TabsList className="mb-6 w-full sm:w-auto flex overflow-x-auto py-1">
+          <TabsList className="mb-4">
             <TabsTrigger value="all">All News</TabsTrigger>
             <TabsTrigger value="earnings">Earnings</TabsTrigger>
             <TabsTrigger value="market">Market</TabsTrigger>
@@ -94,61 +76,24 @@ const NewsFeed: React.FC = () => {
           <TabsContent value={activeCategory}>
             <Card>
               <CardHeader>
-                <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
-                  <div>
-                    <CardTitle>{activeCategory === 'all' ? 'Latest Financial News' : `${activeCategory.charAt(0).toUpperCase() + activeCategory.slice(1)} News`}</CardTitle>
-                    <CardDescription>
-                      Updates and insights to help you stay informed about the financial markets
-                    </CardDescription>
-                  </div>
-                  
-                  {!isLoading && !error && filteredNews.length > 0 && (
-                    <div className="flex items-center space-x-2">
-                      <select 
-                        className="bg-background border border-input rounded-md text-sm px-2 py-1"
-                        value={itemsPerPage}
-                        onChange={(e) => {
-                          setItemsPerPage(Number(e.target.value));
-                          setCurrentPage(1);
-                        }}
-                      >
-                        <option value={6}>6 per page</option>
-                        <option value={12}>12 per page</option>
-                        <option value={24}>24 per page</option>
-                      </select>
-                    </div>
-                  )}
-                </div>
+                <CardTitle>{activeCategory === 'all' ? 'Latest Financial News' : `${activeCategory.charAt(0).toUpperCase() + activeCategory.slice(1)} News`}</CardTitle>
               </CardHeader>
               <CardContent>
                 {isLoading ? (
-                  <LoadingState 
-                    variant="skeleton" 
-                    count={6}
-                  />
-                ) : error ? (
-                  <NewsErrorState refetch={refetch} />
+                  <div className="flex justify-center items-center py-10">
+                    <Loader2 className="h-8 w-8 animate-spin text-primary" />
+                    <span className="ml-2">Loading news...</span>
+                  </div>
                 ) : filteredNews.length === 0 ? (
                   <div className="text-center py-10 text-muted-foreground">
                     <p>No news articles found for this category.</p>
                   </div>
                 ) : (
-                  <>
-                    <NewsGrid 
-                      news={filteredNews} 
-                      displayedNews={currentItems} 
-                      isLoading={false}
-                      isLoadingMore={isRefetching}
-                    />
-                    
-                    {filteredNews.length > itemsPerPage && (
-                      <NewsPagination
-                        currentPage={currentPage}
-                        totalPages={totalPages}
-                        onPageChange={handlePageChange}
-                      />
-                    )}
-                  </>
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {filteredNews.map((article) => (
+                      <NewsCard key={article.id} article={article} className="h-full" />
+                    ))}
+                  </div>
                 )}
               </CardContent>
             </Card>

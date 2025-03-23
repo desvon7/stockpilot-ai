@@ -1,18 +1,10 @@
 
 import React from 'react';
-import { Calendar, ExternalLink } from 'lucide-react';
-import { Card, CardContent, CardFooter } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
-import NewsCardImage from './card/NewsCardImage';
-import NewsCardSentiment from './card/NewsCardSentiment';
-import NewsCardSymbols from './card/NewsCardSymbols';
-import NewsTimeAgo from './card/NewsTimeAgo';
 import CompactNewsCard from './card/CompactNewsCard';
 import FullNewsCard from './card/FullNewsCard';
 
-export interface NewsItem {
+interface NewsItem {
   id: string;
   title: string;
   summary: string;
@@ -24,28 +16,24 @@ export interface NewsItem {
   sentiment?: number;
 }
 
-export interface NewsCardProps {
+interface NewsCardProps {
   article: NewsItem;
-  className?: string;
-  showDate?: boolean;
-  highlightSymbols?: string[];
   onSave?: (article: NewsItem) => void;
+  className?: string;
   compact?: boolean;
 }
 
-const NewsCard: React.FC<NewsCardProps> = ({
-  article,
+const NewsCard: React.FC<NewsCardProps> = ({ 
+  article, 
+  onSave, 
   className,
-  showDate = false,
-  highlightSymbols = [],
-  onSave,
   compact = false
 }) => {
   if (compact) {
     return <CompactNewsCard article={article} className={className} />;
   }
   
-  return <FullNewsCard article={article} className={className} onSave={onSave} />;
+  return <FullNewsCard article={article} onSave={onSave} className={className} />;
 };
 
 export default NewsCard;

@@ -27,8 +27,6 @@ serve(async (req) => {
       throw new Error('Alpaca API credentials not configured');
     }
 
-    console.log(`Fetching real-time quotes for symbols: ${symbols.join(', ')}`);
-
     // Fetch real-time quotes from Alpaca
     const response = await fetch(
       `https://data.alpaca.markets/v2/stocks/quotes/latest?symbols=${symbols.join(',')}`,
@@ -51,24 +49,19 @@ serve(async (req) => {
     // Format the response data
     const formattedData = Object.entries(data.quotes || {}).reduce((acc, [symbol, quote]) => {
       const quoteData = quote as any;
-      const askPrice = quoteData.ap || 0;
-      const bidPrice = quoteData.bp || 0;
-      const price = askPrice || bidPrice || 0;
-      
       acc[symbol] = {
         symbol,
-        price,
-        bid: bidPrice,
-        ask: askPrice,
+        price: quoteData.ap || quoteData.bp, // Use ask price or bid price if available
+        bid: quoteData.bp,
+        ask: quoteData.ap,
         bidSize: quoteData.bs,
         askSize: quoteData.as,
         timestamp: quoteData.t,
-        volume: 0, // We'll need to fetch this separately
       };
       return acc;
     }, {} as Record<string, any>);
 
-    console.log(`Successfully fetched quotes for ${Object.keys(formattedData).length} symbols`);
+    console.log(`Fetched quotes for ${symbols.length} symbols`);
     
     return new Response(JSON.stringify({ quotes: formattedData }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },

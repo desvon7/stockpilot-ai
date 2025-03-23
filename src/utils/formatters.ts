@@ -1,127 +1,66 @@
 
-import { format, parseISO, isValid } from 'date-fns';
-
+// Format currency values
 export const formatCurrency = (value: number): string => {
-  return value.toLocaleString('en-US', {
+  return new Intl.NumberFormat('en-US', {
+    style: 'currency',
+    currency: 'USD',
     minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
-  });
+    maximumFractionDigits: 2
+  }).format(value);
 };
 
-export const formatPercentage = (value: number): string => {
-  return `${(value * 100).toFixed(2)}%`;
-};
-
-// Alias for formatPercentage for consistency with component usage
-export const formatPercent = formatPercentage;
-
-export const formatNumber = (value: number): string => {
-  return value.toLocaleString('en-US');
-};
-
-export const formatCompactNumber = (value: number): string => {
-  const formatter = Intl.NumberFormat('en', { notation: 'compact' });
-  return formatter.format(value);
-};
-
-/**
- * Format a large currency value with appropriate notation (K, M, B)
- * @param value - The value to format
- * @returns Formatted large currency string
- */
+// Format large currency values (millions, billions)
 export const formatLargeCurrency = (value: number): string => {
-  if (value >= 1_000_000_000) {
-    return `$${(value / 1_000_000_000).toFixed(2)}B`;
-  } else if (value >= 1_000_000) {
-    return `$${(value / 1_000_000).toFixed(2)}M`;
-  } else if (value >= 1_000) {
-    return `$${(value / 1_000).toFixed(2)}K`;
+  if (value >= 1e12) {
+    return `$${(value / 1e12).toFixed(2)}T`;
+  } else if (value >= 1e9) {
+    return `$${(value / 1e9).toFixed(2)}B`;
+  } else if (value >= 1e6) {
+    return `$${(value / 1e6).toFixed(2)}M`;
+  } else if (value >= 1e3) {
+    return `$${(value / 1e3).toFixed(2)}K`;
   } else {
     return formatCurrency(value);
   }
 };
 
-/**
- * Get appropriate text color class based on change value
- * @param change - The change value
- * @returns Tailwind text color class
- */
+// Format percentage values
+export const formatPercent = (value: number): string => {
+  return new Intl.NumberFormat('en-US', {
+    style: 'percent',
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2
+  }).format(value / 100);
+};
+
+// Get color class based on change value
 export const getColorByChange = (change: number): string => {
-  if (change > 0) return 'text-green-500';
-  if (change < 0) return 'text-red-500';
-  return 'text-muted-foreground';
+  return change > 0 ? 'text-green-500' : change < 0 ? 'text-red-500' : 'text-muted-foreground';
 };
 
-/**
- * Get appropriate background color class based on change value
- * @param change - The change value
- * @returns Tailwind background color class
- */
+// Get background color class based on change value
 export const getBgColorByChange = (change: number): string => {
-  if (change > 0) return 'bg-green-100 dark:bg-green-900/20';
-  if (change < 0) return 'bg-red-100 dark:bg-red-900/20';
-  return 'bg-muted';
+  return change > 0 ? 'bg-green-500/10' : change < 0 ? 'bg-red-500/10' : 'bg-muted';
 };
 
-/**
- * Get appropriate arrow indicator based on change value
- * @param change - The change value
- * @returns Arrow indicator string
- */
+// Get arrow icon based on change value
 export const getArrowByChange = (change: number): string => {
-  if (change > 0) return '↑';
-  if (change < 0) return '↓';
-  return '–';
+  return change > 0 ? '↑' : change < 0 ? '↓' : '→';
 };
 
-/**
- * Format a date string or Date object into a human-readable format
- * @param dateString - Date string or Date object
- * @param formatStr - Optional format string (default: 'MMM d, yyyy')
- * @returns Formatted date string
- */
-export const formatDate = (dateString: string | Date, formatStr = 'MMM d, yyyy'): string => {
-  if (!dateString) return '';
-  
-  try {
-    const date = typeof dateString === 'string' ? parseISO(dateString) : dateString;
-    if (!isValid(date)) return 'Invalid date';
-    return format(date, formatStr);
-  } catch (error) {
-    console.error('Error formatting date:', error);
-    return 'Invalid date';
-  }
+// Format date
+export const formatDate = (dateString: string): string => {
+  const date = new Date(dateString);
+  return new Intl.DateTimeFormat('en-US', {
+    year: 'numeric',
+    month: 'short',
+    day: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit'
+  }).format(date);
 };
 
-/**
- * Format a date with time
- * @param dateString - Date string or Date object
- * @returns Formatted date with time
- */
-export const formatDateTime = (dateString: string | Date): string => {
-  return formatDate(dateString, 'MMM d, yyyy h:mm a');
-};
-
-/**
- * Format price with appropriate decimal places based on value
- * @param price - Price value
- * @returns Formatted price string
- */
-export const formatPrice = (price: number): string => {
-  if (price >= 1000) {
-    return price.toLocaleString('en-US', { 
-      minimumFractionDigits: 2,
-      maximumFractionDigits: 2 
-    });
-  } else if (price >= 1) {
-    return price.toLocaleString('en-US', { 
-      minimumFractionDigits: 2,
-      maximumFractionDigits: 4
-    });
-  } else {
-    return price.toLocaleString('en-US', { 
-      minimumFractionDigits: 2,
-      maximumFractionDigits: 8
-    });
-  }
+// Format large numbers with commas
+export const formatNumber = (value: number): string => {
+  return new Intl.NumberFormat('en-US').format(value);
 };

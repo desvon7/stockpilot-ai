@@ -10,24 +10,24 @@
     --popover: 0 0% 100%;
     --popover-foreground: 240 10% 4%;
 
-    --primary: 260 85% 60%;
+    --primary: 220 85% 55%;
     --primary-foreground: 0 0% 100%;
 
-    --secondary: 260 35% 95%;
-    --secondary-foreground: 260 85% 45%;
+    --secondary: 220 35% 95%;
+    --secondary-foreground: 220 85% 40%;
 
     --muted: 240 5% 96%;
     --muted-foreground: 240 4% 46%;
 
-    --accent: 260 70% 97%;
-    --accent-foreground: 260 85% 45%;
+    --accent: 220 70% 97%;
+    --accent-foreground: 220 85% 40%;
 
     --destructive: 0 84% 60%;
     --destructive-foreground: 0 0% 100%;
 
     --border: 240 6% 90%;
     --input: 240 6% 90%;
-    --ring: 260 85% 45%;
+    --ring: 240 5% 65%;
 
     --radius: 0.75rem;
 
@@ -51,7 +51,7 @@
     --popover: 240 8% 8%;
     --popover-foreground: 0 0% 98%;
 
-    --primary: 260 75% 60%;
+    --primary: 220 85% 55%;
     --primary-foreground: 0 0% 100%;
 
     --secondary: 240 4% 16%;
@@ -68,7 +68,7 @@
 
     --border: 240 4% 16%;
     --input: 240 4% 16%;
-    --ring: 260 75% 60%;
+    --ring: 240 5% 65%;
 
     --success: 142 71% 45%;
     --success-foreground: 0 0% 100%;
@@ -79,23 +79,4 @@
     --info: 220 85% 55%;
     --info-foreground: 0 0% 100%;
   }
-}
-
-/* Animations */
-@keyframes price-up {
-  0% { color: hsl(var(--success)); }
-  100% { color: inherit; }
-}
-
-@keyframes price-down {
-  0% { color: hsl(var(--destructive)); }
-  100% { color: inherit; }
-}
-
-.animate-price-up {
-  animation: price-up 1s ease-out;
-}
-
-.animate-price-down {
-  animation: price-down 1s ease-out;
 }

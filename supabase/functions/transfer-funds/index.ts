@@ -1,3 +1,4 @@
+
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.7.1';
 
@@ -32,101 +33,117 @@ serve(async (req) => {
       throw new Error('Invalid user token');
     }
 
-    // Parse request body
-    const requestData = await req.json();
-    const { action, amount } = requestData;
-
-    console.log("Request received:", action, amount, requestData);
-
-    // Handle different actions
-    if (action === 'create_link_token') {
-      // Mock response - in production, this would call the Plaid API
+    const { accountId, amount } = await req.json();
+    
+    if (!accountId || !amount) {
       return new Response(
-        JSON.stringify({ 
-          link_token: 'mock-link-token-' + Date.now(),
-          success: true
-        }),
-        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
-    } 
-    else if (action === 'exchange_public_token') {
-      const { public_token, metadata } = requestData;
-      
-      if (!public_token) {
-        throw new Error('Public token is required');
-      }
-
-      if (!amount || isNaN(parseFloat(amount))) {
-        throw new Error('Valid amount is required');
-      }
-
-      // In production this would exchange the token with Plaid
-      // For now, just mock a successful response and update the user's buying power
-
-      // Get the user profile to update buying power
-      const { data: profile, error: profileError } = await supabaseClient
-        .from('profiles')
-        .select('buying_power')
-        .eq('id', user.id)
-        .single();
-
-      if (profileError) {
-        throw new Error(`Error fetching user profile: ${profileError.message}`);
-      }
-
-      const currentBuyingPower = profile?.buying_power || 0;
-      const newBuyingPower = currentBuyingPower + parseFloat(amount);
-
-      // Update user's buying power
-      const { error: updateError } = await supabaseClient
-        .from('profiles')
-        .update({ 
-          buying_power: newBuyingPower,
-          updated_at: new Date().toISOString()
-        })
-        .eq('id', user.id);
-
-      if (updateError) {
-        throw new Error(`Error updating buying power: ${updateError.message}`);
-      }
-
-      // Log a transaction for bookkeeping
-      const { error: transactionError } = await supabaseClient
-        .from('transactions')
-        .insert({
-          user_id: user.id,
-          symbol: 'CASH',
-          company_name: 'Cash Deposit',
-          transaction_type: 'deposit',
-          shares: 1,
-          price_per_share: parseFloat(amount),
-          total_amount: parseFloat(amount),
-          status: 'completed'
-        });
-
-      if (transactionError) {
-        console.error('Error logging transaction:', transactionError);
-        // Continue anyway as this is not critical
-      }
-
-      return new Response(
-        JSON.stringify({ 
-          success: true, 
-          amount: parseFloat(amount),
-          new_balance: newBuyingPower
-        }),
-        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        JSON.stringify({ error: 'Account ID and amount are required' }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 400 }
       );
     }
-    else {
-      throw new Error(`Unsupported action: ${action}`);
+
+    // Validate amount is positive
+    if (parseFloat(amount) <= 0) {
+      return new Response(
+        JSON.stringify({ error: 'Amount must be a positive number' }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 400 }
+      );
     }
+
+    // Find bank account
+    const { data: bankAccount, error: bankAccountError } = await supabaseClient
+      .from('bank_accounts')
+      .select('*')
+      .eq('id', accountId)
+      .single();
+
+    if (bankAccountError || !bankAccount) {
+      return new Response(
+        JSON.stringify({ error: 'Bank account not found' }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 404 }
+      );
+    }
+
+    // Check if account belongs to user
+    if (bankAccount.user_id !== user.id) {
+      return new Response(
+        JSON.stringify({ error: 'Not authorized to access this bank account' }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 401 }
+      );
+    }
+
+    // Check if sufficient balance in bank account (mock balance check)
+    if (bankAccount.balance < parseFloat(amount)) {
+      return new Response(
+        JSON.stringify({ error: 'Insufficient funds in bank account' }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 400 }
+      );
+    }
+
+    // Update bank account balance
+    const { error: updateBankError } = await supabaseClient
+      .from('bank_accounts')
+      .update({ 
+        balance: bankAccount.balance - parseFloat(amount),
+        updated_at: new Date().toISOString()
+      })
+      .eq('id', accountId);
+
+    if (updateBankError) {
+      throw new Error(`Error updating bank account: ${updateBankError.message}`);
+    }
+
+    // Get the user profile to update buying power
+    const { data: profile, error: profileError } = await supabaseClient
+      .from('profiles')
+      .select('*')
+      .eq('id', user.id)
+      .single();
+
+    if (profileError || !profile) {
+      throw new Error('User profile not found');
+    }
+
+    // Update user's buying power
+    const currentBuyingPower = profile.buying_power || 0;
+    const { error: updateProfileError } = await supabaseClient
+      .from('profiles')
+      .update({ 
+        buying_power: currentBuyingPower + parseFloat(amount),
+        updated_at: new Date().toISOString()
+      })
+      .eq('id', user.id);
+
+    if (updateProfileError) {
+      throw new Error(`Error updating user profile: ${updateProfileError.message}`);
+    }
+
+    // Get updated bank account and profile
+    const { data: updatedBankAccount } = await supabaseClient
+      .from('bank_accounts')
+      .select('*')
+      .eq('id', accountId)
+      .single();
+
+    const { data: updatedProfile } = await supabaseClient
+      .from('profiles')
+      .select('id, email, first_name, last_name, buying_power')
+      .eq('id', user.id)
+      .single();
+
+    return new Response(
+      JSON.stringify({
+        bankAccount: updatedBankAccount,
+        user: updatedProfile
+      }),
+      { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+    );
   } catch (error) {
-    console.error('Transfer funds error:', error.message);
+    console.error('Transfer error:', error.message);
     
     return new Response(
-      JSON.stringify({ error: error.message || 'Server error', success: false }),
-      { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 400 }
+      JSON.stringify({ error: error.message || 'Server error' }),
+      { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 500 }
     );
   }
 });

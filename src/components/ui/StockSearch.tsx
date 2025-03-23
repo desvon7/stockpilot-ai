@@ -1,11 +1,10 @@
 
-import React, { useCallback, useState } from 'react';
+import React, { useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { StockSearchResult } from '@/services/stockService';
 import { useStockSearch } from '@/hooks/useStockSearch';
 import StockSearchInput from '@/components/search/StockSearchInput';
 import StockSearchResults from '@/components/search/StockSearchResults';
-import { toast } from 'sonner';
 
 interface StockSearchProps {
   className?: string;
@@ -14,8 +13,6 @@ interface StockSearchProps {
   isLoading?: boolean;
   buttonText?: string;
   disabled?: boolean;
-  placeholder?: string;
-  showAllAssetTypes?: boolean;
 }
 
 const StockSearch: React.FC<StockSearchProps> = ({ 
@@ -24,9 +21,7 @@ const StockSearch: React.FC<StockSearchProps> = ({
   onSelectStock,
   isLoading: externalLoading,
   buttonText,
-  disabled,
-  placeholder = "Search for stocks, ETFs, crypto...",
-  showAllAssetTypes = true
+  disabled
 }) => {
   const navigate = useNavigate();
   const {
@@ -37,7 +32,6 @@ const StockSearch: React.FC<StockSearchProps> = ({
     setSelectedIndex,
     searchResults,
     searchLoading,
-    error,
     searchRef,
     inputRef,
     handleInputChange,
@@ -45,18 +39,15 @@ const StockSearch: React.FC<StockSearchProps> = ({
     resetSearch
   } = useStockSearch();
 
-  const [hasSearched, setHasSearched] = useState(false);
-
   const isLoading = externalLoading || searchLoading;
 
   const handleSelectStock = useCallback((stock: StockSearchResult) => {
     if (onSelectStock) {
       onSelectStock(stock);
     } else {
-      navigate(`/account/stocks/${stock.symbol}`);
+      navigate(`/stocks/${stock.symbol}`);
     }
     resetSearch();
-    toast.success(`Selected ${stock.symbol} - ${stock.name}`);
   }, [onSelectStock, navigate, resetSearch]);
 
   const handleSearchKeyDown = (e: React.KeyboardEvent) => {
@@ -66,42 +57,23 @@ const StockSearch: React.FC<StockSearchProps> = ({
     }
   };
 
-  // Filter results based on showAllAssetTypes setting
-  const filteredResults = showAllAssetTypes
-    ? searchResults
-    : searchResults?.filter(result => result.type === 'Equity' || result.type === 'ETF');
-
-  // Handle search error
-  React.useEffect(() => {
-    if (error && hasSearched) {
-      toast.error('Failed to search stocks. Please try again.');
-      console.error('Stock search error:', error);
-    }
-  }, [error, hasSearched]);
-
-  const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
-    handleInputChange(e);
-    setHasSearched(true);
-  };
-
   return (
     <div ref={searchRef} className={className}>
       <StockSearchInput
         ref={inputRef}
         value={query}
-        onChange={handleSearch}
+        onChange={handleInputChange}
         onKeyDown={handleSearchKeyDown}
         isLoading={isLoading}
         darkMode={darkMode}
         onFocus={() => query.length >= 2 && setIsOpen(true)}
         disabled={disabled}
-        placeholder={placeholder}
       />
 
       <StockSearchResults
         isOpen={isOpen}
         query={query}
-        results={filteredResults || []}
+        results={searchResults}
         selectedIndex={selectedIndex}
         darkMode={darkMode}
         buttonText={buttonText}
@@ -109,7 +81,6 @@ const StockSearch: React.FC<StockSearchProps> = ({
         onSelect={handleSelectStock}
         onSetSelectedIndex={setSelectedIndex}
         onClose={() => setIsOpen(false)}
-        highlightQuery={query}
       />
     </div>
   );

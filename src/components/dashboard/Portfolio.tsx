@@ -9,7 +9,7 @@ import { Loader2 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
 interface PortfolioProps {
-  portfolio: PortfolioItem[] | undefined;
+  portfolio: any; // Using any temporarily for the fix
   isLoading: boolean;
   className?: string;
 }

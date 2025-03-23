@@ -1,6 +1,5 @@
 
 import { supabase } from '@/integrations/supabase/client';
-import { toast } from 'sonner';
 
 export interface StockQuote {
   symbol: string;
@@ -44,23 +43,16 @@ export interface StockDetails extends StockQuote {
 
 export const fetchStockQuote = async (symbol: string): Promise<StockQuote> => {
   try {
-    console.log(`Fetching stock quote for symbol: ${symbol}`);
     const { data, error } = await supabase.functions.invoke('fetch-stock-data', {
       body: { symbol, function: 'GLOBAL_QUOTE' },
     });
 
-    if (error) {
-      console.error('Error from Supabase function:', error);
-      throw error;
-    }
+    if (error) throw error;
 
     const quote = data['Global Quote'];
     if (!quote) {
-      console.error('No quote data returned for symbol:', symbol, data);
       throw new Error('No quote data returned');
     }
-
-    console.log(`Successfully fetched quote for ${symbol}:`, quote);
 
     return {
       symbol: quote['01. symbol'],
@@ -81,24 +73,14 @@ export const fetchStockQuote = async (symbol: string): Promise<StockQuote> => {
 };
 
 export const searchStocks = async (query: string): Promise<StockSearchResult[]> => {
-  if (!query || query.length < 2) {
-    return [];
-  }
-  
   try {
-    console.log(`Searching stocks with query: ${query}`);
     const { data, error } = await supabase.functions.invoke('search-stocks', {
       body: { query },
     });
 
-    if (error) {
-      console.error('Error from search-stocks function:', error);
-      throw error;
-    }
+    if (error) throw error;
 
     const results = data.bestMatches || [];
-    console.log(`Search returned ${results.length} results for "${query}"`);
-    
     return results.map((result: any) => ({
       symbol: result['1. symbol'],
       name: result['2. name'],
@@ -112,7 +94,6 @@ export const searchStocks = async (query: string): Promise<StockSearchResult[]> 
     }));
   } catch (error) {
     console.error('Error searching stocks:', error);
-    toast.error(`Search failed for "${query}"`);
     throw error;
   }
 };
@@ -146,6 +127,7 @@ export const getAIRecommendations = async (symbol: string) => {
   }
 };
 
+// Add the missing functions that are causing errors
 export const fetchTrendingStocks = async () => {
   try {
     const { data, error } = await supabase.functions.invoke('fetch-market-data', {

@@ -3,11 +3,11 @@ import React from 'react';
 import { PieChart, Pie, Cell, ResponsiveContainer, Legend, Tooltip } from 'recharts';
 import { cn } from '@/lib/utils';
 import { formatCurrency, formatPercent } from '@/utils/formatters';
+import { usePortfolioSectors } from '@/hooks/usePortfolioSectors';
 import { Loader2 } from 'lucide-react';
-import { SectorAllocation } from '@/services/portfolioService';
 
 interface PortfolioSectorsProps {
-  sectors: SectorAllocation[] | undefined;
+  sectors: any; // Using any temporarily for the fix
   isLoading: boolean;
   className?: string;
 }

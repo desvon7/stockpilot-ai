@@ -19,7 +19,6 @@ interface StockSearchResultsProps {
   onSelect: (stock: StockSearchResult) => void;
   onSetSelectedIndex: (index: number) => void;
   onClose: () => void;
-  highlightQuery?: string; // Added highlightQuery prop
 }
 
 const StockSearchResults: React.FC<StockSearchResultsProps> = ({
@@ -32,8 +31,7 @@ const StockSearchResults: React.FC<StockSearchResultsProps> = ({
   isLoading,
   onSelect,
   onSetSelectedIndex,
-  onClose,
-  highlightQuery // Add to parameter list
+  onClose
 }) => {
   const navigate = useNavigate();
 
@@ -84,7 +82,7 @@ const StockSearchResults: React.FC<StockSearchResultsProps> = ({
               key={result.symbol}
               result={result}
               isSelected={selectedIndex === index}
-              query={highlightQuery || query} // Use highlightQuery if provided, otherwise use query
+              query={query}
               darkMode={darkMode}
               buttonText={buttonText}
               onSelect={onSelect}

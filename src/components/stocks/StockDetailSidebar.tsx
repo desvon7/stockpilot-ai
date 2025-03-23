@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import StockTradingCard from '@/components/stocks/StockTradingCard';
 import OptionsOrderForm from '@/components/orders/OptionsOrderForm';
@@ -7,10 +7,8 @@ import { AIRecommendation } from '@/hooks/useStockDetail';
 import AIRecommendationCard from '@/components/ai/AIRecommendationCard';
 import StockStatsCard from '@/components/stocks/StockStatsCard';
 import { Link } from 'react-router-dom';
-import { Home, ArrowLeft, RefreshCw } from 'lucide-react';
+import { Home, ArrowLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Quote } from '@/types/marketData';
-import { toast } from 'sonner';
 
 interface StockDetailSidebarProps {
   symbol: string;
@@ -24,74 +22,31 @@ interface StockDetailSidebarProps {
     volume: number;
     avgVolume: number;
   };
-  realTimeQuote?: Quote;
-  refreshData?: () => Promise<void>;
 }
 
 const StockDetailSidebar: React.FC<StockDetailSidebarProps> = ({
   symbol,
   companyName,
   recommendation,
-  statsData,
-  realTimeQuote,
-  refreshData
+  statsData
 }) => {
-  // Use real-time price if available, otherwise use recommendation price
   const [currentPrice, setCurrentPrice] = useState(recommendation.currentPrice);
-  const [isRefreshing, setIsRefreshing] = useState(false);
-  
-  // Update price when real-time quote changes
-  useEffect(() => {
-    if (realTimeQuote?.price) {
-      setCurrentPrice(realTimeQuote.price);
-    }
-  }, [realTimeQuote]);
-
-  const handleRefresh = async () => {
-    if (!refreshData) return;
-    
-    setIsRefreshing(true);
-    try {
-      await refreshData();
-      toast.success(`Refreshed data for ${symbol}`);
-    } catch (error) {
-      toast.error('Failed to refresh data');
-      console.error('Error refreshing data:', error);
-    } finally {
-      setIsRefreshing(false);
-    }
-  };
 
   return (
     <div className="space-y-6">
-      <div className="flex justify-between items-center mb-2">
-        <div className="flex space-x-2">
-          <Button variant="outline" size="sm" asChild className="flex-1 sm:flex-none">
-            <Link to="/stocks">
-              <ArrowLeft className="h-4 w-4 mr-1" />
-              <span className="truncate">Back</span>
-            </Link>
-          </Button>
-          <Button variant="outline" size="sm" asChild className="flex-1 sm:flex-none">
-            <Link to="/portfolio">
-              <Home className="h-4 w-4 mr-1" />
-              <span className="truncate">Portfolio</span>
-            </Link>
-          </Button>
-        </div>
-        
-        {refreshData && (
-          <Button 
-            variant="outline" 
-            size="sm" 
-            onClick={handleRefresh} 
-            disabled={isRefreshing}
-            className="flex items-center"
-          >
-            <RefreshCw className={`h-4 w-4 mr-1 ${isRefreshing ? 'animate-spin' : ''}`} />
-            <span className="truncate">Refresh</span>
-          </Button>
-        )}
+      <div className="flex space-x-2 mb-2">
+        <Button variant="outline" size="sm" asChild>
+          <Link to="/stocks">
+            <ArrowLeft className="h-4 w-4 mr-1" />
+            Back to Stocks
+          </Link>
+        </Button>
+        <Button variant="outline" size="sm" asChild>
+          <Link to="/home">
+            <Home className="h-4 w-4 mr-1" />
+            Home
+          </Link>
+        </Button>
       </div>
       
       <Tabs defaultValue="stock">
@@ -102,8 +57,7 @@ const StockDetailSidebar: React.FC<StockDetailSidebarProps> = ({
         <TabsContent value="stock" className="mt-4">
           <StockTradingCard 
             symbol={symbol} 
-            companyName={companyName}
-            currentPrice={currentPrice} 
+            companyName={companyName} 
           />
         </TabsContent>
         <TabsContent value="options" className="mt-4">

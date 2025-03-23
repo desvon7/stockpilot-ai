@@ -1,15 +1,14 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import NewsGrid from './NewsGrid';
 import NewsFilterBar from './filters/NewsFilterBar';
 import NewsLoadingState from './states/NewsLoadingState';
 import NewsErrorState from './states/NewsErrorState';
 import NewsEmptyState from './states/NewsEmptyState';
 import NewsSourceInfo from './NewsSourceInfo';
-import NewsPagination from './pagination/NewsPagination';
 import { useStockNews } from '@/hooks/useStockNews';
 import { Button } from '@/components/ui/button';
-import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 
 interface NewsFeedProps {
   title?: string;
@@ -18,7 +17,6 @@ interface NewsFeedProps {
   maxItems?: number;
   showFilters?: boolean;
   isCompact?: boolean;
-  className?: string;
 }
 
 const NewsFeed: React.FC<NewsFeedProps> = ({
@@ -27,13 +25,11 @@ const NewsFeed: React.FC<NewsFeedProps> = ({
   categories = ['general'],
   maxItems = 12,
   showFilters = true,
-  isCompact = false,
-  className
+  isCompact = false
 }) => {
   const [activeCategory, setActiveCategory] = useState<string>(categories[0] || 'general');
+  const [viewAll, setViewAll] = useState(false);
   const [searchInput, setSearchInput] = useState('');
-  const [currentPage, setCurrentPage] = useState(1);
-  const [itemsPerPage, setItemsPerPage] = useState(isCompact ? 6 : maxItems);
   
   // Use the stock news hook for fetching data
   const {
@@ -41,22 +37,14 @@ const NewsFeed: React.FC<NewsFeedProps> = ({
     isLoading,
     error,
     refetch,
-    newsSource,
-    isRefetching
+    newsSource
   } = useStockNews(symbols, [activeCategory]);
   
-  // Reset to first page when filters change
-  useEffect(() => {
-    setCurrentPage(1);
-  }, [activeCategory, searchInput]);
-  
-  // Calculate pagination
-  const totalPages = Math.max(1, Math.ceil(news.length / itemsPerPage));
-  const startIndex = (currentPage - 1) * itemsPerPage;
-  const endIndex = startIndex + itemsPerPage;
+  // Calculate number of items to show
+  const displayCount = viewAll ? undefined : maxItems;
   
   // Filter and slice the news items
-  const displayedNews = news.slice(startIndex, endIndex);
+  const displayedNews = news.slice(0, displayCount);
   
   // Calculate source distribution
   const getSourceCount = () => {
@@ -73,92 +61,71 @@ const NewsFeed: React.FC<NewsFeedProps> = ({
   const clearAllCategories = () => {
     setActiveCategory(categories[0] || 'general');
   };
-
-  // Handle page change
-  const handlePageChange = (page: number) => {
-    setCurrentPage(page);
-    // Scroll to top of news feed
-    window.scrollTo({
-      top: 0,
-      behavior: 'smooth'
-    });
-  };
+  
+  // Show the appropriate state based on the query status
+  if (isLoading) {
+    return <NewsLoadingState isFullPage={false} />;
+  }
+  
+  if (error) {
+    return <NewsErrorState refetch={refetch} />;
+  }
+  
+  if (!news.length) {
+    return <NewsEmptyState 
+      searchInput={searchInput} 
+      categories={[activeCategory]} 
+      clearAllCategories={clearAllCategories} 
+    />;
+  }
   
   return (
-    <Card className={`overflow-hidden ${className}`}>
-      <CardHeader className="px-4 sm:px-6">
-        <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
-          <CardTitle className="text-xl md:text-2xl">{title}</CardTitle>
-          
-          {!isLoading && !error && news.length > 0 && (
-            <div className="flex items-center space-x-2">
-              <select 
-                className="bg-background border border-input rounded-md text-sm px-2 py-1"
-                value={itemsPerPage}
-                onChange={(e) => {
-                  setItemsPerPage(Number(e.target.value));
-                  setCurrentPage(1);
-                }}
-              >
-                <option value={6}>6 per page</option>
-                <option value={12}>12 per page</option>
-                <option value={24}>24 per page</option>
-              </select>
-            </div>
-          )}
-        </div>
-        
-        {!isLoading && !error && news.length > 0 && (
-          <NewsSourceInfo 
-            news={news} 
-            sourceCount={sourceCount} 
-            newsSource={newsSource} 
-          />
+    <div className="space-y-4">
+      <div className="flex justify-between items-center mb-4">
+        <h2 className="text-2xl font-bold">{title}</h2>
+        {news.length > maxItems && !viewAll && (
+          <Button 
+            variant="outline" 
+            size="sm" 
+            onClick={() => setViewAll(true)}
+          >
+            View All
+          </Button>
         )}
-      </CardHeader>
+      </div>
       
-      <CardContent className="px-4 sm:px-6 pb-6">
-        {showFilters && categories.length > 1 && !isLoading && !error && news.length > 0 && (
-          <div className="mb-6">
-            <NewsFilterBar 
-              categories={categories}
-              onSelectCategory={(category) => setActiveCategory(category)}
-              activeFilter={activeCategory}
-            />
-          </div>
-        )}
-        
-        {isLoading ? (
-          <NewsLoadingState isFullPage={false} message="Fetching latest financial news..." />
-        ) : error ? (
-          <NewsErrorState refetch={refetch} />
-        ) : !news.length ? (
-          <NewsEmptyState 
-            searchInput={searchInput} 
-            categories={[activeCategory]} 
-            clearAllCategories={clearAllCategories} 
-          />
-        ) : (
-          <>
-            <NewsGrid 
-              news={news} 
-              displayedNews={displayedNews}
-              isLoading={isLoading}
-              compact={isCompact}
-              isLoadingMore={isRefetching} 
-            />
-            
-            {news.length > itemsPerPage && (
-              <NewsPagination
-                currentPage={currentPage}
-                totalPages={totalPages}
-                onPageChange={handlePageChange}
-              />
-            )}
-          </>
-        )}
-      </CardContent>
-    </Card>
+      <NewsSourceInfo 
+        news={news} 
+        sourceCount={sourceCount} 
+        newsSource={newsSource} 
+      />
+      
+      {showFilters && categories.length > 1 && (
+        <NewsFilterBar 
+          categories={categories}
+          onSelectCategory={(category) => setActiveCategory(category)}
+          activeFilter={activeCategory}
+        />
+      )}
+      
+      <NewsGrid 
+        news={displayedNews} 
+        displayedNews={displayedNews}
+        isLoading={false}
+        compact={isCompact} 
+      />
+      
+      {news.length > maxItems && !viewAll && (
+        <div className="flex justify-center mt-6">
+          <Button 
+            variant="outline" 
+            onClick={() => setViewAll(true)}
+          >
+            Load More
+          </Button>
+        </div>
+      )}
+    </div>
   );
 };
 

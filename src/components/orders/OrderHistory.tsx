@@ -20,7 +20,6 @@ import { Badge } from '@/components/ui/badge';
 import { Loader2, ArrowUpCircle, ArrowDownCircle } from 'lucide-react';
 import { formatCurrency, formatDate } from '@/utils/formatters';
 import { useAuth } from '@/contexts/AuthContext';
-import { useIsMobile } from '@/hooks/use-mobile';
 
 interface Transaction {
   id: string;
@@ -38,7 +37,6 @@ interface Transaction {
 
 const OrderHistory: React.FC = () => {
   const { user } = useAuth();
-  const isMobile = useIsMobile();
 
   const { data: transactions, isLoading } = useQuery({
     queryKey: ['user-transactions'],
@@ -89,48 +87,6 @@ const OrderHistory: React.FC = () => {
     }
   };
 
-  // Mobile card view for each transaction
-  const renderMobileTransaction = (transaction: Transaction) => (
-    <Card key={transaction.id} className="mb-3">
-      <CardContent className="p-4">
-        <div className="flex justify-between items-start mb-2">
-          <div className="flex flex-col">
-            <span className="font-medium">{transaction.symbol}</span>
-            <span className="text-xs text-muted-foreground">{formatDate(transaction.created_at)}</span>
-          </div>
-          <div className="flex items-center">
-            {transaction.transaction_type === 'buy' ? (
-              <ArrowUpCircle className="h-4 w-4 mr-1 text-green-500" />
-            ) : (
-              <ArrowDownCircle className="h-4 w-4 mr-1 text-red-500" />
-            )}
-            <span className="text-sm font-medium">
-              {transaction.transaction_type === 'buy' ? 'Buy' : 'Sell'}
-            </span>
-          </div>
-        </div>
-        <div className="grid grid-cols-2 gap-2 text-sm">
-          <div>
-            <p className="text-muted-foreground">Shares</p>
-            <p>{transaction.shares}</p>
-          </div>
-          <div>
-            <p className="text-muted-foreground">Price</p>
-            <p>{formatCurrency(transaction.price_per_share)}</p>
-          </div>
-          <div>
-            <p className="text-muted-foreground">Total</p>
-            <p className="font-medium">{formatCurrency(transaction.total_amount)}</p>
-          </div>
-          <div>
-            <p className="text-muted-foreground">Status</p>
-            <div>{getStatusBadge(transaction.status)}</div>
-          </div>
-        </div>
-      </CardContent>
-    </Card>
-  );
-
   return (
     <Card>
       <CardHeader>
@@ -146,10 +102,6 @@ const OrderHistory: React.FC = () => {
           <div className="text-center py-6 text-muted-foreground">
             <p>No orders found.</p>
             <p className="text-sm mt-2">Start trading to see your order history.</p>
-          </div>
-        ) : isMobile ? (
-          <div className="space-y-4">
-            {transactions.map(renderMobileTransaction)}
           </div>
         ) : (
           <div className="overflow-x-auto">

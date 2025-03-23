@@ -5,17 +5,15 @@ import { useTheme as useNextTheme } from 'next-themes';
 type ThemeContextType = {
   theme: string;
   setTheme: (theme: string) => void;
-  resolvedTheme: string | undefined;
 };
 
-export const ThemeContext = createContext<ThemeContextType>({
+const ThemeContext = createContext<ThemeContextType>({
   theme: 'system',
   setTheme: () => {},
-  resolvedTheme: undefined,
 });
 
 export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const { theme, setTheme, resolvedTheme } = useNextTheme();
+  const { theme, setTheme } = useNextTheme();
   const [currentTheme, setCurrentTheme] = useState<string>(theme || 'system');
 
   useEffect(() => {
@@ -25,22 +23,10 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   }, [theme]);
 
   return (
-    <ThemeContext.Provider value={{ 
-      theme: currentTheme, 
-      setTheme, 
-      resolvedTheme: resolvedTheme 
-    }}>
+    <ThemeContext.Provider value={{ theme: currentTheme, setTheme }}>
       {children}
     </ThemeContext.Provider>
   );
 };
 
-export const useTheme = () => {
-  const context = useContext(ThemeContext);
-  
-  if (context === undefined) {
-    throw new Error('useTheme must be used within a ThemeProvider');
-  }
-  
-  return context;
-};
+export const useTheme = () => useContext(ThemeContext);

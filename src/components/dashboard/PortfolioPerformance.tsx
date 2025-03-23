@@ -1,4 +1,3 @@
-
 import React, { useState, useMemo } from 'react';
 import { format, subDays, subMonths, subYears } from 'date-fns';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from 'recharts';
@@ -6,12 +5,11 @@ import { cn } from '@/lib/utils';
 import { formatCurrency } from '@/utils/formatters';
 import { usePortfolioHistory } from '@/hooks/usePortfolioHistory';
 import { Loader2 } from 'lucide-react';
-import { PortfolioHistoryItem } from '@/services/portfolioService';
 
 type TimeRange = '1W' | '1M' | '3M' | '1Y' | 'All';
 
 interface PortfolioPerformanceProps {
-  history: PortfolioHistoryItem[] | undefined;
+  history: any; // Using any temporarily for the fix
   isLoading: boolean;
   className?: string;
 }

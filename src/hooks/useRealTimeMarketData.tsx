@@ -26,12 +26,6 @@ export const useRealTimeMarketData = ({
   const wsRef = useRef<WebSocket | null>(null);
   const symbolsRef = useRef<string[]>(symbols);
   const reconnectTimeoutRef = useRef<number | null>(null);
-  const reconnectAttempts = useRef<number>(0);
-  const maxReconnectAttempts = 5;
-  
-  // Store the API keys from environment variables or secrets
-  const apiKey = import.meta.env.VITE_ALPACA_API_KEY;
-  const apiSecret = import.meta.env.VITE_ALPACA_API_SECRET;
   
   useEffect(() => {
     symbolsRef.current = symbols;
@@ -44,24 +38,11 @@ export const useRealTimeMarketData = ({
   const updateSubscriptions = useCallback(() => {
     if (!wsRef.current || wsRef.current.readyState !== WebSocket.OPEN) return;
     
-    // Subscribe to the symbols
     wsRef.current.send(JSON.stringify({
       action: "subscribe",
-      trades: symbolsRef.current,
-      quotes: symbolsRef.current
+      symbols: symbolsRef.current
     }));
   }, []);
-
-  const authenticateWebSocket = useCallback(() => {
-    if (!wsRef.current || wsRef.current.readyState !== WebSocket.OPEN) return;
-    
-    // Authenticate with Alpaca API
-    wsRef.current.send(JSON.stringify({
-      action: "auth",
-      key: apiKey,
-      secret: apiSecret
-    }));
-  }, [apiKey, apiSecret]);
 
   const fetchInitialData = useCallback(async () => {
     if (!symbols.length || !enabled) return;
@@ -92,13 +73,16 @@ export const useRealTimeMarketData = ({
         // onOpen
         () => {
           setWsStatus('connected');
-          authenticateWebSocket();
+          
+          ws.send(JSON.stringify({
+            action: "subscribe",
+            symbols: symbolsRef.current
+          }));
           
           if (reconnectTimeoutRef.current) {
             clearTimeout(reconnectTimeoutRef.current);
             reconnectTimeoutRef.current = null;
           }
-          reconnectAttempts.current = 0;
         },
         // onMessage
         (event) => {
@@ -121,31 +105,33 @@ export const useRealTimeMarketData = ({
           console.log('WebSocket disconnected:', event.code, event.reason);
           setWsStatus('disconnected');
           
-          // Attempt to reconnect if not a clean close
-          if (event.code !== 1000 && reconnectAttempts.current < maxReconnectAttempts) {
-            reconnectAttempts.current++;
-            const delay = Math.min(1000 * reconnectAttempts.current, 10000);
-            
-            toast.info(`Reconnecting to market data... (attempt ${reconnectAttempts.current}/${maxReconnectAttempts})`);
-            
-            reconnectTimeoutRef.current = window.setTimeout(() => {
+          const reconnectDelay = reconnectTimeoutRef.current ? Math.min(30000, (reconnectTimeoutRef.current * 1.5)) : 3000;
+          console.log(`Attempting to reconnect in ${reconnectDelay}ms`);
+          
+          reconnectTimeoutRef.current = window.setTimeout(() => {
+            if (enabled) {
+              toast.info('Attempting to reconnect to market data...');
               connectWebSocket();
-            }, delay);
-          } else if (reconnectAttempts.current >= maxReconnectAttempts) {
-            toast.error('Failed to connect to market data after multiple attempts');
-            setError(new Error('Maximum reconnection attempts reached'));
-          }
+            }
+          }, reconnectDelay);
         }
       );
       
       wsRef.current = ws;
+      return ws;
     };
     
-    connectWebSocket();
+    const ws = connectWebSocket();
     
-    // Cleanup function to close WebSocket on unmount
     return () => {
       if (wsRef.current) {
+        if (wsRef.current.readyState === WebSocket.OPEN && symbolsRef.current.length > 0) {
+          wsRef.current.send(JSON.stringify({
+            action: "unsubscribe",
+            symbols: symbolsRef.current
+          }));
+        }
+        
         wsRef.current.close();
         wsRef.current = null;
       }
@@ -155,55 +141,12 @@ export const useRealTimeMarketData = ({
         reconnectTimeoutRef.current = null;
       }
     };
-  }, [enabled, symbols, authenticateWebSocket, onQuoteUpdate, onTradeUpdate, fetchInitialData]);
+  }, [enabled, fetchInitialData, onQuoteUpdate, onTradeUpdate]);
   
-  // Manual refresh function
-  const refresh = useCallback(async () => {
-    try {
-      // Fetch initial data again
-      await fetchInitialData();
-      
-      // Reconnect WebSocket if needed
-      if (wsRef.current?.readyState !== WebSocket.OPEN) {
-        if (wsRef.current) {
-          wsRef.current.close();
-        }
-        
-        setWsStatus('connecting');
-        const ws = createMarketDataWebSocket(
-          symbolsRef.current,
-          () => {
-            setWsStatus('connected');
-            authenticateWebSocket();
-          },
-          (event) => {
-            parseWebSocketMessage(event, onQuoteUpdate, onTradeUpdate, setQuotes, setTrades);
-          },
-          (event) => {
-            console.error('WebSocket error during refresh:', event);
-            setWsStatus('error');
-          },
-          (event) => {
-            console.log('WebSocket disconnected during refresh:', event.code, event.reason);
-            setWsStatus('disconnected');
-          }
-        );
-        
-        wsRef.current = ws;
-      } else {
-        // If already connected, just update subscriptions
-        updateSubscriptions();
-      }
-      
-      toast.success('Market data refreshed');
-    } catch (err) {
-      console.error('Error refreshing market data:', err);
-      setError(err instanceof Error ? err : new Error('Failed to refresh market data'));
-      toast.error('Failed to refresh market data');
-    }
-    
-    return Promise.resolve();
-  }, [fetchInitialData, authenticateWebSocket, onQuoteUpdate, onTradeUpdate, updateSubscriptions]);
+  const refresh = async () => {
+    await fetchInitialData();
+    toast.success('Market data refreshed');
+  };
   
   return {
     quotes,

@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { fetchStockDetails } from '@/services/stockService';
@@ -37,148 +36,43 @@ export interface MockStockData {
   yearLow: number;
   sector: string;
   industry: string;
-  description?: string;
 }
-
-// Add accurate stock data for common symbols
-const getAccurateStockData = (symbol: string): Partial<MockStockData> => {
-  const stockData: Record<string, Partial<MockStockData>> = {
-    'AAPL': {
-      name: 'Apple Inc.',
-      price: 187.68,
-      change: 1.84,
-      changePercent: 0.99,
-      marketCap: 2914736000000,
-      peRatio: 31.06,
-      eps: 6.31,
-      dividendYield: 0.55,
-      beta: 1.178,
-      yearHigh: 259.81,
-      yearLow: 163.31,
-      sector: 'Technology',
-      industry: 'Consumer Electronics',
-      volume: 54876321,
-    },
-    'MSFT': {
-      name: 'Microsoft Corporation',
-      price: 416.75,
-      change: 2.33,
-      changePercent: 0.56,
-      marketCap: 3097200000000,
-      peRatio: 36.2,
-      eps: 11.32,
-      dividendYield: 0.68,
-      beta: 0.942,
-      yearHigh: 429.36,
-      yearLow: 302.21,
-      sector: 'Technology',
-      industry: 'Software—Infrastructure',
-      volume: 21345678,
-    },
-    'GOOGL': {
-      name: 'Alphabet Inc.',
-      price: 162.35,
-      change: -0.87,
-      changePercent: -0.53,
-      marketCap: 2013000000000,
-      peRatio: 26.21,
-      eps: 6.19,
-      dividendYield: 0.48,
-      beta: 1.042,
-      yearHigh: 171.68,
-      yearLow: 115.35,
-      sector: 'Communication Services',
-      industry: 'Internet Content & Information',
-      volume: 18765432,
-    },
-    'TSLA': {
-      name: 'Tesla, Inc.',
-      price: 238.45,
-      change: 5.76,
-      changePercent: 2.48,
-      marketCap: 753200000000,
-      peRatio: 62.15,
-      eps: 3.84,
-      dividendYield: 0.0,
-      beta: 2.31,
-      yearHigh: 278.98,
-      yearLow: 152.37,
-      sector: 'Consumer Cyclical',
-      industry: 'Auto Manufacturers',
-      volume: 87654321,
-    },
-    'NVDA': {
-      name: 'NVIDIA Corporation',
-      price: 924.43,
-      change: 15.68,
-      changePercent: 1.73,
-      marketCap: 2285000000000,
-      peRatio: 68.44,
-      eps: 13.51,
-      dividendYield: 0.02,
-      beta: 1.75,
-      yearHigh: 974.99,
-      yearLow: 228.43,
-      sector: 'Technology',
-      industry: 'Semiconductors',
-      volume: 45678923,
-    },
-  };
-
-  return stockData[symbol] || {};
-};
 
 export const useStockDetail = (symbol: string | undefined) => {
   const [timeframe, setTimeframe] = useState<TimeRange>('1M');
   
-  const { 
-    data: stockData, 
-    isLoading,
-    error 
-  } = useQuery({
+  const { data: stockData, isLoading } = useQuery({
     queryKey: ['stock-details', symbol],
     queryFn: () => fetchStockDetails(symbol || ''),
-    enabled: !!symbol,
-    retry: 2,
-    meta: {
-      onError: (error: Error) => {
-        console.error(`Error fetching stock details for ${symbol}:`, error);
-      }
-    }
+    enabled: !!symbol
   });
   
-  // Get accurate mock data based on symbol
-  const accurateData = symbol ? getAccurateStockData(symbol) : {};
-  
-  // Base mock data with fallbacks
-  const baseMockStockData: MockStockData = {
+  const mockStockData: MockStockData = {
     symbol: symbol || 'AAPL',
-    name: 'Stock Company',
-    price: 100.00,
-    change: 0.00,
-    changePercent: 0.00,
-    open: 100.00,
-    previousClose: 100.00,
-    dayHigh: 100.00,
-    dayLow: 100.00,
-    volume: 0,
-    avgVolume: 0,
-    marketCap: 0,
-    peRatio: 0,
-    dividend: 0,
-    dividendYield: 0,
-    eps: 0,
-    beta: 1.0,
-    yearHigh: 100.00,
-    yearLow: 100.00,
-    sector: 'Unknown',
-    industry: 'Unknown',
-  };
-  
-  // Combine base data with accurate data
-  const mockStockData = {
-    ...baseMockStockData,
-    ...accurateData
+    name: symbol === 'AAPL' ? 'Apple Inc.' : 
+           symbol === 'MSFT' ? 'Microsoft Corporation' : 
+           symbol === 'GOOGL' ? 'Alphabet Inc.' : 
+           symbol === 'TSLA' ? 'Tesla, Inc.' : 
+           symbol === 'NVDA' ? 'NVIDIA Corporation' : 'Stock Company',
+    price: 187.68,
+    change: 1.84,
+    changePercent: 0.99,
+    open: 186.12,
+    previousClose: 185.84,
+    dayHigh: 188.91,
+    dayLow: 185.83,
+    volume: 54876321,
+    avgVolume: 58452136,
+    marketCap: 2914736000000,
+    peRatio: 32.11,
+    dividend: 0.24,
+    dividendYield: 0.51,
+    eps: 5.84,
+    beta: 1.28,
+    yearHigh: 194.48,
+    yearLow: 124.17,
+    sector: 'Technology',
+    industry: 'Consumer Electronics',
   };
   
   const mockChartData = Array.from({ length: 100 }, (_, i) => ({
@@ -216,11 +110,11 @@ export const useStockDetail = (symbol: string | undefined) => {
   const mockRecommendation: AIRecommendation = {
     symbol: mockStockData.symbol,
     name: mockStockData.name,
-    recommendation: mockStockData.change >= 0 ? 'buy' : 'hold',
-    confidence: mockStockData.change >= 0 ? 0.87 : 0.65,
+    recommendation: 'buy',
+    confidence: 0.87,
     priceTarget: mockStockData.price * 1.15,
     currentPrice: mockStockData.price,
-    reasoning: `${mockStockData.name} shows ${mockStockData.change >= 0 ? 'strong' : 'mixed'} fundamentals with ${mockStockData.change >= 0 ? 'consistent' : 'fluctuating'} revenue growth and ${mockStockData.change >= 0 ? 'expanding' : 'stable'} margins. The company's strategic investments in ${mockStockData.sector === 'Technology' ? 'AI and cloud services' : 'key growth areas'} position it ${mockStockData.change >= 0 ? 'well' : 'reasonably'} for future growth.`,
+    reasoning: `${mockStockData.name} shows strong fundamentals with consistent revenue growth and expanding margins. The company's strategic investments in AI and new product lines position it well for future growth.`,
     timestamp: new Date().toISOString()
   };
 
@@ -248,7 +142,6 @@ export const useStockDetail = (symbol: string | undefined) => {
     mockRecommendation,
     statsData,
     isLoading,
-    error,
     timeframe,
     setTimeframe
   };

@@ -48,7 +48,6 @@ serve(async (req) => {
     }
 
     // Parse the request body
-    const requestData = await req.json();
     const {
       symbol,
       companyName,
@@ -57,9 +56,7 @@ serve(async (req) => {
       price_per_share,
       execution_type = 'market',
       limit_price = null
-    } = requestData;
-
-    console.log('Transaction request:', requestData);
+    } = await req.json();
 
     // Validate required fields
     if (!symbol || !companyName || !transaction_type || !shares || !price_per_share) {
@@ -87,25 +84,6 @@ serve(async (req) => {
 
     // Calculate total amount
     const total_amount = shares * price_per_share;
-
-    // Get user profile to check available funds
-    const { data: userProfile, error: profileError } = await supabase
-      .from('profiles')
-      .select('buying_power')
-      .eq('id', user.id)
-      .single();
-
-    if (profileError) {
-      throw new Error(`Error fetching user profile: ${profileError.message}`);
-    }
-
-    // For buy orders, check if user has enough buying power
-    if (transaction_type === 'buy') {
-      const buyingPower = userProfile?.buying_power || 0;
-      if (buyingPower < total_amount) {
-        throw new Error(`Insufficient funds. Required: $${total_amount.toFixed(2)}, Available: $${buyingPower.toFixed(2)}`);
-      }
-    }
 
     if (transaction_type === 'sell') {
       // Check if user owns enough shares
@@ -139,7 +117,9 @@ serve(async (req) => {
         shares,
         price_per_share,
         total_amount,
-        status
+        status,
+        execution_type,
+        limit_price
       })
       .select()
       .single();
@@ -150,43 +130,15 @@ serve(async (req) => {
 
     // For market orders, update the portfolio immediately
     if (execution_type === 'market') {
-      // Update user's buying power for buy orders
-      if (transaction_type === 'buy') {
-        const { error: updateBuyingPowerError } = await supabase
-          .from('profiles')
-          .update({ 
-            buying_power: userProfile.buying_power - total_amount,
-            updated_at: new Date().toISOString()
-          })
-          .eq('id', user.id);
-
-        if (updateBuyingPowerError) {
-          throw new Error(`Error updating buying power: ${updateBuyingPowerError.message}`);
-        }
-      } else if (transaction_type === 'sell') {
-        // Add funds back to user's buying power
-        const { error: updateBuyingPowerError } = await supabase
-          .from('profiles')
-          .update({ 
-            buying_power: userProfile.buying_power + total_amount,
-            updated_at: new Date().toISOString()
-          })
-          .eq('id', user.id);
-
-        if (updateBuyingPowerError) {
-          throw new Error(`Error updating buying power: ${updateBuyingPowerError.message}`);
-        }
-      }
-
       // Check if the stock is already in the portfolio
       const { data: existingStock, error: existingError } = await supabase
         .from('portfolios')
         .select('*')
         .eq('user_id', user.id)
         .eq('symbol', symbol)
-        .maybeSingle();
+        .single();
 
-      if (existingError) {
+      if (existingError && existingError.code !== 'PGRST116') { // Not found is okay
         throw new Error(`Error checking existing portfolio: ${existingError.message}`);
       }
 
